@@ -1,0 +1,22 @@
+{
+  "name": "fullstack",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "dependencies": {
+    "@dataesr/dsfr-plus": "^0.4.0",
+    "concurrently": "^8.0.1"
+  },
+  "scripts": {
+    "build": "npm -w client run build -- --mode ${npm_config_mode} --emptyOutDir --outDir ../server/dist",
+    "client": "npm -w client run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "preview": "npm run build --mode=${npm_config_mode} && npm -w server start",
+    "server": "npm -w server run dev",
+    "start": "npm run dev"
+  }
+}
