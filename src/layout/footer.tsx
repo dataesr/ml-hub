@@ -24,13 +24,10 @@ export default function MainFooter() {
     <>
       <Footer fluid={true}>
         <FooterTop>
-          <Container>DOADIFY</Container>
+          <Container>ML-HUB</Container>
         </FooterTop>
         <FooterBody>
-          <Logo
-            splitCharacter="|"
-            text="Ministère|de l'enseignement|supérieur|et de la recherche"
-          />
+          <Logo splitCharacter="|" text="Ministère|de l'enseignement|supérieur|et de la recherche" />
           <Link
             className="fr-footer__content-link"
             target="_blank"
@@ -81,5 +78,5 @@ export default function MainFooter() {
         </FooterBottom>
       </Footer>
     </>
-  );
+  )
 }

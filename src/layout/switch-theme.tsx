@@ -94,6 +94,7 @@ export default function SwitchTheme({ isOpen, onClose }) {
                               className="fr-artwork"
                               viewBox="0 0 80 80"
                               width="80px"
+                              height="80px"
                             >
                               <use
                                 className="fr-artwork-decorative"
@@ -134,6 +135,7 @@ export default function SwitchTheme({ isOpen, onClose }) {
                               className="fr-artwork"
                               viewBox="0 0 80 80"
                               width="80px"
+                              height="80px"
                             >
                               <use
                                 className="fr-artwork-decorative"

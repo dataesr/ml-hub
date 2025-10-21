@@ -1,22 +1,37 @@
 {
-  "name": "fullstack",
+  "name": "client",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.1",
   "type": "module",
-  "workspaces": [
-    "client",
-    "server"
-  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "start": "npm run dev"
+  },
   "dependencies": {
     "@dataesr/dsfr-plus": "^0.4.0",
-    "concurrently": "^8.0.1"
+    "@tanstack/react-query": "^4.29.5",
+    "@tanstack/react-query-devtools": "^4.29.6",
+    "classnames": "^2.3.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.11.1"
   },
-  "scripts": {
-    "build": "npm -w client run build -- --mode ${npm_config_mode} --emptyOutDir --outDir ../server/dist",
-    "client": "npm -w client run dev",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "preview": "npm run build --mode=${npm_config_mode} && npm -w server start",
-    "server": "npm -w server run dev",
-    "start": "npm run dev"
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "eslint": "^8.40.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.3.4",
+    "sass": "^1.62.1",
+    "typescript": "^5.5.3",
+    "vite": "^4.3.2"
   }
 }

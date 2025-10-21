@@ -1,0 +1,42 @@
+name: Staging deployment
+
+on:
+  push:
+    branches:
+      - staging
+
+env:
+  # Must match k8s deployment name
+  DEPLOYMENT: ml-hub
+  DEPLOYMENT_NAMESPACE: ml-hub
+  MM_NOTIFICATION_CHANNEL: bots
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏁 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Build app
+        run: npm ci --silent && npm run build --mode=staging
+
+      - name: 🌥️ Deployment
+        id: s3-deploy
+        uses: dataesr/ovh-s3-deploy@v1
+        with:
+          access_key: ${{ secrets.S3_ACCESS_KEY }}
+          secret_key: ${{ secrets.S3_SECRET_KEY }}
+
+  notify:
+    needs: deploy
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📢 Notify
+        uses: dataesr/mm-notifier-action@v1.0.2
+        with:
+          deployment_url: ${{ steps.s3-deploy.outputs.deployment_url }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          mattermost_channel: ${{ env.MM_NOTIFICATION_CHANNEL}}
+          mattermost_webhook_url: ${{ secrets.MATTERMOST_WEBHOOK_URL }}

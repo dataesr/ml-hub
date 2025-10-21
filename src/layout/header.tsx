@@ -24,11 +24,8 @@ export default function Header() {
 
   return (
     <HeaderWrapper>
-      <Logo
-        splitCharacter="|"
-        text="Ministère|de l'enseignement|supérieur|et de la recherche"
-      />
-      <Service name="DOADIFY" tagline="Nouvelle application en developpement" />
+      <Logo splitCharacter="|" text="Ministère|de l'enseignement|supérieur|et de la recherche" />
+      <Service name="ML-HUB" tagline="ML & AI models" />
       <FastAccess>
         <Button>
           <button
@@ -53,5 +50,5 @@ export default function Header() {
         <SwitchTheme isOpen={isThemeModalOpen} onClose={closeThemeModal} />
       </Nav>
     </HeaderWrapper>
-  );
+  )
 }
