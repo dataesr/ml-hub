@@ -6,21 +6,21 @@ import {
   Button,
   Nav,
   Link,
-  NavItem,
-} from "@dataesr/dsfr-plus";
-import SwitchTheme from "./switch-theme";
-import { useState } from "react";
+  // NavItem,
+} from "@dataesr/dsfr-plus"
+import SwitchTheme from "./switch-theme"
+import { useState } from "react"
 
 export default function Header() {
-  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
 
   const openThemeModal = () => {
-    setIsThemeModalOpen(true);
-  };
+    setIsThemeModalOpen(true)
+  }
 
   const closeThemeModal = () => {
-    setIsThemeModalOpen(false);
-  };
+    setIsThemeModalOpen(false)
+  }
 
   return (
     <HeaderWrapper>
@@ -39,14 +39,13 @@ export default function Header() {
         </Button>
       </FastAccess>
       <Nav>
-        <Link href="/">Accueil</Link>
-        <Link href="/">DoadiHome</Link>
-        <Link href="/">DoadiTest</Link>
-        <Link href="/">DoadiNav</Link>
-        <Link href="/">DoadiItem</Link>
-        <NavItem title={"DoadiNavItem"}>
+        <Link href="/">Models</Link>
+        <Link href="/">Train</Link>
+        <Link href="/">Evaluate</Link>
+        <Link href="/">Inference</Link>
+        {/* <NavItem title={"DoadiNavItem"}>
           <Link href="/">DoadiNavItem</Link>
-        </NavItem>
+        </NavItem> */}
         <SwitchTheme isOpen={isThemeModalOpen} onClose={closeThemeModal} />
       </Nav>
     </HeaderWrapper>
