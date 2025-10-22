@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app import routes
+from app.ovhai import ovhai_initialize
 
 app = FastAPI(title="ML HUB BACKEND")
 
@@ -15,6 +16,9 @@ app.add_middleware(
 
 # Include routes
 app.include_router(routes.router)
+
+# Init ovhai cli
+ovhai_initialize()
 
 
 @app.get("/")
