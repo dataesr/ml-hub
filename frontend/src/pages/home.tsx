@@ -1,6 +1,7 @@
 import { Container } from "@dataesr/dsfr-plus"
 import { useListModels } from "../hooks/huggingface"
 import ModelCard from "../components/model-card"
+import { dateStringToNumber } from "../utils"
 
 export default function Home() {
   const { data: models, isFetching, error } = useListModels()
@@ -11,7 +12,9 @@ export default function Home() {
   return (
     <Container className="fr-my-5w">
       {models
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .sort(
+          (a, b) => dateStringToNumber(b.last_modified || b.created_at) - dateStringToNumber(a.last_modified || a.created_at)
+        )
         .map((model) => (
           <ModelCard key={model.id} model={model} />
         ))}
