@@ -1,18 +1,17 @@
 import { useParams } from "react-router-dom"
 import { Container, Title, Text, Button, Tag, TagGroup, ButtonGroup } from "@dataesr/dsfr-plus"
-import { useHuggingFaceModels } from "../hooks/useHuggingFaceModels"
+import { useGetModel } from "../hooks/huggingface"
 
 export default function Model() {
-  const { modelId } = useParams<{ modelId: string }>()
-  const { data: models, isFetching, error } = useHuggingFaceModels()
+  const { owner, name } = useParams<{ owner: string; name: string }>()
+  console.log("owner", owner, "name", name)
+  const { data: currentModel, isFetching, error } = useGetModel(`${owner}/${name}`)
 
   console.log("isFetching", isFetching)
   console.log("error", error)
 
   if (isFetching || error) return null
 
-  const currentModel = models?.find((model) => model.id === modelId)
-  console.log("modelId", modelId)
   console.log("currentModel", currentModel)
 
   const handleTrain = () => null
@@ -22,7 +21,7 @@ export default function Model() {
   return (
     <Container className="fr-my-5w">
       <Title as="h3" className="fr-mb-2w">
-        {currentModel.name}
+        {currentModel.id}
       </Title>
       <Text size="md" className="fr-mb-3w">
         {currentModel.config?.model_type && (
@@ -30,14 +29,14 @@ export default function Model() {
             <strong>Type:</strong> {currentModel.config.model_type}
           </span>
         )}
-        {currentModel.task && (
+        {currentModel.pipeline_tag && (
           <span className="fr-mr-2w">
-            <strong>Task:</strong> {currentModel.task}
+            <strong>Task:</strong> {currentModel.pipeline_tag}
           </span>
         )}
-        {currentModel.downloads && (
+        {currentModel.downloads != undefined && (
           <span className="fr-mr-2w">
-            <strong>Downloads:</strong> {currentModel.downloads.toLocaleString()}
+            <strong>Downloads:</strong> {currentModel.downloads}
           </span>
         )}
       </Text>
@@ -83,7 +82,7 @@ export default function Model() {
           icon="external-link-line"
           iconPosition="right"
           variant="secondary"
-          onClick={() => window.open(`https://huggingface.co/${currentModel.name}`, "_blank")}
+          onClick={() => window.open(`https://huggingface.co/${currentModel.id}`, "_blank")}
         >
           Voir sur Hugging Face
         </Button>

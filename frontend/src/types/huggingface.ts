@@ -1,8 +1,15 @@
-import * as hub from "@huggingface/hub"
-
-type HuggingFaceAdditionalInfos = {
+export type HuggingFaceModel = {
+  _id: string
+  id: string
+  modelId: string
+  author?: string
+  downloads?: number
   config: { architectures: Array<string>; model_type: string }
-  tags: string[]
+  created_at: string
+  last_modified: string
+  pipeline_tag: string
+  private: boolean
+  tags: Array<string>
 }
-export type HuggingFaceModel = hub.ModelEntry & HuggingFaceAdditionalInfos
+
 export type HuggingFaceModels = Array<HuggingFaceModel>

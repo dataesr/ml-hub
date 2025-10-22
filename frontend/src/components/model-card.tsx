@@ -10,7 +10,7 @@ export default function ModelCard({ model }: ModelCardProps) {
   return (
     <Container className="fr-card fr-mb-2w">
       <Card
-        title={model.name}
+        title={model.id}
         horizontal
         start={
           <TagGroup>
@@ -18,16 +18,16 @@ export default function ModelCard({ model }: ModelCardProps) {
             {/* {model?.tags?.map((tag) => (
               <Tag>{tag}</Tag>
             ))} */}
-            {model?.task && <Tag color="green-emeraude">{model.task}</Tag>}
+            {model?.pipeline_tag && <Tag color="green-emeraude">{model.pipeline_tag}</Tag>}
           </TagGroup>
         }
         footer={
-          <Link icon="arrow-right-line" iconPosition="right" href={`https://huggingface.co/${model.name}`} target="_blank">
+          <Link icon="arrow-right-line" iconPosition="right" href={`https://huggingface.co/${model.id}`} target="_blank">
             See on HuggingFace
           </Link>
         }
         linkProps={{
-          href: `model/${model.id}`,
+          href: `/model/${model._id}`,
         }}
       />
     </Container>

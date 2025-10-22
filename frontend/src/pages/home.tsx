@@ -1,9 +1,9 @@
 import { Container } from "@dataesr/dsfr-plus"
-import { useHuggingFaceModels } from "../hooks/useHuggingFaceModels"
+import { useListModels } from "../hooks/huggingface"
 import ModelCard from "../components/model-card"
 
 export default function Home() {
-  const { data: models, isFetching, error } = useHuggingFaceModels()
+  const { data: models, isFetching, error } = useListModels()
 
   if (isFetching || error) return null
 
@@ -11,9 +11,9 @@ export default function Home() {
   return (
     <Container className="fr-my-5w">
       {models
-        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .map((model) => (
-          <ModelCard model={model} />
+          <ModelCard key={model.id} model={model} />
         ))}
     </Container>
   )

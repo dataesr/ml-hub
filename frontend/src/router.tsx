@@ -9,7 +9,7 @@ export default function Router() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/model/:modelId" element={<Model />} />
+        <Route path="/model/:owner/:name" element={<Model />} />
       </Route>
     </Routes>
   )
