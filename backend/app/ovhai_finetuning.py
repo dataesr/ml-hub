@@ -20,13 +20,12 @@ class JOB(BaseModel):
     id: str | None = None
     name: str
     gpu: int | None = None
-    volumes: list[Literal["jobs", "datasets"]] = ["jobs"]
     envs: list[ENV] = []
     model_name: str
     dataset_name: str
     dataset_format: Literal["auto", "conversational", "text"] | None = None
     dataset_volume: bool | None = False
-    model: Literal["train", "push"] | None = None
+    mode: Literal["train", "push"] | None = None
     output_model_name: str | None = None
     hf_hub: str | None = None
     hf_private: bool | None = False

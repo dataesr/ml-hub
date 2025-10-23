@@ -1,7 +1,6 @@
 import os
 import json
 import subprocess
-from pydantic import BaseModel
 from typing import Literal
 from app.logger import get_logger
 
@@ -49,7 +48,7 @@ def ovhai_job_list(state: str = None):
 
 
 def ovhai_job_run(job_cli: str):
-    cmd = f"ovhai job run {job_cli}"
+    cmd = f"ovhai job run {job_cli} -o json"
     data = cmd_get_data(cmd)
     return data
 
