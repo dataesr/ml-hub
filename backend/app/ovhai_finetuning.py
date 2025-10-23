@@ -1,13 +1,13 @@
 from pydantic import BaseModel
 from typing import Literal
-from logger import get_logger
+from app.logger import get_logger
 
 logger = get_logger(__name__)
 
 GPU = "ai1-1-gpu"
 DOCKER = "ghcr.io/dataesr/llm-finetuning:latest"
 DOCKER_CMD = "uv run main.py"
-VOLUME_JOBS = ("llm-jobs@1azgra/:/workspace/jobs:rwd",)
+VOLUME_JOBS = "llm-jobs@1azgra/:/workspace/jobs:rwd"
 VOLUME_DATASETS = "llm-datasets@1azgra/:/workspace/datasets:ro"
 
 

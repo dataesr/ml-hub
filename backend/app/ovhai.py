@@ -1,10 +1,28 @@
 import os
 import json
 import subprocess
+from pydantic import BaseModel
+from typing import Literal
 from app.logger import get_logger
 
 logger = get_logger(__name__)
 
+JOB_STATE = Literal[
+    "QUEUED",
+    "PENDING",
+    "INITIALIZING",
+    "FINALIZING",
+    "RUNNING",
+    "TIMEOUT",
+    "FAILED",
+    "ERROR",
+    "DONE",
+    "INTERRUPTED",
+    "INTERRUPTING",
+    "SYNC_FAILED",
+]
+
+JOB_ACTIONS = Literal["GET", "STOP"]
 
 def ovhai_initialize():
     cmd = f'ovhai login --username {os.getenv("OVHAI_USERNAME")} --password-from-env OVHAI_PASSWORD'
@@ -12,7 +30,7 @@ def ovhai_initialize():
     result.check_returncode()
 
 
-def cmd_get_data(cmd: str):
+def cmd_get_data(cmd: str) -> dict:
     data = {}
     try:
         result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
@@ -23,8 +41,9 @@ def cmd_get_data(cmd: str):
     return data
 
 
-def ovhai_job_list():
-    cmd = f"ovhai job list -o json"
+def ovhai_job_list(state: str = None):
+    filter = f"-s {state}" if state else "-a"
+    cmd = f"ovhai job list {filter} -o json"
     data = cmd_get_data(cmd)
     return data
 
@@ -37,11 +56,11 @@ def ovhai_job_run(job_cli: str):
 
 def ovhai_job_stop(id: str):
     cmd = f"ovhai job stop {id}"
-    result = subprocess.run(cmd, shell=True, text=True)
+    result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
     result.check_returncode()
 
 
 def ovhai_job_get(id: str):
-    cmd = f"ovhai job get {id}"
+    cmd = f"ovhai job get {id} -o json"
     data = cmd_get_data(cmd)
     return data

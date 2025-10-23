@@ -1,4 +1,3 @@
-import os
 from huggingface_hub import list_models, model_info
 from app.logger import get_logger
 
