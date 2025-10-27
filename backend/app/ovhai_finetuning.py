@@ -26,9 +26,9 @@ class JOB(BaseModel):
     dataset_format: Literal["auto", "conversational", "text"] | None = None
     dataset_volume: bool | None = False
     mode: Literal["train", "push"] | None = None
-    output_model_name: str | None = None
+    push_model_dir: str | None = None
     hf_hub: str | None = None
-    hf_private: bool | None = False
+    hf_hub_private: bool | None = False
 
     def get_cli(self) -> str:
         cmd = f"--name {self.name}"
@@ -47,12 +47,12 @@ class JOB(BaseModel):
             cmd += f" --dataset_format {self.dataset_format}"
         if self.mode:
             cmd += f" --mode {self.mode}"
-        if self.output_model_name:
-            cmd += f" --output_model_name {self.output_model_name}"
+        if self.push_model_dir:
+            cmd += f" --push_model_dir {self.push_model_dir}"
         if self.hf_hub:
             cmd += f" --hf_hub {self.hf_hub}"
-        if self.hf_private:
-            cmd += f" --hf_private"
+        if self.hf_hub_private:
+            cmd += f" --hf_hub_private"
         return cmd
 
         # def _get_stop_cmd(self) -> str:
