@@ -1,32 +1,14 @@
-import { Container, Title, Button, Tag, ColorFamily, Text } from "@dataesr/dsfr-plus"
+import { Button, Container, Title } from "@dataesr/dsfr-plus"
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import { useListJobs } from "../hooks/ovhai"
-import { OvhAiJob, OvhAiJobs, OvhaiJobState } from "../types/ovhai"
-import { buildTableComponents } from "../helpers/job"
+import { OvhAiJobs } from "../types/ovhai"
+import { buildTableComponents } from "../helpers/jobs"
+import { postOvhAiJob } from "../api"
+import { useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { TrainNewModal } from "../components/job-new"
 
-const getStateColor = (state: OvhaiJobState): ColorFamily => {
-  switch (state) {
-    case "DONE":
-      return "green-emeraude"
-    case "RUNNING":
-    case "INITIALIZING":
-    case "FINALIZING":
-    case "PENDING":
-      return "blue-cumulus"
-    case "FAILED":
-    case "ERROR":
-    case "SYNC_FAILED":
-    case "TIMEOUT":
-      return "beige-gris-galet"
-    case "INTERRUPTED":
-    case "INTERRUPTING":
-      return "orange-terre-battue"
-    default:
-      return "blue-cumulus"
-  }
-}
-
-const tableConfig = [
+const TABLE_CONFIG = [
   { header: "Name / ID", component: "name" },
   { header: "Status", component: "status" },
   { header: "Resources", component: "resources" },
@@ -36,14 +18,14 @@ const tableConfig = [
 ]
 
 function TrainTable({ jobs }: { jobs: OvhAiJobs }) {
-  const headers = tableConfig.map((col) => col.header)
-  const data = jobs.map((job) => buildTableComponents(job)).map((job) => tableConfig.map((col) => job[col.component]))
-
+  const headers = TABLE_CONFIG.map((col) => col.header)
+  const data = jobs.map((job) => buildTableComponents(job)).map((job) => TABLE_CONFIG.map((col) => job[col.component]))
   return <Table headers={headers} data={data} />
 }
 
 export default function Train() {
   const { data: jobs, isFetching, error } = useListJobs()
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   if (isFetching || error) return null
   if (!jobs || jobs.length < 1) return "error"
@@ -53,7 +35,9 @@ export default function Train() {
       <Title as="h2" className="fr-mb-4w">
         Training Jobs
       </Title>
+      <Button onClick={() => setIsModalOpen(true)}>New training</Button>
       <TrainTable jobs={jobs} />
+      <TrainNewModal isOpen={isModalOpen} onClose={() => null} />
     </Container>
   )
 }

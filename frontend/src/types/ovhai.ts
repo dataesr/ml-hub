@@ -43,3 +43,4 @@ export type OvhAiJob = {
   }
 }
 export type OvhAiJobs = Array<OvhAiJob>
+
