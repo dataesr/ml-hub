@@ -39,8 +39,9 @@ export default function Header() {
         </Button>
       </FastAccess>
       <Nav>
-        <Link href="/">Models</Link>
-        <Link href="/train">Train</Link>
+        <Link href="/">Home</Link>
+        <Link href="/models">Models</Link>
+        <Link href="/jobs">Jobs</Link>
         <Link href="/">Evaluate</Link>
         <Link href="/">Inference</Link>
         {/* <NavItem title={"DoadiNavItem"}>

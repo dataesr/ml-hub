@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom"
 import { Container, Title, Text, Button, Tag, TagGroup, ButtonGroup } from "@dataesr/dsfr-plus"
-import { useGetModel } from "../hooks/huggingface"
+import { useGetModel } from "../../hooks/models"
 
 export default function Model() {
   const { owner, name } = useParams<{ owner: string; name: string }>()

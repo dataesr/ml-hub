@@ -1,9 +1,9 @@
 import { Container, Title } from "@dataesr/dsfr-plus"
-import { useListModels } from "../hooks/huggingface"
-import ModelCard from "../components/model-card"
-import { dateStringToNumber } from "../utils"
+import { useListModels } from "../../hooks/models"
+import ModelCard from "./components/model-card"
+import { dateStringToNumber } from "../../utils"
 
-export default function Home() {
+export default function Models() {
   const { data: models, isFetching, error } = useListModels()
 
   if (isFetching || error) return null

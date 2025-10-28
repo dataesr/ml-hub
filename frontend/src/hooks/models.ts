@@ -1,13 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { fetchOvhAiJob, fetchOvhAiJobs } from "../api"
-import { OvhaiJobState } from "../types/ovhai"
+import { apiModelsGet, apiModelsList } from "../api"
 
-
-export function useGetJob(name: string) {
+export function useGetModel(name: string) {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["ovhai", "jobs", "get", name],
-    queryFn: () => fetchOvhAiJob(name),
+    queryKey: ["hf", "models", "get", name],
+    queryFn: () => apiModelsGet(name),
     // enabled: true,
   })
 
@@ -18,10 +16,10 @@ export function useGetJob(name: string) {
   return values
 }
 
-export function useListJobs(state: OvhaiJobState = null) {
+export function useListModels() {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["ovhai", "jobs", "list", state || "all"],
-    queryFn: () => fetchOvhAiJobs(state),
+    queryKey: ["hf", "models", "list", "dataesr"],
+    queryFn: () => apiModelsList("dataesr"),
     // enabled: true,
   })
 

@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { TrainNewJobArgs } from "../types/train"
-import { postOvhAiJob } from "../api"
+import { TrainNewJobArgs } from "../../../types/train"
+import { apiJobsCreate } from "../../../api"
 import {
   Button,
   Checkbox,
@@ -21,7 +21,7 @@ interface TrainNewModalProps {
   onClose: () => void
 }
 
-export function TrainNewModal({ isOpen, onClose }: TrainNewModalProps) {
+export function JobsNew({ isOpen, onClose }: TrainNewModalProps) {
   const [formData, setFormData] = useState<TrainNewJobArgs>({
     name: "",
     model_name: "",
@@ -38,7 +38,7 @@ export function TrainNewModal({ isOpen, onClose }: TrainNewModalProps) {
     setIsSubmitting(true)
 
     try {
-      const res = await postOvhAiJob(formData)
+      const res = await apiJobsCreate(formData)
       console.log("res", res)
       onClose()
       resetForm()
@@ -73,7 +73,7 @@ export function TrainNewModal({ isOpen, onClose }: TrainNewModalProps) {
   const handleFormChange = (key: string, value: any) => setFormData({ ...formData, [key]: value })
 
   return (
-    <Modal size="lg" isOpen={isOpen} hide={() => null}>
+    <Modal size="lg" isOpen={isOpen} hide={onClose}>
       <ModalClose>Close</ModalClose>
       <ModalTitle>New training job</ModalTitle>
       <ModalContent>
