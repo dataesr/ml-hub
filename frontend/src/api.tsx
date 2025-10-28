@@ -2,7 +2,7 @@ import { transformJob } from "./pages/jobs/helpers/jobs"
 import { HuggingFaceModel, HuggingFaceModels } from "./types/models"
 import { OvhAiJob, OvhAiJobInputs, OvhAiJobs } from "./types/jobs"
 
-export const API_URL = import.meta.env.VITE_API_URL
+export const API_URL = import.meta.env.VITE_API_URL || "/api"
 
 /// HuggingFace Models
 export async function apiModelsGet(name: string): Promise<HuggingFaceModel> {

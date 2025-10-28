@@ -52,7 +52,7 @@ class JOB(BaseModel):
         envs = self._get_envs()
         if envs:
             for env in envs:
-                cmd += f" --env {env.name}={env.value}"
+                cmd += f" --env {env['name']}={env['value']}"
         cmd += f" --volume {VOLUME_JOBS}"
         if self.dataset_volume:
             cmd += f" --volume {VOLUME_DATASETS}"
