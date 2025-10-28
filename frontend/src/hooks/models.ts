@@ -7,6 +7,7 @@ export function useGetModel(name: string) {
     queryKey: ["hf", "models", "get", name],
     queryFn: () => apiModelsGet(name),
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,
   })
 
@@ -22,6 +23,7 @@ export function useListModels() {
     queryKey: ["hf", "models", "list", "dataesr"],
     queryFn: () => apiModelsList("dataesr"),
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,
   })
 

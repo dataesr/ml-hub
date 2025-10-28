@@ -8,6 +8,7 @@ export function useGetJob(name: string) {
     queryKey: ["ovhai", "jobs", "get", name],
     queryFn: () => apiJobsGet(name),
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,
   })
 
@@ -23,6 +24,7 @@ export function useListJobs(state: OvhaiJobState = null) {
     queryKey: ["ovhai", "jobs", "list", state || "all"],
     queryFn: () => apiJobsList(state),
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,
   })
 

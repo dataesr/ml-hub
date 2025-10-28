@@ -8,9 +8,10 @@ type ModelCardProps = {
 
 export default function ModelCard({ model }: ModelCardProps) {
   return (
-    <Container className="fr-card fr-mb-2w">
+    <Container className="fr-card fr-mb-1w">
       <Card
         title={model.id}
+        size="small"
         horizontal
         start={
           <TagGroup>

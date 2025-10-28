@@ -3,7 +3,7 @@ import { OvhAiJob, OvhAiJobs } from "../../../types/jobs"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
 import { Button, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate, formatDuration } from "../../../utils"
-import { getStateColor, OVH_AI_TRAINING_URL } from "../helpers/jobs"
+import { getStateColor, OVH_AI_TRAINING_URL } from "../helpers"
 
 const TABLE_CONFIG = [
   { header: "Name / ID", component: "name" },
@@ -58,7 +58,6 @@ const buildTableComponents = (job: OvhAiJob) => {
     actions,
   }
 }
-
 
 export default function JobsTable({ jobs }: { jobs: OvhAiJobs }) {
   const headers = TABLE_CONFIG.map((col) => col.header)

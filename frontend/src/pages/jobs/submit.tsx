@@ -3,6 +3,7 @@ import { apiJobsCreate } from "../../api"
 import { Accordion, Button, Checkbox, Container, Select, SelectOption, TextInput, Title, Toggle } from "@dataesr/dsfr-plus"
 import { OvhAiJob, OvhAiJobInputs } from "../../types/jobs"
 import { scrollToTop } from "../../utils"
+import { useNavigate } from "react-router-dom"
 
 const DEFAULT_INPUTS: OvhAiJobInputs = {
   name: "",
@@ -15,6 +16,7 @@ export default function JobsSubmit() {
   const [inputs, setInputs] = useState<OvhAiJobInputs>(DEFAULT_INPUTS)
   const [pushToHF, setPushToHF] = useState<boolean>(false)
   const jobType = "finetuning"
+  const navigate = useNavigate()
 
   const resetInputs = () => {
     setPushToHF(false)
@@ -41,8 +43,11 @@ export default function JobsSubmit() {
   console.log("inputs", inputs)
 
   return (
-    <Container className="fr-my-5w">
-      <Title as="h2" className="fr-mb-4w">
+    <Container className="fr-my-3w">
+      <Button size="sm" variant="tertiary" icon="arrow-left-line" onClick={() => navigate("/jobs")}>
+        Back to jobs
+      </Button>
+      <Title as="h2" className="fr-mb-4w fr-mt-5w">
         New training job
       </Title>
       <Container fluid style={{ maxWidth: "600px" }}>

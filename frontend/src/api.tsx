@@ -1,4 +1,4 @@
-import { transformJob } from "./pages/jobs/helpers/jobs"
+import { transformJob } from "./pages/jobs/helpers"
 import { HuggingFaceModel, HuggingFaceModels } from "./types/models"
 import { OvhAiJob, OvhAiJobInputs, OvhAiJobs } from "./types/jobs"
 
