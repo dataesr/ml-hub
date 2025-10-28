@@ -1,5 +1,5 @@
 import { Table } from "@codegouvfr/react-dsfr/Table"
-import { OvhAiJob, OvhAiJobs } from "../../../types/ovhai"
+import { OvhAiJob, OvhAiJobs } from "../../../types/jobs"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
 import { Button, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate, formatDuration } from "../../../utils"

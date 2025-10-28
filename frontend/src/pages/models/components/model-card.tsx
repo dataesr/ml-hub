@@ -1,5 +1,5 @@
 import { Container, Link, Tag, TagGroup } from "@dataesr/dsfr-plus"
-import { HuggingFaceModel } from "../../../types/huggingface"
+import { HuggingFaceModel } from "../../../types/models"
 import { Card } from "@codegouvfr/react-dsfr/Card"
 
 type ModelCardProps = {

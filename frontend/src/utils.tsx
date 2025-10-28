@@ -15,3 +15,10 @@ export const formatDuration = (duration: number): string => {
   const d = new Date(duration * 1000)
   return d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", second: "2-digit" })
 }
+
+export const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  })
+}

@@ -1,6 +1,6 @@
 import { ColorFamily } from "@dataesr/dsfr-plus"
-import { OvhAiJob } from "../../../types/ovhai"
-import { OvhaiJobState } from "../../../types/ovhai"
+import { OvhAiJob } from "../../../types/jobs"
+import { OvhaiJobState } from "../../../types/jobs"
 
 export const OVH_AI_TRAINING_URL = import.meta.env.VITE_OVH_AI_TRAINING_URL
 

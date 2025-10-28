@@ -1,3 +1,4 @@
+import os
 from pydantic import BaseModel
 from typing import Literal
 from app.logger import get_logger
@@ -9,18 +10,19 @@ DOCKER = "ghcr.io/dataesr/llm-finetuning:latest"
 DOCKER_CMD = "uv run main.py"
 VOLUME_JOBS = "llm-jobs@1azgra/:/workspace/jobs:rwd"
 VOLUME_DATASETS = "llm-datasets@1azgra/:/workspace/datasets:ro"
-
-
 class ENV(BaseModel):
     name: str
     value: str
 
+SECRET_ENVS: list[ENV] = [
+    {"name": "HF_TOKEN", "value": os.getenv("HF_TOKEN")},
+    {"name": "WANDB_KEY", "value": os.getenv("WANDB_KEY")},
+]
 
 class JOB(BaseModel):
     id: str | None = None
     name: str
     gpu: int | None = None
-    envs: list[ENV] = []
     model_name: str
     dataset_name: str
     dataset_format: Literal["auto", "conversational", "text"] | None = None
@@ -29,13 +31,27 @@ class JOB(BaseModel):
     push_model_dir: str | None = None
     hf_hub: str | None = None
     hf_hub_private: bool | None = False
+    wandb_name: str | None = None
+    wandb_project: str | None = None
+    wandb_disabled: bool | None = False
+
+    def _get_envs(self) -> list[ENV]:
+        envs = SECRET_ENVS
+        if self.wandb_name:
+            envs.append({"name": "WANDB_NAME", "value": self.wandb_name})
+        if self.wandb_project:
+            envs.append({"name": "WANDB_PROJECT", "value": self.wandb_project})
+        if self.wandb_disabled:
+            envs.append({"name": "WANDB_MODE", "value": "disabled"})
+        return envs
 
     def get_cli(self) -> str:
         cmd = f"--name {self.name}"
         if self.gpu:
             cmd += f" --flavor {GPU} --gpu {self.gpu}"
-        if self.envs:
-            for env in self.envs:
+        envs = self._get_envs()
+        if envs:
+            for env in envs:
                 cmd += f" --env {env.name}={env.value}"
         cmd += f" --volume {VOLUME_JOBS}"
         if self.dataset_volume:
@@ -54,15 +70,3 @@ class JOB(BaseModel):
         if self.hf_hub_private:
             cmd += f" --hf_hub_private"
         return cmd
-
-        # def _get_stop_cmd(self) -> str:
-        #     if not self.id:
-        #         raise ValueError(f"Job {self.name} doesnt have any id")
-        #     cmd = f"ovhai job stop {self.id}"
-        #     return cmd
-
-        # def _get_data_cmd(self) -> str:
-        #     if not self.id:
-        #         raise ValueError(f"Job {self.name} doesnt have any id")
-        #     cmd = f"ovhai job get {self.id} -o json"
-        #     return cmd

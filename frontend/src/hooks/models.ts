@@ -6,7 +6,8 @@ export function useGetModel(name: string) {
   const { data, error, isFetching } = useQuery({
     queryKey: ["hf", "models", "get", name],
     queryFn: () => apiModelsGet(name),
-    // enabled: true,
+    refetchOnWindowFocus: false,
+    // staleTime: 5 * 60 * 1000,
   })
 
   const values = useMemo(() => {
@@ -20,7 +21,8 @@ export function useListModels() {
   const { data, error, isFetching } = useQuery({
     queryKey: ["hf", "models", "list", "dataesr"],
     queryFn: () => apiModelsList("dataesr"),
-    // enabled: true,
+    refetchOnWindowFocus: false,
+    // staleTime: 5 * 60 * 1000,
   })
 
   const values = useMemo(() => {

@@ -1,6 +1,6 @@
 import { transformJob } from "./pages/jobs/helpers/jobs"
-import { HuggingFaceModel, HuggingFaceModels } from "./types/huggingface"
-import { OvhAiJob, OvhAiJobs } from "./types/ovhai"
+import { HuggingFaceModel, HuggingFaceModels } from "./types/models"
+import { OvhAiJob, OvhAiJobInputs, OvhAiJobs } from "./types/jobs"
 
 export const API_URL = import.meta.env.VITE_API_URL
 
@@ -23,7 +23,7 @@ export async function apiModelsList(owner: string): Promise<HuggingFaceModels> {
   return data
 }
 
-/// OVHAI
+/// OVHAI Jobs
 export async function apiJobsGet(id: string): Promise<OvhAiJob> {
   const res = await fetch(`${API_URL}/ovhai/jobs/${id}`, {
     method: "GET",
@@ -43,8 +43,8 @@ export async function apiJobsList(state: string): Promise<OvhAiJobs> {
   return Array.isArray(data) ? data.map(transformJob) : []
 }
 
-export async function apiJobsCreate(job: Record<string, any>): Promise<OvhAiJob> {
-  const res = await fetch(`${API_URL}/ovhai/jobs`, {
+export async function apiJobsCreate(job: OvhAiJobInputs): Promise<OvhAiJob> {
+  const res = await fetch(`${API_URL}/ovhai/jobs/finetuning`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(job),

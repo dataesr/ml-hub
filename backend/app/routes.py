@@ -40,8 +40,7 @@ async def manage_job(id: str, action: JOB_ACTIONS = "GET"):
             return {"error": error.stderr}
 
 
-### ovhai - finetuning
-@router.post("/finetune")
+@router.post("/ovhai/jobs/finetuning")
 async def create_ft_job(job: JOB_FT):
     data = ovhai_job_run(job.get_cli())
     return data
