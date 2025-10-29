@@ -43,7 +43,12 @@ const buildTableComponents = (job: OvhAiJob) => {
   const duration = job.status.duration ? formatDuration(job.status.duration) : "-"
 
   const actions = (
-    <Button icon="external-link-line" size="sm" onClick={() => window.open(`${OVH_AI_TRAINING_URL}/${job.id}`, "_blank")}>
+    <Button
+      icon="external-link-line"
+      size="sm"
+      variant="text"
+      onClick={() => window.open(`${OVH_AI_TRAINING_URL}/${job.id}`, "_blank")}
+    >
       Open
     </Button>
   )
@@ -62,5 +67,5 @@ const buildTableComponents = (job: OvhAiJob) => {
 export default function JobsTable({ jobs }: { jobs: OvhAiJobs }) {
   const headers = TABLE_CONFIG.map((col) => col.header)
   const data = jobs.map((job) => buildTableComponents(job)).map((job) => TABLE_CONFIG.map((col) => job[col.component]))
-  return <Table headers={headers} data={data} />
+  return <Table className="fr-pt-0" headers={headers} data={data} />
 }

@@ -9,6 +9,7 @@ export function useGetJob(name: string) {
     queryFn: () => apiJobsGet(name),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    keepPreviousData: true,
     // staleTime: 5 * 60 * 1000,
   })
 
@@ -20,17 +21,18 @@ export function useGetJob(name: string) {
 }
 
 export function useListJobs(state: OvhaiJobState = null) {
-  const { data, error, isFetching } = useQuery({
+  const { data, error, isFetching, refetch } = useQuery({
     queryKey: ["ovhai", "jobs", "list", state || "all"],
     queryFn: () => apiJobsList(state),
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
+    keepPreviousData: true,
     // staleTime: 5 * 60 * 1000,
   })
 
   const values = useMemo(() => {
-    return { data, isFetching, error }
-  }, [data, isFetching, error])
+    return { data, isFetching, error, refetch }
+  }, [data, isFetching, error, refetch])
 
   return values
 }
