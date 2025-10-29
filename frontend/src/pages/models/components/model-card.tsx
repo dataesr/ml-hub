@@ -28,7 +28,7 @@ export default function ModelCard({ model }: ModelCardProps) {
           </Link>
         }
         linkProps={{
-          href: `/model/${model.id}`,
+          href: `/models/${model.id}`,
         }}
       />
     </Container>
