@@ -3,6 +3,7 @@ from app.hf import hf_dataset_info, hf_list_datasets, hf_list_models, hf_model_i
 from app.ovhai import JOB_ACTIONS, ovhai_job_get, ovhai_job_list, ovhai_job_run, ovhai_job_stop
 from app.ovhai import JOB_STATE
 from app.ovhai_finetuning import JOB as JOB_FT
+from app.wandb import wandb_list_projects, wandb_list_runs
 
 router = APIRouter()
 
@@ -61,4 +62,17 @@ async def manage_job(id: str, action: JOB_ACTIONS = "GET"):
 @router.post("/ovhai/jobs/finetuning")
 async def create_ft_job(job: JOB_FT):
     data = ovhai_job_run(job.get_cli())
+    return data
+
+
+### Weight & Biases
+@router.get("/wandb/projects/{entity}")
+async def get_projects(entity: str):
+    data = wandb_list_projects(entity)
+    return data
+
+
+@router.get("/wandb/runs/{entity}/{project}")
+async def get_runs(entity: str, project: str):
+    data = wandb_list_runs(entity, project)
     return data
