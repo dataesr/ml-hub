@@ -22,6 +22,7 @@ function ModelsList({ models }: { models: HuggingFaceModels }) {
 
 export default function Models() {
   const { data: models, isFetching, error } = useListModels()
+  console.log("error", error)
 
   console.log("models", models)
 

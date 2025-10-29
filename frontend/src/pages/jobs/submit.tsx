@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { apiJobsCreate } from "../../api"
 import { Accordion, Button, Checkbox, Container, Select, SelectOption, TextInput, Title, Toggle } from "@dataesr/dsfr-plus"
 import { OvhAiJob, OvhAiJobInputs } from "../../types/jobs"
 import { scrollToTop } from "../../utils"
 import { useNavigate } from "react-router-dom"
+import { validateDebouncedInput, validateInput } from "./helpers/inputs-validation"
 
 const DEFAULT_INPUTS: OvhAiJobInputs = {
   name: "",
@@ -15,16 +16,54 @@ const DEFAULT_INPUTS: OvhAiJobInputs = {
 export default function JobsSubmit() {
   const [inputs, setInputs] = useState<OvhAiJobInputs>(DEFAULT_INPUTS)
   const [pushToHF, setPushToHF] = useState<boolean>(false)
-  const jobType = "finetuning"
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const debouncedTimersRef = useState<Record<string, number>>({})[0]
   const navigate = useNavigate()
+  const jobType = "finetuning"
+  const required = inputs.name && inputs.model_name && inputs.dataset_name && ((pushToHF && inputs?.hf_hub) || !pushToHF)
 
   const resetInputs = () => {
     setPushToHF(false)
     setInputs(DEFAULT_INPUTS)
+    setErrors({})
     scrollToTop()
   }
 
-  const handleInputsChange = (key: string, value: any) => setInputs({ ...inputs, [key]: value })
+  const handleErrorsChange = (key: string, message: string) => {
+    if (message) {
+      setErrors((prev) => ({ ...prev, [key]: message }))
+    } else if (key in errors) {
+      const { [key]: _, ...newErrors } = errors
+      setErrors(newErrors)
+    }
+  }
+
+  const handleInputsChange = (key: string, value: any) => {
+    setInputs({ ...inputs, [key]: value })
+
+    if (debouncedTimersRef[key]) {
+      clearTimeout(debouncedTimersRef[key])
+    }
+
+    // keys that may trigger API calls
+    if (["model_name", "dataset_name", "hf_hub"].includes(key)) {
+      debouncedTimersRef[key] = setTimeout(async () => {
+        const message = await validateDebouncedInput(key, value)
+        handleErrorsChange(key, message)
+      }, 1500)
+    } else {
+      const message = validateInput(key, value)
+      handleErrorsChange(key, message)
+    }
+  }
+
+  const handlePushToHFChange = (push: boolean) => {
+    if (!push) {
+      const { hf_hub, hf_hub_private, ...newInputs } = inputs
+      setInputs(newInputs)
+    }
+    setPushToHF(push)
+  }
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,7 +79,11 @@ export default function JobsSubmit() {
     }
   }
 
-  console.log("inputs", inputs)
+  useEffect(() => {
+    return () => Object.values(debouncedTimersRef).forEach((t) => t && clearTimeout(t))
+  }, [])
+
+  console.log("input", inputs)
 
   return (
     <Container className="fr-my-3w">
@@ -51,7 +94,7 @@ export default function JobsSubmit() {
         New training job
       </Title>
       <Container fluid style={{ maxWidth: "600px" }}>
-        <Select label="Job Type" defaultSelectedKey={jobType} isDisabled>
+        <Select label="Job Type" defaultSelectedKey={jobType}>
           <SelectOption key={"finetuning"}>Finetuning</SelectOption>
         </Select>
         <TextInput
@@ -59,7 +102,10 @@ export default function JobsSubmit() {
           hint="Name of the job. Not unique but should be descriptive."
           value={inputs.name}
           onChange={(e) => handleInputsChange("name", e.target.value)}
+          maxLength={64}
           required
+          messageType={errors.name ? "error" : undefined}
+          message={errors.name || undefined}
         />
         <TextInput
           label="Model Name"
@@ -67,6 +113,8 @@ export default function JobsSubmit() {
           value={inputs.model_name}
           onChange={(e) => handleInputsChange("model_name", e.target.value)}
           required
+          messageType={errors.model_name ? "error" : undefined}
+          message={errors.model_name || undefined}
         />
         <TextInput
           label="Dataset Name"
@@ -74,25 +122,33 @@ export default function JobsSubmit() {
           value={inputs.dataset_name}
           onChange={(e) => handleInputsChange("dataset_name", e.target.value)}
           required
+          messageType={errors.dataset_name ? "error" : undefined}
+          message={errors.dataset_name || undefined}
         />
         <Toggle
           label="Run job on GPU"
           checked={Boolean(inputs.gpu)}
           onChange={(e) => handleInputsChange("gpu", Number(e.target.checked))}
         />
-        <Toggle label="Push model on HuggingFace" checked={pushToHF} onChange={(e) => setPushToHF(e.target.checked)} />
+        <Toggle
+          label="Push model on HuggingFace"
+          checked={pushToHF}
+          onChange={(e) => handlePushToHFChange(e.target.checked)}
+        />
         {pushToHF && (
           <Container fluid className="fr-ml-5w fr-mt-2w">
             <TextInput
               label="HuggingFace Name"
               hint="Name of the HuggingFace repository to push the model."
               value={inputs?.hf_hub || ""}
-              required={pushToHF}
               onChange={(e) => handleInputsChange("hf_hub", e.target.value)}
+              required={pushToHF}
+              messageType={errors.hf_hub ? "error" : undefined}
+              message={errors.hf_hub || undefined}
             />
             <Checkbox
               label="Make the repository private"
-              checked={inputs?.hf_hub_private || true}
+              checked={inputs?.hf_hub_private || false}
               onChange={(e) => handleInputsChange("hf_hub_private", e.target.checked)}
             />
           </Container>
@@ -119,12 +175,16 @@ export default function JobsSubmit() {
             hint="Name of the W&B run. Automatically generated if not set."
             value={inputs?.wandb_name || ""}
             onChange={(e) => handleInputsChange("wandb_name", e.target.value)}
+            messageType={errors.wandb_name ? "error" : undefined}
+            message={errors.wandb_name || undefined}
           />
           <TextInput
             label="W&B Project Name"
             hint="Name of the W&B project. Defaults to 'huggingface' if not set."
             value={inputs?.wandb_project || ""}
             onChange={(e) => handleInputsChange("wandb_project", e.target.value)}
+            messageType={errors.wandb_project ? "error" : undefined}
+            message={errors.wandb_project || undefined}
           />
           <Toggle
             label="Disable W&B"
@@ -134,11 +194,13 @@ export default function JobsSubmit() {
         </Accordion>
         <div className="fr-mt-5w" style={{ display: "flex", width: "100%", alignItems: "center" }}>
           <div style={{ flexGrow: 1 }}>
-            <Button variant="secondary" onClick={() => resetInputs()}>
+            <Button variant="secondary" onClick={() => resetInputs()} disabled={inputs === DEFAULT_INPUTS}>
               Reset options
             </Button>
           </div>
-          <Button onClick={onSubmit}>Create job</Button>
+          <Button onClick={onSubmit} disabled={!required}>
+            Create job
+          </Button>
         </div>
       </Container>
     </Container>

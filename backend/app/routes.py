@@ -1,5 +1,5 @@
-from fastapi import APIRouter
-from app.hf import hf_list_models, hf_model_info
+from fastapi import APIRouter, HTTPException
+from app.hf import hf_dataset_info, hf_list_datasets, hf_list_models, hf_model_info
 from app.ovhai import JOB_ACTIONS, ovhai_job_get, ovhai_job_list, ovhai_job_run, ovhai_job_stop
 from app.ovhai import JOB_STATE
 from app.ovhai_finetuning import JOB as JOB_FT
@@ -8,13 +8,31 @@ router = APIRouter()
 
 
 ### huggingface hub
-@router.get("/model/{owner}/{name}")
+@router.get("/hf/dataset/{owner}/{name}")
+async def hf_get_dataset(owner: str, name: str):
+    try:
+        dataset = hf_dataset_info(f"{owner}/{name}")
+        return dataset
+    except Exception as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.get("/hf/datasets/{owner}")
+async def hf_get_datasets(owner: str):
+    datasets = hf_list_datasets({owner})
+    return datasets
+
+
+@router.get("/hf/model/{owner}/{name}")
 async def hf_get_model(owner: str, name: str):
-    model = hf_model_info(f"{owner}/{name}")
-    return model
+    try:
+        model = hf_model_info(f"{owner}/{name}")
+        return model
+    except Exception as error:
+        raise HTTPException(status_code=404, detail=str(error))
 
 
-@router.get("/models/{owner}")
+@router.get("/hf/models/{owner}")
 async def hf_get_models(owner: str):
     models = hf_list_models(owner)
     return models
