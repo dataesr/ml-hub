@@ -1,6 +1,22 @@
 import { useEffect, useState } from "react"
 import { apiJobsCreate } from "../../api"
-import { Accordion, Button, Checkbox, Container, Select, SelectOption, TextInput, Title, Toggle } from "@dataesr/dsfr-plus"
+import {
+  Accordion,
+  Alert,
+  Button,
+  Checkbox,
+  Container,
+  Modal,
+  ModalContent,
+  ModalFooter,
+  ModalTitle,
+  Select,
+  SelectOption,
+  Text,
+  TextInput,
+  Title,
+  Toggle,
+} from "@dataesr/dsfr-plus"
 import { OvhAiJob, OvhAiJobInputs } from "../../types/jobs"
 import { scrollToTop } from "../../utils"
 import { useNavigate } from "react-router-dom"
@@ -17,6 +33,9 @@ export default function JobsSubmit() {
   const [inputs, setInputs] = useState<OvhAiJobInputs>(DEFAULT_INPUTS)
   const [pushToHF, setPushToHF] = useState<boolean>(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [alertError, setAlertError] = useState<string>("")
+  const [alertSuccess, setAlertSuccess] = useState<string>("")
+  const [openSubmit, setOpenSubmit] = useState<boolean>(false)
   const debouncedTimersRef = useState<Record<string, number>>({})[0]
   const navigate = useNavigate()
   const jobType = "finetuning"
@@ -40,6 +59,7 @@ export default function JobsSubmit() {
 
   const handleInputsChange = (key: string, value: any) => {
     setInputs({ ...inputs, [key]: value })
+    setAlertError("")
 
     if (debouncedTimersRef[key]) {
       clearTimeout(debouncedTimersRef[key])
@@ -65,17 +85,21 @@ export default function JobsSubmit() {
     setPushToHF(push)
   }
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onCheck = (e: React.FormEvent) => {
     e.preventDefault()
+    if (Object.entries(errors).length) setAlertError("Please fix the errors before creating the job.")
+    else setOpenSubmit(true)
+  }
 
+  const onSubmit = async () => {
     try {
       const newJob: OvhAiJob = await apiJobsCreate(inputs)
-      console.log("newJob", newJob)
       resetInputs()
+      setAlertSuccess(`Successfully created job ${newJob.spec.name} (${newJob.id})`)
+      setTimeout(() => navigate(`/jobs`), 2000)
     } catch (error) {
       console.error("Error creating job:", error)
-      alert("Error creating job. Please try again.")
-    } finally {
+      setAlertError("Error creating job. Please try again.")
     }
   }
 
@@ -84,6 +108,7 @@ export default function JobsSubmit() {
   }, [])
 
   console.log("input", inputs)
+  console.log("errors", errors)
 
   return (
     <Container className="fr-my-3w">
@@ -192,16 +217,52 @@ export default function JobsSubmit() {
             onChange={(e) => handleInputsChange("wandb_disabled", e.target.checked)}
           />
         </Accordion>
+        {alertError && (
+          <Alert
+            className="fr-mt-4w"
+            variant="error"
+            title="Error"
+            description={alertError}
+            closeMode="controlled"
+            onClose={() => setAlertError("")}
+          />
+        )}
         <div className="fr-mt-5w" style={{ display: "flex", width: "100%", alignItems: "center" }}>
           <div style={{ flexGrow: 1 }}>
             <Button variant="secondary" onClick={() => resetInputs()} disabled={inputs === DEFAULT_INPUTS}>
               Reset options
             </Button>
           </div>
-          <Button onClick={onSubmit} disabled={!required}>
+          <Button onClick={onCheck} disabled={!required}>
             Create job
           </Button>
         </div>
+        <Container fluid>
+          <Modal isOpen={openSubmit} hide={() => null}>
+            <ModalTitle>Confirm job</ModalTitle>
+            <ModalContent>
+              <Text>Are you sure you want to submit the following job ?</Text>
+              <Text className="fr-mb-1v fr-text--legend">{`- type: ${jobType}`}</Text>
+              {Object.entries(inputs).map(([key, value]) => (
+                <Text className="fr-mb-1v fr-text--legend">{`- ${key}: ${String(value)}`}</Text>
+              ))}
+            </ModalContent>
+            <ModalFooter>
+              {alertSuccess ? (
+                <Alert variant="success" title="Job created!" description={alertSuccess} />
+              ) : (
+                <div className="fr-mt-5w" style={{ display: "flex", width: "100%", alignItems: "center" }}>
+                  <div style={{ flexGrow: 1 }}>
+                    <Button variant="secondary" onClick={() => setOpenSubmit(false)}>
+                      No
+                    </Button>
+                  </div>
+                  <Button onClick={onSubmit}>Create</Button>
+                </div>
+              )}
+            </ModalFooter>
+          </Modal>
+        </Container>
       </Container>
     </Container>
   )
