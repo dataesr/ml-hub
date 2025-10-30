@@ -3,7 +3,7 @@ from app.hf import hf_dataset_info, hf_list_datasets, hf_list_models, hf_model_i
 from app.ovhai import JOB_ACTIONS, ovhai_job_get, ovhai_job_list, ovhai_job_run, ovhai_job_stop
 from app.ovhai import JOB_STATE
 from app.ovhai_finetuning import JOB as JOB_FT
-from app.wandb import wandb_list_projects, wandb_list_runs
+from app.wandb import RUN_STATES, wandb_list_projects, wandb_list_runs
 
 router = APIRouter()
 
@@ -73,6 +73,6 @@ async def get_projects(entity: str):
 
 
 @router.get("/wandb/runs/{entity}/{project}")
-async def get_runs(entity: str, project: str):
-    data = wandb_list_runs(entity, project)
+async def get_runs(entity: str, project: str, state: RUN_STATES = None):
+    data = wandb_list_runs(entity, project, state)
     return data
