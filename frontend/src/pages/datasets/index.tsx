@@ -1,36 +1,36 @@
 import { Container, Title } from "@dataesr/dsfr-plus"
-import { useListModels } from "../../hooks/models"
-import ModelCard from "./components/model-card"
+import { useListDatasets } from "../../hooks/datasets"
 import { dateStringToNumber } from "../../utils"
 import ErrorCallOut from "../../components/error-call-out"
-import { HuggingFaceModels } from "../../types/models"
+import { HuggingFaceDatasets } from "../../types/datasets"
 import LoadingSpinner from "../../components/loading-spinner"
+import DatasetCard from "./components/dataset-card"
 
-function ModelsList({ models }: { models: HuggingFaceModels }) {
-  const sortedModels = models.sort(
+function DatasetsList({ datasets }: { datasets: HuggingFaceDatasets }) {
+  const sortedDatasets = datasets.sort(
     (a, b) => dateStringToNumber(b.last_modified || b.created_at) - dateStringToNumber(a.last_modified || a.created_at)
   )
 
   return (
     <Container fluid style={{ maxWidth: "900px" }}>
-      {sortedModels.map((model) => (
-        <ModelCard key={model.id} model={model} />
+      {sortedDatasets.map((dataset) => (
+        <DatasetCard key={dataset.id} dataset={dataset} />
       ))}
     </Container>
   )
 }
 
-export default function Models() {
-  const { data: models, isFetching, error } = useListModels()
+export default function Datasets() {
+  const { data: datasets, isFetching, error } = useListDatasets()
 
   return (
     <Container className="fr-my-5w">
       <Title as="h2" className="fr-mb-4w">
-        HuggingFace Models
+        HuggingFace Datasets
       </Title>
       {error && <ErrorCallOut error={error} />}
       {isFetching && <LoadingSpinner position="left" />}
-      {!isFetching && models && <ModelsList models={models} />}
+      {!isFetching && datasets && <DatasetsList datasets={datasets} />}
     </Container>
   )
 }

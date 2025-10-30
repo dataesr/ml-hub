@@ -2,8 +2,6 @@ import { ColorFamily } from "@dataesr/dsfr-plus"
 import { OvhAiJob } from "../../../types/jobs"
 import { OvhaiJobState } from "../../../types/jobs"
 
-export const OVH_AI_TRAINING_URL = import.meta.env.VITE_OVH_AI_TRAINING_URL
-
 export const getStateColor = (state: OvhaiJobState): ColorFamily => {
   switch (state) {
     case "DONE":

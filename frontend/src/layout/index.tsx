@@ -1,13 +1,16 @@
 import { Outlet } from "react-router-dom";
-import Header from "./header";
-import MainFooter from "./footer";
+import { Container } from "@dataesr/dsfr-plus"
+import Header from "./header"
+import MainFooter from "./footer"
 
 export default function Layout() {
   return (
     <>
       <Header />
-      <Outlet />
+      <Container>
+        <Outlet />
+      </Container>
       <MainFooter />
     </>
-  );
+  )
 }

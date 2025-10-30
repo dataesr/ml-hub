@@ -3,7 +3,8 @@ import { OvhAiJob, OvhAiJobs } from "../../../types/jobs"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
 import { Button, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate, formatDuration } from "../../../utils"
-import { getStateColor, OVH_AI_TRAINING_URL } from "../helpers"
+import { getStateColor } from "../helpers"
+import { OVHAI_TRAINING_URL } from "../../../api"
 
 const TABLE_CONFIG = [
   { header: "Name / ID", component: "name" },
@@ -47,7 +48,7 @@ const buildTableComponents = (job: OvhAiJob) => {
       icon="external-link-line"
       size="sm"
       variant="text"
-      onClick={() => window.open(`${OVH_AI_TRAINING_URL}/${job.id}`, "_blank")}
+      onClick={() => window.open(`${OVHAI_TRAINING_URL}/${job.id}`, "_blank")}
     >
       Open
     </Button>

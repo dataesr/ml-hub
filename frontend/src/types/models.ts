@@ -2,8 +2,8 @@ export type HuggingFaceModel = {
   _id: string
   id: string
   modelId: string
-  author?: string
-  downloads?: number
+  author: string
+  downloads: number
   config: { architectures: Array<string>; model_type: string }
   created_at: string
   last_modified: string

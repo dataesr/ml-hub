@@ -7,7 +7,14 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/hf")
 
 
-@router.get("/dataset/{owner}/{name}")
+@router.get("/datasets")
+def hf_list_datasets(owner: str = None, limit: int = 100):
+    datasets = list_datasets(author=owner, limit=limit)
+    datasets = [dataset.__dict__ for dataset in datasets]
+    return datasets
+
+
+@router.get("/datasets/{owner}/{name}")
 async def hf_get_dataset(owner: str, name: str):
     try:
         dataset = dataset_info(repo_id=f"{owner}/{name}")
@@ -16,26 +23,17 @@ async def hf_get_dataset(owner: str, name: str):
         raise HTTPException(status_code=404, detail=str(error))
 
 
-@router.get("/datasets/{owner}")
-def hf_list_datasets(owner: str = None, limit: int = 100):
-    datasets = list_datasets(author=owner, limit=limit)
-    datasets = [dataset.__dict__ for dataset in datasets]
-    # logger.debug(f"{models =}")
-    return datasets
+@router.get("/models")
+def hf_list_models(owner: str = None, limit: int = 100):
+    models = list_models(author=owner, limit=limit, fetch_config=True)
+    models = [model.__dict__ for model in models]
+    return models
 
 
-@router.get("/model/{owner}/{name}")
+@router.get("/models/{owner}/{name}")
 async def hf_get_model(owner: str, name: str):
     try:
         model = model_info(repo_id=f"{owner}/{name}")
         return model.__dict__
     except Exception as error:
         raise HTTPException(status_code=404, detail=str(error))
-
-
-@router.get("/models/{owner}")
-def hf_list_models(owner: str = None, limit: int = 100):
-    models = list_models(author=owner, limit=limit, fetch_config=True)
-    models = [model.__dict__ for model in models]
-    # logger.debug(f"{models =}")
-    return models
