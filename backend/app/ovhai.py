@@ -2,9 +2,13 @@ import os
 import json
 import subprocess
 from typing import Literal
+from fastapi import APIRouter
 from app.logger import get_logger
+from app.ovhai_finetuning import JOB as JOB_FT
 
 logger = get_logger(__name__)
+
+router = APIRouter(prefix="/ovhai")
 
 JOB_STATE = Literal[
     "QUEUED",
@@ -39,14 +43,6 @@ def cmd_get_data(cmd: str) -> dict:
         logger.debug(f"error getting data for cmd {cmd}")
     return data
 
-
-def ovhai_job_list(state: str = None):
-    filter = f"-s {state}" if state else "-a"
-    cmd = f"ovhai job list -o json {filter}"
-    data = cmd_get_data(cmd)
-    return data
-
-
 def ovhai_job_run(job_cli: str):
     cmd = f"ovhai job run -o json {job_cli}"
     data = cmd_get_data(cmd)
@@ -62,4 +58,31 @@ def ovhai_job_stop(id: str):
 def ovhai_job_get(id: str):
     cmd = f"ovhai job get {id} -o json"
     data = cmd_get_data(cmd)
+    return data
+
+
+@router.get("/jobs")
+def ovhai_job_list(state: JOB_STATE = None):
+    filter = f"-s {state}" if state else "-a"
+    cmd = f"ovhai job list -o json {filter}"
+    data = cmd_get_data(cmd)
+    return data
+
+
+@router.get("/jobs/{id}")
+async def ovhai_job(id: str, action: JOB_ACTIONS = "GET"):
+    if action == "GET":
+        data = ovhai_job_get(id)
+        return data
+    if action == "STOP":
+        try:
+            ovhai_job_stop(id)
+            return {"message": "ok"}
+        except Exception as error:
+            return {"error": error.stderr}
+
+
+@router.post("/jobs/finetuning")
+async def ovhai_finetune(job: JOB_FT):
+    data = ovhai_job_run(job.get_cli())
     return data

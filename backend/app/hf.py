@@ -1,16 +1,22 @@
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 from huggingface_hub import list_models, model_info, dataset_info, list_datasets
-from huggingface_hub.errors import RepositoryNotFoundError
 from app.logger import get_logger
 
 logger = get_logger(__name__)
 
-
-def hf_dataset_info(dataset_id: str):
-    dataset = dataset_info(repo_id=dataset_id)
-    return dataset.__dict__
+router = APIRouter(prefix="/hf")
 
 
+@router.get("/dataset/{owner}/{name}")
+async def hf_get_dataset(owner: str, name: str):
+    try:
+        dataset = dataset_info(repo_id=f"{owner}/{name}")
+        return dataset.__dict__
+    except Exception as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.get("/datasets/{owner}")
 def hf_list_datasets(owner: str = None, limit: int = 100):
     datasets = list_datasets(author=owner, limit=limit)
     datasets = [dataset.__dict__ for dataset in datasets]
@@ -18,11 +24,16 @@ def hf_list_datasets(owner: str = None, limit: int = 100):
     return datasets
 
 
-def hf_model_info(model_id: str):
-    model = model_info(repo_id=model_id)
-    return model.__dict__
+@router.get("/model/{owner}/{name}")
+async def hf_get_model(owner: str, name: str):
+    try:
+        model = model_info(repo_id=f"{owner}/{name}")
+        return model.__dict__
+    except Exception as error:
+        raise HTTPException(status_code=404, detail=str(error))
 
 
+@router.get("/models/{owner}")
 def hf_list_models(owner: str = None, limit: int = 100):
     models = list_models(author=owner, limit=limit, fetch_config=True)
     models = [model.__dict__ for model in models]

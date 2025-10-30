@@ -49,6 +49,8 @@ class JOB(BaseModel):
         cmd = f"--name {self.name}"
         if self.gpu:
             cmd += f" --flavor {GPU} --gpu {self.gpu}"
+        else:
+            cmd += f" --cpu 1"
         envs = self._get_envs()
         if envs:
             for env in envs:

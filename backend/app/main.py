@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app import routes
-from app.ovhai import ovhai_initialize
+from app.ovhai import ovhai_initialize, router as ovhai_router
+from app.hf import router as hf_router
+from app.wandb import router as wandb_router
 
 app = FastAPI(title="ML HUB BACKEND")
 
@@ -20,7 +21,10 @@ app.add_middleware(
 )
 
 # Include routes
-app.include_router(routes.router)
+app.include_router(ovhai_router)
+app.include_router(hf_router)
+app.include_router(wandb_router)
+
 
 # Init ovhai cli
 ovhai_initialize()
@@ -33,4 +37,4 @@ def root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok"}
+    return {"message": "healthy"}
