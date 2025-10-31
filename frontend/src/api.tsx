@@ -1,8 +1,8 @@
 import { buildJob } from "./pages/jobs/helpers/build"
 import { HuggingFaceModel } from "./types/models"
 import { OvhAiJob, OvhAiJobInputs } from "./types/jobs"
-import { ArtifactKind, WandbArtifact } from "./types/experiments"
-import { buildArtifact } from "./pages/experiments/helpers/build"
+import { ArtifactKind, WandbArtifact, WandbProject, WandbRun } from "./types/experiments"
+import { buildArtifact, buildProject, buildRun } from "./pages/experiments/helpers/build"
 import { HuggingFaceDataset } from "./types/datasets"
 
 export const HUGGING_FACE_URL = "https://huggingface.co"
@@ -12,8 +12,9 @@ export const API_URL = import.meta.env.VITE_API_URL || "/api"
 const API_DATASETS_URL = API_URL + "/hf/datasets"
 const API_MODELS_URL = API_URL + "/hf/models"
 const API_JOBS_URL = API_URL + "/ovhai/jobs"
+const API_EXPERIMENTS_URL = API_URL + "/wandb/projects"
+const API_RUNS_URL = API_URL + "/wandb/runs"
 const API_ARTIFACTS_URL = API_URL + "/wandb/artifacts"
-// const API_RUNS_URL = API_URL + "/wandb/runs" // unused for now
 
 async function apiRequest(input: RequestInfo | URL, init?: RequestInit) {
   try {
@@ -88,6 +89,30 @@ export async function apiJobsCreate(job: OvhAiJobInputs, jobType: string = "fine
 /// OVHAI deploys
 
 /// Weights & Biases
+export async function apiExperimentsList(entity: string): Promise<WandbProject[]> {
+  const data = await apiRequest(`${API_EXPERIMENTS_URL}/${entity}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+  return Array.isArray(data) ? data.map(buildProject) : []
+}
+
+export async function apiRunsList(entity: string, project: string): Promise<WandbRun[]> {
+  const data = await apiRequest(`${API_RUNS_URL}/${entity}/${project}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+  return Array.isArray(data) ? data.map(buildRun) : []
+}
+
+export async function apiRunsGet(entity: string, project: string, id: string): Promise<WandbRun> {
+  const data = await apiRequest(`${API_RUNS_URL}/${entity}/${project}/${id}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+  return buildRun(data)
+}
+
 export async function apiArtifactsGet<K extends ArtifactKind>(
   entity: string,
   project: string,
@@ -100,9 +125,6 @@ export async function apiArtifactsGet<K extends ArtifactKind>(
   })
   return buildArtifact(data) as WandbArtifact<K>
 }
-
-// export function apiArtifactsList(entity: string, project: string, type: "model"): Promise<Array<WandbArtifact<"model">>>
-// export function apiArtifactsList(entity: string, project: string, type: "dataset"): Promise<Array<WandbArtifact<"dataset">>>
 export async function apiArtifactsList<K extends ArtifactKind>(
   entity: string,
   project: string,

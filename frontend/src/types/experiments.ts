@@ -5,10 +5,9 @@ export type WandbProject = {
   createdAt: Date
   isBenchmark: boolean
 }
-export type WandbProjects = Array<WandbProject>
 
 export type WandbRunState = "crashed" | "failed" | "finished" | "killed" | "running" | "pending"
-export type WandbRun = {
+export type WandbRunBase = {
   id: string
   name: string
   displayName: string
@@ -16,7 +15,12 @@ export type WandbRun = {
   createdAt: Date
   url: string
 }
-export type WandbRuns = Array<WandbRun>
+export type WandbRun = WandbRunBase & {
+  tags: Array<string>
+  config: Record<string, any>
+  group?: string
+  jobType?: string
+}
 
 export type ArtifactKind = "model" | "dataset"
 type ArtifactSource = "huggingface" | "ovh"
@@ -64,4 +68,3 @@ export type WandbArtifactBase = {
 export type WandbArtifact<K extends ArtifactKind> = WandbArtifactBase & {
   versions: Array<WandbArtifactVersion<K>>
 }
-export type WandbArtifacts = Array<WandbArtifact<ArtifactKind>>
