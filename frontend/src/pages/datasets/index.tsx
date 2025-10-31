@@ -2,11 +2,11 @@ import { Container, Title } from "@dataesr/dsfr-plus"
 import { useListDatasets } from "../../hooks/datasets"
 import { dateStringToNumber } from "../../utils"
 import ErrorCallOut from "../../components/error-call-out"
-import { HuggingFaceDatasets } from "../../types/datasets"
+import { HuggingFaceDataset } from "../../types/datasets"
 import LoadingSpinner from "../../components/loading-spinner"
 import DatasetCard from "./components/dataset-card"
 
-function DatasetsList({ datasets }: { datasets: HuggingFaceDatasets }) {
+function DatasetsList({ datasets }: { datasets: HuggingFaceDataset[] }) {
   const sortedDatasets = datasets.sort(
     (a, b) => dateStringToNumber(b.last_modified || b.created_at) - dateStringToNumber(a.last_modified || a.created_at)
   )

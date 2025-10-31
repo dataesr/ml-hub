@@ -42,7 +42,6 @@ export type OvhAiJob = {
     finalizedAt?: Date
   }
 }
-export type OvhAiJobs = Array<OvhAiJob>
 
 export type OvhAiJobInputs = {
   name: string

@@ -20,7 +20,7 @@ import {
 import { OvhAiJob, OvhAiJobInputs } from "../../types/jobs"
 import { scrollToTop } from "../../utils"
 import { useNavigate } from "react-router-dom"
-import { validateDebouncedInput, validateInput } from "./helpers/inputs-validation"
+import { validateDebouncedInput, validateInput } from "./helpers/validate"
 
 const DEFAULT_INPUTS: OvhAiJobInputs = {
   name: "",

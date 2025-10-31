@@ -11,5 +11,3 @@ export type HuggingFaceModel = {
   private: boolean
   tags: Array<string>
 }
-
-export type HuggingFaceModels = Array<HuggingFaceModel>

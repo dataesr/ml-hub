@@ -36,7 +36,7 @@ def wandb_list_runs(entity: str, project: str, state: RUN_STATES = None):
             "name": run.name,
             "displayName": run.displayName,
             "state": run.state,
-            "createdAt": run.createAt,
+            "createdAt": run.createdAt,
             "url": run.url,
         }
         for run in runs
@@ -52,14 +52,30 @@ def wandb_get_run(entity: str, project: str, id: str):
     return run._attrs
 
 
-@router.get("/artifacts/{entity}/{project}/{type}")
-def wandb_list_artifacts(entity: str, project: str, type: ARTIFACT_TYPES):
+@router.get("/artifacts/{entity}/{project}")
+def wandb_list_artifacts(entity: str, project: str, type: ARTIFACT_TYPES = "model"):
     artifacts = wb.artifact_collections(project_name=f"{entity}/{project}", type_name=type)
     artifacts = [artifact._attrs for artifact in artifacts]
     return artifacts
 
 
-@router.get("/artifacts/{entity}/{project}/{type}/{name}")
-def wandb_get_artifact(entity: str, project: str, name: str, type: ARTIFACT_TYPES):
-    artifact = wb.artifact(name=f"{entity}/{project}/{name}", type=type)
-    return artifact._attrs
+@router.get("/artifacts/{entity}/{project}/{name}")
+def wandb_get_artifact(entity: str, project: str, name: str, type: ARTIFACT_TYPES = "model"):
+    artifact_name = f"{entity}/{project}/{name}"
+    artifact = wb.artifact_collection(name=artifact_name, type_name=type)
+    artifact = artifact._attrs
+    versions = wb.artifacts(name=artifact_name, type_name=type)
+    artifact["versions"] = [
+        {
+            "version": version.version,
+            "name": version.name,
+            "entity": version.entity,
+            "project": version.project,
+            "aliases": version.aliases,
+            "created_at": version.created_at,
+            "final": version._final,
+            "metadata": version.metadata,
+        }
+        for version in versions
+    ]
+    return artifact

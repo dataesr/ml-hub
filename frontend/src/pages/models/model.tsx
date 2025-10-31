@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { Container, Title, Text, Button, Tag, TagGroup, ButtonGroup } from "@dataesr/dsfr-plus"
 import { useGetModel } from "../../hooks/models"
 import { HUGGING_FACE_URL } from "../../api"
@@ -6,6 +6,7 @@ import { HUGGING_FACE_URL } from "../../api"
 export default function Model() {
   const { owner, name } = useParams<{ owner: string; name: string }>()
   const { data: currentModel, isFetching, error } = useGetModel(`${owner}/${name}`)
+  const navigate = useNavigate()
 
   if (isFetching || error) return null
 
@@ -14,8 +15,11 @@ export default function Model() {
   const handleInference = () => null
 
   return (
-    <Container className="fr-my-5w">
-      <Title as="h3" className="fr-mb-2w">
+    <Container className="fr-my-3w">
+      <Button size="sm" variant="tertiary" icon="arrow-left-line" onClick={() => navigate("/models")}>
+        Back to models
+      </Button>
+      <Title as="h3" className="fr-mb-2w fr-mt-5w">
         {currentModel.id}
       </Title>
       <Text size="md" className="fr-mb-3w">

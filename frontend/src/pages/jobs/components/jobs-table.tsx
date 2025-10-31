@@ -1,9 +1,9 @@
 import { Table } from "@codegouvfr/react-dsfr/Table"
-import { OvhAiJob, OvhAiJobs } from "../../../types/jobs"
+import { OvhAiJob } from "../../../types/jobs"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
 import { Button, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate, formatDuration } from "../../../utils"
-import { getStateColor } from "../helpers"
+import { getStateColor } from "../helpers/colors"
 import { OVHAI_TRAINING_URL } from "../../../api"
 
 const TABLE_CONFIG = [
@@ -65,7 +65,7 @@ const buildTableComponents = (job: OvhAiJob) => {
   }
 }
 
-export default function JobsTable({ jobs }: { jobs: OvhAiJobs }) {
+export default function JobsTable({ jobs }: { jobs: OvhAiJob[] }) {
   const headers = TABLE_CONFIG.map((col) => col.header)
   const data = jobs.map((job) => buildTableComponents(job)).map((job) => TABLE_CONFIG.map((col) => job[col.component]))
   return <Table className="fr-pt-0" headers={headers} data={data} />

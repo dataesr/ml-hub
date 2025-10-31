@@ -43,6 +43,7 @@ export default function Header() {
         <Link href="/models">Models</Link>
         <Link href="/datasets">Datasets</Link>
         <Link href="/jobs">Jobs</Link>
+        <Link href="/experiments">Experiments</Link>
         <Link href="/">Evaluate</Link>
         <Link href="/">Inference</Link>
         {/* <NavItem title={"DoadiNavItem"}>

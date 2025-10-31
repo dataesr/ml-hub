@@ -1,6 +1,9 @@
-import { transformJob } from "./pages/jobs/helpers"
-import { HuggingFaceModel, HuggingFaceModels } from "./types/models"
-import { OvhAiJob, OvhAiJobInputs, OvhAiJobs } from "./types/jobs"
+import { buildJob } from "./pages/jobs/helpers/build"
+import { HuggingFaceModel } from "./types/models"
+import { OvhAiJob, OvhAiJobInputs } from "./types/jobs"
+import { ArtifactKind, WandbArtifact } from "./types/experiments"
+import { buildArtifact } from "./pages/experiments/helpers/build"
+import { HuggingFaceDataset } from "./types/datasets"
 
 export const HUGGING_FACE_URL = "https://huggingface.co"
 export const OVHAI_TRAINING_URL = import.meta.env.VITE_OVHAI_TRAINING_URL
@@ -9,6 +12,8 @@ export const API_URL = import.meta.env.VITE_API_URL || "/api"
 const API_DATASETS_URL = API_URL + "/hf/datasets"
 const API_MODELS_URL = API_URL + "/hf/models"
 const API_JOBS_URL = API_URL + "/ovhai/jobs"
+const API_ARTIFACTS_URL = API_URL + "/wandb/artifacts"
+// const API_RUNS_URL = API_URL + "/wandb/runs" // unused for now
 
 async function apiRequest(input: RequestInfo | URL, init?: RequestInit) {
   try {
@@ -24,14 +29,14 @@ async function apiRequest(input: RequestInfo | URL, init?: RequestInit) {
 }
 
 /// HuggingFace Dataset
-export async function apiDatasetsGet(name: string): Promise<any> {
+export async function apiDatasetsGet(name: string): Promise<HuggingFaceDataset> {
   return await apiRequest(`${API_DATASETS_URL}/${name}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   })
 }
 
-export async function apiDatasetsList(owner: string): Promise<any> {
+export async function apiDatasetsList(owner: string): Promise<HuggingFaceDataset[]> {
   return await apiRequest(`${API_DATASETS_URL}?owner=${owner}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -46,7 +51,7 @@ export async function apiModelsGet(name: string): Promise<HuggingFaceModel> {
   })
 }
 
-export async function apiModelsList(owner: string): Promise<HuggingFaceModels> {
+export async function apiModelsList(owner: string): Promise<HuggingFaceModel[]> {
   return await apiRequest(`${API_MODELS_URL}?owner=${owner}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -59,16 +64,16 @@ export async function apiJobsGet(id: string): Promise<OvhAiJob> {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   })
-  return transformJob(data)
+  return buildJob(data)
 }
 
-export async function apiJobsList(state: string): Promise<OvhAiJobs> {
+export async function apiJobsList(state: string): Promise<OvhAiJob[]> {
   const state_url = state ? `?state=${state}` : ""
   const data = await apiRequest(`${API_JOBS_URL}${state_url}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   })
-  return Array.isArray(data) ? data.map(transformJob) : []
+  return Array.isArray(data) ? data.map(buildJob) : []
 }
 
 export async function apiJobsCreate(job: OvhAiJobInputs, jobType: string = "finetuning"): Promise<OvhAiJob> {
@@ -77,12 +82,35 @@ export async function apiJobsCreate(job: OvhAiJobInputs, jobType: string = "fine
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(job),
   })
-  return transformJob(data)
+  return buildJob(data)
 }
 
 /// OVHAI deploys
 
 /// Weights & Biases
-// export async function apiExperimentsGet(object: ): Promise<any> {
-  
-// }
+export async function apiArtifactsGet<K extends ArtifactKind>(
+  entity: string,
+  project: string,
+  name: string,
+  type: ArtifactKind
+): Promise<WandbArtifact<K>> {
+  const data = await apiRequest(`${API_ARTIFACTS_URL}/${entity}/${project}/${name}?type=${type}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+  return buildArtifact(data) as WandbArtifact<K>
+}
+
+// export function apiArtifactsList(entity: string, project: string, type: "model"): Promise<Array<WandbArtifact<"model">>>
+// export function apiArtifactsList(entity: string, project: string, type: "dataset"): Promise<Array<WandbArtifact<"dataset">>>
+export async function apiArtifactsList<K extends ArtifactKind>(
+  entity: string,
+  project: string,
+  type: K
+): Promise<Array<WandbArtifact<K>>> {
+  const data = await apiRequest(`${API_ARTIFACTS_URL}/${entity}/${project}?type=${type}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+  return (Array.isArray(data) ? data.map(buildArtifact) : []) as Array<WandbArtifact<K>>
+}

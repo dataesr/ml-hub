@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { Container, Title, Text, Button, Tag, TagGroup, ButtonGroup } from "@dataesr/dsfr-plus"
 import { HUGGING_FACE_URL } from "../../api"
 import { useGetDataset } from "../../hooks/datasets"
@@ -6,22 +6,21 @@ import { useGetDataset } from "../../hooks/datasets"
 export default function Dataset() {
   const { owner, name } = useParams<{ owner: string; name: string }>()
   const { data: currentModel, isFetching, error } = useGetDataset(`${owner}/${name}`)
+  const navigate = useNavigate()
 
   if (isFetching || error) return null
 
   const handleTrain = () => null
 
   return (
-    <Container className="fr-my-5w">
-      <Title as="h3" className="fr-mb-2w">
+    <Container className="fr-my-3w">
+      <Button size="sm" variant="tertiary" icon="arrow-left-line" onClick={() => navigate("/datasets")}>
+        Back to datasets
+      </Button>
+      <Title as="h3" className="fr-mb-2w fr-mt-5w">
         {currentModel.id}
       </Title>
       <Text size="md" className="fr-mb-3w">
-        {currentModel.config?.model_type && (
-          <span className="fr-mr-2w">
-            <strong>Type:</strong> {currentModel.config.model_type}
-          </span>
-        )}
         {currentModel.downloads != undefined && (
           <span className="fr-mr-2w">
             <strong>Downloads:</strong> {currentModel.downloads}
