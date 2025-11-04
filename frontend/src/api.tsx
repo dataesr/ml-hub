@@ -9,12 +9,12 @@ export const HUGGING_FACE_URL = "https://huggingface.co"
 export const OVHAI_TRAINING_URL = import.meta.env.VITE_OVHAI_TRAINING_URL
 
 export const API_URL = import.meta.env.VITE_API_URL || "/api"
-const API_DATASETS_URL = API_URL + "/hf/datasets"
-const API_MODELS_URL = API_URL + "/hf/models"
-const API_JOBS_URL = API_URL + "/ovhai/jobs"
-const API_EXPERIMENTS_URL = API_URL + "/wandb/projects"
-const API_RUNS_URL = API_URL + "/wandb/runs"
-const API_ARTIFACTS_URL = API_URL + "/wandb/artifacts"
+const API_DATASETS_URL = API_URL + "/datasets"
+const API_MODELS_URL = API_URL + "/models"
+const API_JOBS_URL = API_URL + "/jobs"
+const API_EXPERIMENTS_URL = API_URL + "/exp/projects"
+const API_RUNS_URL = API_URL + "/exp/runs"
+const API_ARTIFACTS_URL = API_URL + "/exp/artifacts"
 
 async function apiRequest(input: RequestInfo | URL, init?: RequestInit) {
   try {
@@ -59,6 +59,9 @@ export async function apiModelsList(owner: string): Promise<HuggingFaceModel[]> 
   })
 }
 
+/// OVHAI storage
+// export async function apiStorageList(): Promise<
+
 /// OVHAI Jobs
 export async function apiJobsGet(id: string): Promise<OvhAiJob> {
   const data = await apiRequest(`${API_JOBS_URL}/${id}`, {
@@ -86,7 +89,7 @@ export async function apiJobsCreate(job: OvhAiJobInputs, jobType: string = "fine
   return buildJob(data)
 }
 
-/// OVHAI deploys
+/// OVHAI Deploys
 
 /// Weights & Biases
 export async function apiExperimentsList(entity: string): Promise<WandbProject[]> {

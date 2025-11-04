@@ -10,14 +10,18 @@ DOCKER = "ghcr.io/dataesr/llm-finetuning:latest"
 DOCKER_CMD = "uv run main.py"
 VOLUME_JOBS = "llm-jobs@1azgra/:/workspace/jobs:rwd"
 VOLUME_DATASETS = "llm-datasets@1azgra/:/workspace/datasets:ro"
+
+
 class ENV(BaseModel):
     name: str
     value: str
+
 
 SECRET_ENVS: list[ENV] = [
     {"name": "HF_TOKEN", "value": os.getenv("HF_TOKEN")},
     {"name": "WANDB_KEY", "value": os.getenv("WANDB_KEY")},
 ]
+
 
 class JOB(BaseModel):
     id: str | None = None

@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 RUN_STATES = Literal["crashed", "failed", "finished", "killed", "running", "pending"]
 ARTIFACT_TYPES = Literal["model", "dataset"]
 
-router = APIRouter(prefix="/wandb")
+router = APIRouter(prefix="/exp")
 
 wb = wandb.Api()
 

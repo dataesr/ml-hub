@@ -2,9 +2,8 @@ import os
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.ovhai import ovhai_initialize, router as ovhai_router
-from app.hf import router as hf_router
-from app.wandb import router as wandb_router
+from app.ovhai import ovhai_initialize
+from app.routers import datasets, models, jobs, experiments, storage
 
 app = FastAPI(title="ML HUB API")
 
@@ -20,24 +19,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API routes under /api to coexist with SPA at /
+# Backend api routes at /api
 api_router = APIRouter(prefix="/api")
-api_router.include_router(ovhai_router)
-api_router.include_router(hf_router)
-api_router.include_router(wandb_router)
+api_router.include_router(datasets.router)
+api_router.include_router(models.router)
+api_router.include_router(jobs.router)
+api_router.include_router(experiments.router)
+api_router.include_router(storage.router)
 app.include_router(api_router)
 
 
 # Init ovhai cli
 ovhai_initialize()
 
-
-# Health remains at /health; root is handled by SPA static files
 @app.get("/health")
 def health_check():
     return {"message": "healthy"}
 
-
+# Frontend routes at /
 STATIC_DIR = os.getenv("STATIC_DIR", "static")
 if os.path.isdir(STATIC_DIR):
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
