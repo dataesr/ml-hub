@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.datasets import service as datasets_svc
+from app.datasets.schemas import DatasetConfig
 
 router = APIRouter()
 
@@ -23,7 +24,8 @@ def datasets_get(owner: str, name: str):
         raise HTTPException(status_code=404, detail=str(error))
 
 
-@router.get("/datasets/configs")
+# TODO: rename configs routes; not really explicit
+@router.get("/configs")
 def datasets_configs_list():
     try:
         configs = datasets_svc.list_configs()
@@ -32,36 +34,19 @@ def datasets_configs_list():
         raise HTTPException(status_code=404, detail=str(error))
 
 
-@router.get("/datasets/configs/{name}")
+@router.post("/configs")
+def datasets_configs_add(config: DatasetConfig):
+    try:
+        datasets_svc.add_config(config)
+        return {f"{config.name}": "config uploaded"}
+    except Exception as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+
+@router.get("/configs/{name}")
 def datasets_configs_get(name: str):
     try:
         config = datasets_svc.get_config(name)
         return config
     except Exception as error:
         raise HTTPException(status_code=404, detail=str(error))
-
-
-# @router.post("/datasets/configs")
-# def datasets_configs_add(config: Config):
-#     try:
-#         configs = datasets_svc.add_config(config)
-#         return configs
-#     except Exception as error:
-#         raise HTTPException(status_code=400, detail=str(error))
-
-
-# @router.get("/datasets/configs/{name}")
-# def datasets_configs_get_from_storage():
-#     try:
-#         config = ovhai_object_get()
-
-# @router.post("/datasets/configs")
-# def datasets_configs_add_to_storage(name: str):
-#     tmp_path = f"/tmp/{name}"
-#     if not tmp_path.endswith(".json"):
-#         tmp_path += ".json"
-#     with open(tmp_path, "w") as f:
-#         json.dump(content, f)
-#     try:
-
-#         ovhai_object_upload(name, )

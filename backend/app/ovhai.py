@@ -22,9 +22,9 @@ def ovhai_initialize():
 
 def cmd_run(cmd: str, capture_json: bool = False):
     result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
-    logger.debug(f"results {result.stdout}")
+    # logger.debug(f"results {result.stdout}")
     if result.returncode != 0:
-        logger.error(f"CMD ERR: {result.stderr}")
+        # logger.error(f"CMD ERR: {result.stderr}")
         raise Exception(f"CMD ERR: {result.stderr}")
 
     if result.returncode == 0 and capture_json:
@@ -32,7 +32,7 @@ def cmd_run(cmd: str, capture_json: bool = False):
             data: dict = json.loads(result.stdout)
             return data
         except Exception:
-            logger.error(f"Error while parsing json from {result.stdout}")
+            # logger.error(f"Error while parsing json from {result.stdout}")
             raise ValueError(f"Error while parsing json from {result.stdout}")
 
 
@@ -44,11 +44,28 @@ def ovhai_object_list(container: str, prefix: str = None):
     return data
 
 
-def ovhai_object_upload(file_path: str, container: str, prefix: str = None):
-    cmd = f"ovhai bucket object upload {container}@{DATA_STORE} {file_path}"
+def ovhai_object_upload(object_name: str, container: str, prefix: str = None, remove_prefix: str = None):
+    cmd = f"ovhai bucket object upload {container}@{DATA_STORE} {object_name}"
     if prefix:
         cmd += f" --add-prefix {prefix}"
+    if remove_prefix:
+        cmd += f" --remove-prefix {remove_prefix}"
     cmd_run(cmd)
+
+
+def ovhai_object_download(object_name: str, container: str, output: str = None, remove_prefix: str = None):
+    output_path = object_name
+    cmd = f"ovhai bucket object download {container}@{DATA_STORE} {object_name}"
+    if remove_prefix:
+        cmd += f" --remove-prefix {remove_prefix}"
+        output_path = output_path.removeprefix(remove_prefix)
+    if output:
+        cmd += f" --output {output}"
+        output_path = os.path.join(output, output_path)
+    # logger.debug(f"{cmd =}")
+    # logger.debug(f"{object_name=}, {output=}, {remove_prefix=}, {output_path=}")
+    cmd_run(cmd)
+    return output_path
 
 
 def ovhai_object_delete(container: str, object_name: str = None, prefix: str = None):
