@@ -1,12 +1,18 @@
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { apiArtifactsGet, apiArtifactsList, apiExperimentsList, apiRunsGet, apiRunsList } from "../api"
-import { ArtifactKind } from "../types/experiments"
+import {
+  getExperimentArtifact,
+  getExperimentsRun,
+  listExperiments,
+  listExperimentsArtifacts,
+  listExperimentsRuns,
+} from "./api"
+import { ExperimentArtifactKind } from "./types"
 
 export function useListExperiments() {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["wandb", "projects", "list", "dataesr"],
-    queryFn: () => apiExperimentsList("dataesr"),
+    queryKey: ["experiments", "list"],
+    queryFn: () => listExperiments(),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     keepPreviousData: true,
@@ -22,8 +28,8 @@ export function useListExperiments() {
 
 export function useGetRun(project: string, id: string) {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["wandb", "runs", "get", "dataesr", project, id],
-    queryFn: () => apiRunsGet("dataesr", project, id),
+    queryKey: ["experiments", "runs", "get", project, id],
+    queryFn: () => getExperimentsRun(project, id),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,
@@ -38,8 +44,8 @@ export function useGetRun(project: string, id: string) {
 
 export function useListRuns(project: string) {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["wandb", "runs", "list", "dataesr", project],
-    queryFn: () => apiRunsList("dataesr", project),
+    queryKey: ["experiments", "runs", "list", project],
+    queryFn: () => listExperimentsRuns(project),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     keepPreviousData: true,
@@ -53,10 +59,14 @@ export function useListRuns(project: string) {
   return values
 }
 
-export function useGetArtifact<K extends ArtifactKind>(project: string, name: string, type: ArtifactKind) {
+export function useGetArtifact<K extends ExperimentArtifactKind>(
+  project: string,
+  name: string,
+  type: ExperimentArtifactKind
+) {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["wandb", "artifacts", "get", "dataesr", project, name, type],
-    queryFn: () => apiArtifactsGet<K>("dataesr", project, name, type),
+    queryKey: ["experiments", "artifacts", "get", project, name, type],
+    queryFn: () => getExperimentArtifact<K>(project, name, type),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,
@@ -69,10 +79,10 @@ export function useGetArtifact<K extends ArtifactKind>(project: string, name: st
   return values
 }
 
-export function useListArtifacts(project: string, type: ArtifactKind) {
+export function useListArtifacts(project: string, type: ExperimentArtifactKind) {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["wandb", "artifacts", "list", "dataesr", project],
-    queryFn: () => apiArtifactsList("dataesr", project, type),
+    queryKey: ["experiments", "artifacts", "list", project],
+    queryFn: () => listExperimentsArtifacts(project, type),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,

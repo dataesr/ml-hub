@@ -2,8 +2,8 @@ import { Table } from "@codegouvfr/react-dsfr/Table"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
 import { Button, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate } from "../../../utils"
-import { WandbRun } from "../../../types/experiments"
 import { getStateColor } from "../helpers/colors"
+import { ExperimentRun } from "../../../api/experiments/types"
 
 const TABLE_CONFIG = [
   { header: "Name / ID", component: "name" },
@@ -14,7 +14,7 @@ const TABLE_CONFIG = [
   { header: "Actions", component: "actions" },
 ]
 
-const buildTableComponents = (run: WandbRun) => {
+const buildTableComponents = (run: ExperimentRun) => {
   const name = (
     <>
       <CopyToClipboard copyText={run.name}>
@@ -46,7 +46,7 @@ const buildTableComponents = (run: WandbRun) => {
   }
 }
 
-export default function RunsTable({ runs }: { runs: WandbRun[] }) {
+export default function RunsTable({ runs }: { runs: ExperimentRun[] }) {
   const headers = TABLE_CONFIG.map((col) => col.header)
   const data = runs.map((run) => buildTableComponents(run)).map((run) => TABLE_CONFIG.map((col) => run[col.component]))
   return <Table className="fr-pt-0" headers={headers} data={data} />

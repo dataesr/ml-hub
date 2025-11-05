@@ -1,7 +1,7 @@
 import { ColorFamily } from "@dataesr/dsfr-plus"
-import { WandbRunState } from "../../../types/experiments"
+import { ExperimentRunState } from "../../../api/experiments/types"
 
-export const getStateColor = (state: WandbRunState): ColorFamily => {
+export const getStateColor = (state: ExperimentRunState): ColorFamily => {
   switch (state) {
     case "finished":
       return "green-emeraude"

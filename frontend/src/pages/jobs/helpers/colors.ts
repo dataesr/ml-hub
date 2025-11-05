@@ -1,7 +1,7 @@
 import { ColorFamily } from "@dataesr/dsfr-plus"
-import { OvhaiJobState } from "../../../types/jobs"
+import { JobState } from "../../../api/jobs/types"
 
-export const getStateColor = (state: OvhaiJobState): ColorFamily => {
+export const getStateColor = (state: JobState): ColorFamily => {
   switch (state) {
     case "DONE":
       return "green-emeraude"

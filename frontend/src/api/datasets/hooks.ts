@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { apiDatasetsGet, apiDatasetsList } from "../api"
+import { getDataset, listDatasets } from "./api"
 
 export function useGetDataset(name: string) {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["hf", "datasets", "get", name],
-    queryFn: () => apiDatasetsGet(name),
+    queryKey: ["datasets", "get", name],
+    queryFn: () => getDataset(name),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,
@@ -20,8 +20,8 @@ export function useGetDataset(name: string) {
 
 export function useListDatasets() {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["hf", "datasets", "list", "dataesr"],
-    queryFn: () => apiDatasetsList("dataesr"),
+    queryKey: ["datasets", "list"],
+    queryFn: () => listDatasets(),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,

@@ -1,4 +1,4 @@
-export type WandbProject = {
+export type Experiment = {
   id: string
   name: string
   entityName: string
@@ -6,27 +6,27 @@ export type WandbProject = {
   isBenchmark: boolean
 }
 
-export type WandbRunState = "crashed" | "failed" | "finished" | "killed" | "running" | "pending"
-export type WandbRunBase = {
+export type ExperimentRunState = "crashed" | "failed" | "finished" | "killed" | "running" | "pending"
+export type ExperimentRunBase = {
   id: string
   name: string
   displayName: string
-  state: WandbRunState
+  state: ExperimentRunState
   createdAt: Date
   url: string
 }
-export type WandbRun = WandbRunBase & {
+export type ExperimentRun = ExperimentRunBase & {
   tags: Array<string>
   config: Record<string, any>
   group?: string
   jobType?: string
 }
 
-export type ArtifactKind = "model" | "dataset"
+export type ExperimentArtifactKind = "model" | "dataset"
 type ArtifactSource = "huggingface" | "ovh"
-type MetadataByKind<K extends ArtifactKind> = Extract<WandbArtifactMetadata, { kind: K }>
+type MetadataByKind<K extends ExperimentArtifactKind> = Extract<ExperimentArtifactMetadata, { kind: K }>
 
-export type WandbArtifactMetadata =
+export type ExperimentArtifactMetadata =
   | {
       kind: "model"
       model_name: string
@@ -45,7 +45,7 @@ export type WandbArtifactMetadata =
       hf_hash?: string
       path?: string
     }
-export type WandbArtifactVersion<K extends ArtifactKind> = {
+export type ExperimentArtifactVersion<K extends ExperimentArtifactKind> = {
   version: string
   name: string
   entity: string
@@ -57,7 +57,7 @@ export type WandbArtifactVersion<K extends ArtifactKind> = {
   metadata: MetadataByKind<K>
 }
 
-export type WandbArtifactBase = {
+export type ExperimentArtifactBase = {
   id: string
   name: string
   createdAt: Date
@@ -65,6 +65,6 @@ export type WandbArtifactBase = {
   tags: Record<string, any>
   aliases: Record<string, any>
 }
-export type WandbArtifact<K extends ArtifactKind> = WandbArtifactBase & {
-  versions: Array<WandbArtifactVersion<K>>
+export type ExperimentArtifact<K extends ExperimentArtifactKind> = ExperimentArtifactBase & {
+  versions: Array<ExperimentArtifactVersion<K>>
 }

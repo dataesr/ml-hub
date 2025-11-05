@@ -1,12 +1,12 @@
 import { Container, Title } from "@dataesr/dsfr-plus"
-import { useListModels } from "../../hooks/models"
 import ModelCard from "./components/model-card"
 import { dateStringToNumber } from "../../utils"
 import ErrorCallOut from "../../components/error-call-out"
-import { HuggingFaceModel } from "../../types/models"
 import LoadingSpinner from "../../components/loading-spinner"
+import { Model } from "../../api/models/types"
+import { useListModels } from "../../api/models/hooks"
 
-function ModelsList({ models }: { models: HuggingFaceModel[] }) {
+function ModelsList({ models }: { models: Model[] }) {
   const sortedModels = models.sort(
     (a, b) => dateStringToNumber(b.last_modified || b.created_at) - dateStringToNumber(a.last_modified || a.created_at)
   )

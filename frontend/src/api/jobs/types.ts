@@ -1,4 +1,4 @@
-export type OvhaiJobState =
+export type JobState =
   | "QUEUED"
   | "PENDING"
   | "INITIALIZING"
@@ -12,7 +12,7 @@ export type OvhaiJobState =
   | "INTERRUPTING"
   | "SYNC_FAILED"
 
-export type OvhAiJob = {
+export type Job = {
   id: string
   createdAt: Date
   updatedAt?: Date
@@ -33,7 +33,7 @@ export type OvhAiJob = {
     }
   }
   status: {
-    state: OvhaiJobState
+    state: JobState
     url: string
     duration?: number
     exitCode?: number
@@ -43,7 +43,7 @@ export type OvhAiJob = {
   }
 }
 
-export type OvhAiJobInputs = {
+export type JobInputs = {
   name: string
   model_name: string
   dataset_name: string

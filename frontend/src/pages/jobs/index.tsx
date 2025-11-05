@@ -1,9 +1,9 @@
 import { Button, ButtonGroup, Container, Title } from "@dataesr/dsfr-plus"
-import { useListJobs } from "../../hooks/jobs"
 import JobsTable from "./components/jobs-table"
 import { useNavigate } from "react-router-dom"
 import ErrorCallOut from "../../components/error-call-out"
 import LoadingSpinner from "../../components/loading-spinner"
+import { useListJobs } from "../../api/jobs/hooks"
 
 export default function Jobs() {
   const { data: jobs, isFetching, error, refetch } = useListJobs()

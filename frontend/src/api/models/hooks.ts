@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { apiModelsGet, apiModelsList } from "../api"
+import { getModel, listModels } from "./api"
 
 export function useGetModel(name: string) {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["hf", "models", "get", name],
-    queryFn: () => apiModelsGet(name),
+    queryKey: ["models", "get", name],
+    queryFn: () => getModel(name),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,
@@ -20,8 +20,8 @@ export function useGetModel(name: string) {
 
 export function useListModels() {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["hf", "models", "list", "dataesr"],
-    queryFn: () => apiModelsList("dataesr"),
+    queryKey: ["models", "list"],
+    queryFn: () => listModels(),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     // staleTime: 5 * 60 * 1000,

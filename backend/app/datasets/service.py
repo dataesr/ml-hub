@@ -6,7 +6,7 @@ FOLDER_CONFIGS = "configs/"
 OWNER = "dataesr"
 
 
-def list(owner: str = OWNER, limit: int = 100):
+def list(owner: str, limit: int = 100):
     datasets = list_datasets(author=owner, limit=limit)
     datasets = [dataset.__dict__ for dataset in datasets]
     return datasets

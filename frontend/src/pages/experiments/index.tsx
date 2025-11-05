@@ -1,9 +1,9 @@
 import { Container, Select, SelectOption, Title } from "@dataesr/dsfr-plus"
-import { useListExperiments, useListRuns } from "../../hooks/experiments"
 import ErrorCallOut from "../../components/error-call-out"
 import LoadingSpinner from "../../components/loading-spinner"
 import { useState } from "react"
 import RunsTable from "./components/runs-table"
+import { useListExperiments, useListRuns } from "../../api/experiments/hooks"
 
 interface ExperimentsRunsArgs {
   project: string

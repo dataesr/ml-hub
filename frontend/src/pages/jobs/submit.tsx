@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { apiJobsCreate } from "../../api"
 import {
   Accordion,
   Alert,
@@ -17,12 +16,13 @@ import {
   Title,
   Toggle,
 } from "@dataesr/dsfr-plus"
-import { OvhAiJob, OvhAiJobInputs } from "../../types/jobs"
 import { scrollToTop } from "../../utils"
 import { useNavigate } from "react-router-dom"
 import { validateDebouncedInput, validateInput } from "./helpers/validate"
+import { Job, JobInputs } from "../../api/jobs/types"
+import { createJob } from "../../api/jobs/api"
 
-const DEFAULT_INPUTS: OvhAiJobInputs = {
+const DEFAULT_INPUTS: JobInputs = {
   name: "",
   model_name: "",
   dataset_name: "",
@@ -30,7 +30,7 @@ const DEFAULT_INPUTS: OvhAiJobInputs = {
 }
 
 export default function JobsSubmit() {
-  const [inputs, setInputs] = useState<OvhAiJobInputs>(DEFAULT_INPUTS)
+  const [inputs, setInputs] = useState<JobInputs>(DEFAULT_INPUTS)
   const [pushToHF, setPushToHF] = useState<boolean>(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [alertError, setAlertError] = useState<string>("")
@@ -93,7 +93,7 @@ export default function JobsSubmit() {
 
   const onSubmit = async () => {
     try {
-      const newJob: OvhAiJob = await apiJobsCreate(inputs)
+      const newJob: Job = await createJob(inputs)
       resetInputs()
       setAlertSuccess(`Successfully created job ${newJob.spec.name} (${newJob.id})`)
       setTimeout(() => navigate(`/jobs`), 2000)

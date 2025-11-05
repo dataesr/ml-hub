@@ -5,13 +5,13 @@ from app.experiments.schemas import ARTIFACT_TYPES, RUN_STATES
 router = APIRouter(prefix="/experiments")
 
 
-@router.get("/projects")
+@router.get("/")
 def experiments_projects_list():
     projects = exp_svc.list_projects()
     return projects
 
 
-@router.get("/projects/{project}")
+@router.get("/{project}")
 def experiments_projects_get(project: str):
     project = exp_svc.get_project(project)
     return project

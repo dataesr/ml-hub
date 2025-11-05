@@ -1,11 +1,11 @@
 import { Button, Col, Container, Link, Row, Tag, TagGroup } from "@dataesr/dsfr-plus"
-import { HuggingFaceModel } from "../../../types/models"
-import { HUGGING_FACE_URL } from "../../../api"
+import { HUGGING_FACE_URL } from "../../../api/url"
+import { Model } from "../../../api/models/types"
 
 const filterTags = (tag: string) => !["region"].some((filter) => tag.includes(filter))
 
 interface ModelCardProps {
-  model: HuggingFaceModel
+  model: Model
 }
 export default function ModelCard({ model }: ModelCardProps) {
   return (

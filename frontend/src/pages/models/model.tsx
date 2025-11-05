@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { Container, Title, Text, Button, Tag, TagGroup, ButtonGroup } from "@dataesr/dsfr-plus"
-import { useGetModel } from "../../hooks/models"
-import { HUGGING_FACE_URL } from "../../api"
+import { HUGGING_FACE_URL } from "../../api/url"
+import { useGetModel } from "../../api/models/hooks"
 
 export default function Model() {
   const { owner, name } = useParams<{ owner: string; name: string }>()

@@ -6,7 +6,7 @@ router = APIRouter()
 
 @router.get("/models")
 @router.get("/models/{owner}")
-def models_list(owner: str = "dataesr", limit: int = 100):
+def models_list(owner: str = models_svc.OWNER, limit: int = 100):
     try:
         models = models_svc.list(owner, limit)
         return models

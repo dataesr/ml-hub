@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { Container, Title, Text, Button, Tag, TagGroup, ButtonGroup } from "@dataesr/dsfr-plus"
-import { HUGGING_FACE_URL } from "../../api"
-import { useGetDataset } from "../../hooks/datasets"
+import { useGetDataset } from "../../api/datasets/hooks"
+import { HUGGING_FACE_URL } from "../../api/url"
 
 export default function Dataset() {
   const { owner, name } = useParams<{ owner: string; name: string }>()

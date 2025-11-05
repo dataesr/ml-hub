@@ -1,11 +1,11 @@
 import { Button, Col, Container, Link, Row, Tag, TagGroup } from "@dataesr/dsfr-plus"
-import { HuggingFaceDataset } from "../../../types/datasets"
-import { HUGGING_FACE_URL } from "../../../api"
+import { HUGGING_FACE_URL } from "../../../api/url"
+import { Dataset } from "../../../api/datasets/types"
 
 const filterTags = (tag: string) => !["library", "region", "language"].some((filter) => tag.includes(filter))
 
 interface DatasetCardProps {
-  dataset: HuggingFaceDataset
+  dataset: Dataset
 }
 export default function DatasetCard({ dataset }: DatasetCardProps) {
   return (
