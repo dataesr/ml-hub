@@ -3,7 +3,10 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.ovhai import ovhai_initialize
-from app.routers import datasets, models, jobs, experiments, storage
+from app.datasets.views import router as datasets_router
+from app.experiments.views import router as experiments_router
+from app.jobs.views import router as jobs_router
+from app.models.views import router as models_router
 
 app = FastAPI(title="ML HUB API")
 
@@ -21,11 +24,10 @@ app.add_middleware(
 
 # Backend api routes at /api
 api_router = APIRouter(prefix="/api")
-api_router.include_router(datasets.router)
-api_router.include_router(models.router)
-api_router.include_router(jobs.router)
-api_router.include_router(experiments.router)
-api_router.include_router(storage.router)
+api_router.include_router(datasets_router)
+api_router.include_router(models_router)
+api_router.include_router(jobs_router)
+api_router.include_router(experiments_router)
 app.include_router(api_router)
 
 

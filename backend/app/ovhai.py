@@ -6,6 +6,7 @@ from app.logger import get_logger
 logger = get_logger(__name__)
 
 DATA_STORE = "1azgra"
+CONTAINERS_PREFIX = "llm-"
 
 def ovhai_initialize():
     # login
@@ -21,7 +22,7 @@ def ovhai_initialize():
 
 def cmd_run(cmd: str, capture_json: bool = False):
     result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
-
+    logger.debug(f"results {result.stdout}")
     if result.returncode != 0:
         logger.error(f"CMD ERR: {result.stderr}")
         raise Exception(f"CMD ERR: {result.stderr}")
@@ -35,6 +36,14 @@ def cmd_run(cmd: str, capture_json: bool = False):
             raise ValueError(f"Error while parsing json from {result.stdout}")
 
 
+def ovhai_object_list(container: str, prefix: str = None):
+    cmd = f"ovhai bucket object list {container}@{DATA_STORE} -o json"
+    if prefix:
+        cmd += f" --prefix {prefix}"
+    data = cmd_run(cmd, capture_json=True)
+    return data
+
+
 def ovhai_object_upload(file_path: str, container: str, prefix: str = None):
     cmd = f"ovhai bucket object upload {container}@{DATA_STORE} {file_path}"
     if prefix:
@@ -42,23 +51,9 @@ def ovhai_object_upload(file_path: str, container: str, prefix: str = None):
     cmd_run(cmd)
 
 
-def ovhai_object_delete(object_name: str, container: str):
-    cmd = f"ovhai bucket object delete {container}@{DATA_STORE}"
+def ovhai_object_delete(container: str, object_name: str = None, prefix: str = None):
+    to_delete = f"--all"
+    if prefix or object_name:
+        to_delete = f"--prefix {prefix}" if prefix else object_name
+    cmd = f"ovhai bucket object delete {container}@{DATA_STORE} {to_delete}"
     cmd_run(cmd)
-
-
-def ovhai_job_run(job_cli: str):
-    cmd = f"ovhai job run -o json {job_cli}"
-    data = cmd_run(cmd, capture_json=True)
-    return data
-
-
-def ovhai_job_stop(id: str):
-    cmd = f"ovhai job stop {id}"
-    cmd_run(cmd)
-
-
-def ovhai_job_get(id: str):
-    cmd = f"ovhai job get {id} -o json"
-    data = cmd_run(cmd, capture_json=True)
-    return data
