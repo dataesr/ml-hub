@@ -2,13 +2,16 @@ import os
 from app.ovhai import cmd_run
 from app.types import ENV
 from app.jobs.schemas import JOB_STATE, JOB_INPUTS
+from app.datasets.service import create_config, add_config
+from app.logger import get_logger
+
+logger = get_logger(__name__)
 
 GPU = "ai1-1-gpu"
 DOCKER = "ghcr.io/dataesr/llm-finetuning:latest"
 DOCKER_CMD = "uv run main.py"
 VOLUME_JOBS = "llm-jobs@1azgra/:/workspace/jobs:rwd"
 VOLUME_DATASETS = "llm-datasets@1azgra/:/workspace/datasets:ro"
-
 
 SECRET_ENVS: list[ENV] = [
     {"name": "HF_TOKEN", "value": os.getenv("HF_TOKEN")},
@@ -42,6 +45,24 @@ def _get_run_cmd(inputs: JOB_INPUTS):
     cmd += f" --volume {VOLUME_JOBS}"
     if inputs.dataset_volume:
         cmd += f" --volume {VOLUME_DATASETS}"
+
+    # Dataset extras
+    dataset_extras = {}
+    if inputs.dataset_instruction:
+        dataset_extras["instruction"] = inputs.dataset_instruction
+    if inputs.dataset_text_format:
+        dataset_extras["text_format"] = inputs.dataset_text_format
+    if inputs.dataset_chat_template:
+        dataset_extras["chat_template"] = inputs.dataset_chat_template
+    if dataset_extras:
+        dataset_extras["dataset_name"] = inputs.dataset_name
+        try:
+            dataset_extras_name = add_config(create_config(dataset_extras))
+            if dataset_extras_name:
+                cmd += f" --dataset_extras_name {dataset_extras_name}"
+        except Exception as error:
+            logger.debug(f"dataset extras = {dataset_extras}")
+            raise Exception(f"Error while adding dataset extras {str(error)}")
 
     # Docker args
     cmd += f" {DOCKER} -- {DOCKER_CMD}"

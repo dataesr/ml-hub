@@ -24,6 +24,9 @@ class JOB_INPUTS(BaseModel):
     model_name: str
     dataset_name: str
     dataset_format: Literal["auto", "conversational", "text"] | None = None
+    dataset_instruction: str | None = None
+    dataset_text_format: str | None = None
+    dataset_chat_template: str | None = None
     dataset_volume: bool | None = False
     mode: Literal["train", "push"] | None = None
     push_model_dir: str | None = None
