@@ -12,6 +12,7 @@ export type Dataset = {
 
 export type DatasetConfig = {
   name: string
+  dataset_name?: string
   instruction?: string
   dataset_format?: "text" | "conversational"
   text_format?: string

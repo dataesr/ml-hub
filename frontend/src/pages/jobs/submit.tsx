@@ -12,6 +12,7 @@ import {
   Select,
   SelectOption,
   Text,
+  TextArea,
   TextInput,
   Title,
   Toggle,
@@ -189,11 +190,43 @@ export default function JobsSubmit() {
             <SelectOption key="text">Text</SelectOption>
             <SelectOption key="conversational">Conversational</SelectOption>
           </Select>
+          <TextArea
+            style={{ resize: "vertical", maxHeight: "400px" }}
+            className="fr-mt-2w"
+            label="Dataset prompts instruction"
+            hint="Custom instruction that will be applied to all prompts."
+            value={inputs?.dataset_instruction || ""}
+            placeholder="You are a helpful assistant..."
+            onChange={(e) => handleInputsChange("dataset_instruction", e.target.value)}
+            messageType={errors.dataset_instruction ? "error" : undefined}
+            message={errors.dataset_instruction || undefined}
+          />
+          <TextInput
+            className="fr-mt-2w"
+            label="Dataset prompts text format"
+            hint="Text format that will be applied to all prompts."
+            value={inputs?.dataset_text_format || ""}
+            placeholder="### Instruction:\n {instruction}..."
+            onChange={(e) => handleInputsChange("dataset_text_format", e.target.value)}
+            messageType={errors.dataset_text_format ? "error" : undefined}
+            message={errors.dataset_text_format || undefined}
+          />
+          <TextInput
+            className="fr-mt-2w"
+            label="Dataset prompts chat template"
+            hint="Chat template that will be applied to all prompts."
+            value={inputs?.dataset_text_format || ""}
+            placeholder="{%- for message in messages -%}..."
+            onChange={(e) => handleInputsChange("dataset_chat_template", e.target.value)}
+            messageType={errors.dataset_chat_template ? "error" : undefined}
+            message={errors.dataset_chat_template || undefined}
+          />
           <Toggle
             label="Link OVH dataset volume"
             checked={inputs?.dataset_volume || false}
             onChange={(e) => handleInputsChange("dataset_volume", e.target.checked)}
           />
+          <hr />
           <TextInput
             className="fr-mt-2w"
             label="W&B Run Name"
