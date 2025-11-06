@@ -15,14 +15,14 @@ VOLUME_DATASETS = "llm-datasets@1azgra/:/workspace/datasets:ro"
 
 SECRET_ENVS: list[ENV] = [
     {"name": "HF_TOKEN", "value": os.getenv("HF_TOKEN")},
-    {"name": "WANDB_API_KEY", "value": os.getenv("WANDB_KEY")},
+    {"name": "WANDB_API_KEY", "value": os.getenv("WANDB_API_KEY")},
 ]
 
 
 def _get_run_cmd(inputs: JOB_INPUTS):
     # Job command
     cmd = "ovhai job run -o json"
-    cmd += f"--name {inputs.name}"
+    cmd += f" --name {inputs.name}"
 
     # GPU
     if inputs.gpu:
@@ -41,11 +41,6 @@ def _get_run_cmd(inputs: JOB_INPUTS):
     for env in envs:
         cmd += f" --env {env['name']}={env['value']}"
 
-    # Volumes
-    cmd += f" --volume {VOLUME_JOBS}"
-    if inputs.dataset_volume:
-        cmd += f" --volume {VOLUME_DATASETS}"
-
     # Dataset extras
     dataset_extras = {}
     if inputs.dataset_instruction:
@@ -54,6 +49,18 @@ def _get_run_cmd(inputs: JOB_INPUTS):
         dataset_extras["text_format"] = inputs.dataset_text_format
     if inputs.dataset_chat_template:
         dataset_extras["chat_template"] = inputs.dataset_chat_template
+
+    # Volumes
+    cmd += f" --volume {VOLUME_JOBS}"
+    if inputs.dataset_volume or dataset_extras:
+        cmd += f" --volume {VOLUME_DATASETS}"
+
+    # Docker args
+    cmd += f" {DOCKER} -- {DOCKER_CMD}"
+    cmd += f" --model_name {inputs.model_name}"
+    cmd += f" --dataset_name {inputs.dataset_name}"
+    if inputs.dataset_format:
+        cmd += f" --dataset_format {inputs.dataset_format}"
     if dataset_extras:
         dataset_extras["dataset_name"] = inputs.dataset_name
         try:
@@ -63,13 +70,6 @@ def _get_run_cmd(inputs: JOB_INPUTS):
         except Exception as error:
             logger.debug(f"dataset extras = {dataset_extras}")
             raise Exception(f"Error while adding dataset extras {str(error)}")
-
-    # Docker args
-    cmd += f" {DOCKER} -- {DOCKER_CMD}"
-    cmd += f" --model_name {inputs.model_name}"
-    cmd += f" --dataset_name {inputs.dataset_name}"
-    if inputs.dataset_format:
-        cmd += f" --dataset_format {inputs.dataset_format}"
     if inputs.mode:
         cmd += f" --mode {inputs.mode}"
     if inputs.push_model_dir:
@@ -79,6 +79,7 @@ def _get_run_cmd(inputs: JOB_INPUTS):
     if inputs.hf_hub_private:
         cmd += f" --hf_hub_private"
 
+    logger.debug(f"job cmd = {cmd}")
     return cmd
 
 

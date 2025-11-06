@@ -22,7 +22,7 @@ def ovhai_initialize():
 
 def cmd_run(cmd: str, capture_json: bool = False):
     result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
-    # logger.debug(f"results {result.stdout}")
+    logger.debug(f"results {result.stdout}")
     if result.returncode != 0:
         # logger.error(f"CMD ERR: {result.stderr}")
         raise Exception(f"CMD ERR: {result.stderr}")
