@@ -1,3 +1,5 @@
+import { EnvironmentVariable } from "../../types"
+
 export type JobState =
   | "QUEUED"
   | "PENDING"
@@ -20,8 +22,7 @@ export type Job = {
     name: string
     image: string
     command: Array<string>
-    envVars?: any
-    defaultHttpPort?: number
+    envVars?: Array<EnvironmentVariable>
     labels: {
       ["ovh/id"]: string
       ["ovh/type"]: string

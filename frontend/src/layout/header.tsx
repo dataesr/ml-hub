@@ -45,7 +45,7 @@ export default function Header() {
         <Link href="/jobs">Jobs</Link>
         <Link href="/experiments">Experiments</Link>
         <Link href="/">Evaluate</Link>
-        <Link href="/">Inference</Link>
+        <Link href="/inference">Inference</Link>
         {/* <NavItem title={"DoadiNavItem"}>
           <Link href="/">DoadiNavItem</Link>
         </NavItem> */}

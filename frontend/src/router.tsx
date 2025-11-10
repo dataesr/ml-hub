@@ -9,6 +9,7 @@ import Dataset from "./pages/datasets/dataset"
 import Jobs from "./pages/jobs"
 import JobsSubmit from "./pages/jobs/submit"
 import Experiments from "./pages/experiments"
+import InferenceApps from "./pages/inference"
 
 export default function Router() {
   return (
@@ -21,6 +22,7 @@ export default function Router() {
         <Route path="/datasets/:owner/:name" element={<Dataset />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/jobs/submit" element={<JobsSubmit />} />
+        <Route path="/inference" element={<InferenceApps />} />
         <Route path="/experiments" element={<Experiments />} />
       </Route>
     </Routes>
