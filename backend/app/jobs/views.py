@@ -8,7 +8,7 @@ router = APIRouter()
 @router.get("/jobs")
 def jobs_list(state: JOB_STATE = None):
     try:
-        jobs = jobs_svc.list(state)
+        jobs = jobs_svc.get_all(state)
         return jobs
     except Exception as error:
         raise HTTPException(status_code=404, detail=str(error))

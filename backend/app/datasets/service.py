@@ -14,7 +14,7 @@ FOLDER_TMP = "tmp/"
 OWNER = "dataesr"
 
 
-def list(owner: str, limit: int = 100):
+def get_all(owner: str, limit: int = 100):
     datasets = list_datasets(author=owner, limit=limit)
     datasets = [dataset.__dict__ for dataset in datasets]
     return datasets

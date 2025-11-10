@@ -83,7 +83,7 @@ def _get_run_cmd(inputs: JOB_INPUTS):
     return cmd
 
 
-def list(state: JOB_STATE = None):
+def get_all(state: JOB_STATE = None):
     filter = f"-s {state}" if state else "-a"
     cmd = f"ovhai job list -o json {filter}"
     data = cmd_run(cmd, capture_json=True)

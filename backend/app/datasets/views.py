@@ -9,7 +9,7 @@ router = APIRouter()
 @router.get("/datasets/{owner}")
 def datasets_list(owner: str = datasets_svc.OWNER, limit: int = 100):
     try:
-        datasets = datasets_svc.list(owner, limit)
+        datasets = datasets_svc.get_all(owner, limit)
         return datasets
     except Exception as error:
         raise HTTPException(status_code=404, detail=str(error))

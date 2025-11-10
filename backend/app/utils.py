@@ -1,6 +1,7 @@
 import json
 import os
 from typing import Any
+from app.types import ENV
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -36,3 +37,10 @@ def json_read(path: str, remove: bool = False) -> dict[str, Any]:
         os.remove(json_path)
 
     return data
+
+
+def env_exist(envs: list[ENV], env_name: str, env_value: str):
+    for env in envs:
+        if env["name"] == env_name and env["value"] == env_value:
+            return True
+    return False

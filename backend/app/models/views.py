@@ -8,7 +8,7 @@ router = APIRouter()
 @router.get("/models/{owner}")
 def models_list(owner: str = models_svc.OWNER, limit: int = 100):
     try:
-        models = models_svc.list(owner, limit)
+        models = models_svc.get_all(owner, limit)
         return models
     except Exception as error:
         raise HTTPException(status_code=404, detail=str(error))
