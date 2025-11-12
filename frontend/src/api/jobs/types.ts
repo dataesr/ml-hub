@@ -45,11 +45,12 @@ export type Job = {
 }
 
 export type JobInputs = {
-  name: string
+  name?: string
   model_name: string
   dataset_name: string
   gpu?: number
-  dataset_file_config?: string
+  pipeline?: string
+  dataset_config?: string
   dataset_format?: "auto" | "conversational" | "text"
   dataset_instruction?: string
   dataset_text_format?: string

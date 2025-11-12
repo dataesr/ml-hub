@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from typing import Any
 from app.types import ENV
 from app.logger import get_logger
@@ -44,3 +45,9 @@ def env_exist(envs: list[ENV], env_name: str, env_value: str):
         if env["name"] == env_name and env["value"] == env_value:
             return True
     return False
+
+
+def timestamp(print_time: bool = True) -> str:
+    if not print_time:
+        return time.strftime("%Y%m%d")
+    return time.strftime("%Y%m%d-%H%M%S")

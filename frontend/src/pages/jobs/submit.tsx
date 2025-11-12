@@ -9,6 +9,8 @@ import {
   ModalContent,
   ModalFooter,
   ModalTitle,
+  SegmentedControl,
+  SegmentedElement,
   Select,
   SelectOption,
   Text,
@@ -22,24 +24,30 @@ import { useNavigate } from "react-router-dom"
 import { validateDebouncedInput, validateInput } from "./helpers/validate"
 import { Job, JobInputs } from "../../api/jobs/types"
 import { createJob } from "../../api/jobs/api"
+import { useGetDatasetConfig, useListDatasetConfigs } from "../../api/datasets/hooks"
 
 const DEFAULT_INPUTS: JobInputs = {
-  name: "",
   model_name: "",
   dataset_name: "",
+  pipeline: "causallm",
   gpu: 1,
 }
 
+//TODO: split into several components
 export default function JobsSubmit() {
   const [inputs, setInputs] = useState<JobInputs>(DEFAULT_INPUTS)
-  const [pushToHF, setPushToHF] = useState<boolean>(false)
+  const [pushToHF, setPushToHF] = useState<boolean>(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [alertError, setAlertError] = useState<string>("")
   const [alertSuccess, setAlertSuccess] = useState<string>("")
   const [openSubmit, setOpenSubmit] = useState<boolean>(false)
   const debouncedTimersRef = useState<Record<string, number>>({})[0]
+
+  const [controlConfig, setControlConfig] = useState<string>("custom")
+  const { data: configs } = useListDatasetConfigs(inputs?.dataset_name)
+  const { data: selectedConfig } = useGetDatasetConfig(inputs?.dataset_config, inputs?.dataset_name)
+
   const navigate = useNavigate()
-  const jobType = "finetuning"
   const required = inputs.name && inputs.model_name && inputs.dataset_name && ((pushToHF && inputs?.hf_hub) || !pushToHF)
 
   const resetInputs = () => {
@@ -117,25 +125,13 @@ export default function JobsSubmit() {
         Back to jobs
       </Button>
       <Title as="h2" className="fr-mb-4w fr-mt-5w">
-        New training job
+        New Training Job
       </Title>
       <Container fluid style={{ maxWidth: "600px" }}>
-        <Select label="Job Type" defaultSelectedKey={jobType}>
-          <SelectOption key={"finetuning"}>Finetuning</SelectOption>
-        </Select>
-        <TextInput
-          label="Job Name"
-          hint="Name of the job. Not unique but should be descriptive."
-          value={inputs.name}
-          onChange={(e) => handleInputsChange("name", e.target.value)}
-          maxLength={64}
-          required
-          messageType={errors.name ? "error" : undefined}
-          message={errors.name || undefined}
-        />
         <TextInput
           label="Model Name"
           hint="HuggingFace repository of the model to train."
+          placeholder="meta-llama/Llama-3.2-1B"
           value={inputs.model_name}
           onChange={(e) => handleInputsChange("model_name", e.target.value)}
           required
@@ -145,27 +141,56 @@ export default function JobsSubmit() {
         <TextInput
           label="Dataset Name"
           hint="HuggingFace repository or OVH file path of the dataset."
+          placeholder="dataesr/training-dataset"
           value={inputs.dataset_name}
           onChange={(e) => handleInputsChange("dataset_name", e.target.value)}
           required
           messageType={errors.dataset_name ? "error" : undefined}
           message={errors.dataset_name || undefined}
         />
+        <Select
+          label="Training Pipeline"
+          selectedKey={inputs.pipeline}
+          onSelectionChange={(key) => handleInputsChange("pipeline", key)}
+          isRequired
+        >
+          <SelectOption key={"causallm"}>CausalLM</SelectOption>
+          <SelectOption key={"causallm-unsloth"}>CausalLM with Unsloth</SelectOption>
+        </Select>
+        <TextInput
+          label="Experiment Project Name"
+          hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
+          placeholder="acknowledgments-entity-extraction"
+          value={inputs?.wandb_project || ""}
+          onChange={(e) => handleInputsChange("wandb_project", e.target.value)}
+          messageType={errors.wandb_project ? "error" : undefined}
+          message={errors.wandb_project || undefined}
+        />
+        {/* <TextInput
+          label="Job Name"
+          hint="Name of the job. Automatically generated if not set."
+          value={inputs.name}
+          onChange={(e) => handleInputsChange("name", e.target.value)}
+          maxLength={20}
+          messageType={errors.name ? "error" : undefined}
+          message={errors.name || undefined}
+        /> */}
         <Toggle
           label="Run job on GPU"
           checked={Boolean(inputs.gpu)}
           onChange={(e) => handleInputsChange("gpu", Number(e.target.checked))}
         />
         <Toggle
-          label="Push model on HuggingFace"
+          label="Push model on HuggingFace (recommanded)"
           checked={pushToHF}
           onChange={(e) => handlePushToHFChange(e.target.checked)}
         />
         {pushToHF && (
-          <Container fluid className="fr-ml-5w fr-mt-2w">
+          <Container fluid className="fr-mt-2w">
             <TextInput
               label="HuggingFace Name"
               hint="Name of the HuggingFace repository to push the model."
+              placeholder="dataesr/my-trained-model"
               value={inputs?.hf_hub || ""}
               onChange={(e) => handleInputsChange("hf_hub", e.target.value)}
               required={pushToHF}
@@ -179,73 +204,109 @@ export default function JobsSubmit() {
             />
           </Container>
         )}
-        <Accordion title="Advanced options" className="fr-mt-5w">
-          <Select
-            label="Dataset prompts format"
-            defaultSelectedKey={"auto"}
-            selectedKey={inputs?.dataset_format || "auto"}
-            onSelectionChange={(key) => handleInputsChange("dataset_format", key)}
+        <Accordion title="Dataset options" className="fr-mt-5w">
+          <SegmentedControl
+            className="fr-mb-2w"
+            name="datasetConfig"
+            label="Dataset config"
+            value={controlConfig}
+            onChangeValue={(value) => {
+              if (value === "custom") handleInputsChange("dataset_config", "")
+              setControlConfig(value)
+            }}
           >
-            <SelectOption key="auto">Auto</SelectOption>
-            <SelectOption key="text">Text</SelectOption>
-            <SelectOption key="conversational">Conversational</SelectOption>
-          </Select>
-          <TextArea
-            style={{ resize: "vertical", maxHeight: "400px" }}
-            className="fr-mt-2w"
-            label="Dataset prompts instruction"
-            hint="Custom instruction that will be applied to all prompts."
-            value={inputs?.dataset_instruction || ""}
-            placeholder="You are a helpful assistant..."
-            onChange={(e) => handleInputsChange("dataset_instruction", e.target.value)}
-            messageType={errors.dataset_instruction ? "error" : undefined}
-            message={errors.dataset_instruction || undefined}
-          />
-          <TextInput
-            className="fr-mt-2w"
-            label="Dataset prompts text format"
-            hint="Text format that will be applied to all prompts."
-            value={inputs?.dataset_text_format || ""}
-            placeholder="### Instruction:\n {instruction}..."
-            onChange={(e) => handleInputsChange("dataset_text_format", e.target.value)}
-            messageType={errors.dataset_text_format ? "error" : undefined}
-            message={errors.dataset_text_format || undefined}
-          />
-          <TextInput
+            <SegmentedElement value="custom" label="Custom" />
+            <SegmentedElement value="existing" label="Existing" />
+          </SegmentedControl>
+          {controlConfig === "existing" && (
+            <Container fluid>
+              <Select
+                label="Load config"
+                defaultSelectedKey={"custom"}
+                selectedKey={inputs?.dataset_config || "custom"}
+                onSelectionChange={(key) => handleInputsChange("dataset_config", key)}
+                isDisabled={!inputs?.dataset_name}
+              >
+                {configs &&
+                  configs?.map((config) => <SelectOption key={config.config_name}>{config.config_name}</SelectOption>)}
+              </Select>
+              {selectedConfig && Object.entries(selectedConfig).map(([key, value]) => <Text>{`${key}: ${value}`}</Text>)}
+            </Container>
+          )}
+          {controlConfig === "custom" && (
+            <Container fluid>
+              <Select
+                label="Dataset prompts format"
+                defaultSelectedKey={"auto"}
+                selectedKey={inputs?.dataset_format || selectedConfig?.dataset_format || "auto"}
+                onSelectionChange={(key) => handleInputsChange("dataset_format", key)}
+              >
+                <SelectOption key="auto">Auto</SelectOption>
+                <SelectOption key="text">Text</SelectOption>
+                <SelectOption key="conversational">Conversational</SelectOption>
+              </Select>
+              <TextArea
+                style={{ resize: "vertical", maxHeight: "400px" }}
+                className="fr-mt-2w"
+                label="Dataset prompts instruction"
+                hint="Custom instruction that will be applied to all prompts."
+                value={inputs?.dataset_instruction || selectedConfig?.instruction || ""}
+                placeholder="You are a helpful assistant..."
+                onChange={(e) => handleInputsChange("dataset_instruction", e.target.value)}
+                messageType={errors.dataset_instruction ? "error" : undefined}
+                message={errors.dataset_instruction || undefined}
+              />
+              <TextInput
+                className="fr-mt-2w"
+                label="Dataset prompts text format"
+                hint="Text format that will be applied to all prompts."
+                value={inputs?.dataset_text_format || selectedConfig?.text_format || ""}
+                placeholder="### Instruction:\n {instruction}..."
+                onChange={(e) => handleInputsChange("dataset_text_format", e.target.value)}
+                messageType={errors.dataset_text_format ? "error" : undefined}
+                message={errors.dataset_text_format || undefined}
+                disabled={inputs?.dataset_format === "conversational"}
+              />
+              {/* <TextInput
             className="fr-mt-2w"
             label="Dataset prompts chat template"
             hint="Chat template that will be applied to all prompts."
-            value={inputs?.dataset_text_format || ""}
+            value={inputs?.dataset_chat_template || selectedConfig?.chat_template || ""}
             placeholder="{%- for message in messages -%}..."
             onChange={(e) => handleInputsChange("dataset_chat_template", e.target.value)}
             messageType={errors.dataset_chat_template ? "error" : undefined}
             message={errors.dataset_chat_template || undefined}
-          />
-          <Toggle
+          /> */}
+            </Container>
+          )}
+          {/* <Toggle
             label="Link OVH dataset volume"
             checked={inputs?.dataset_volume || false}
             onChange={(e) => handleInputsChange("dataset_volume", e.target.checked)}
-          />
-          <hr />
-          <TextInput
+          /> */}
+        </Accordion>
+        <Accordion title="Experiment options">
+          {/* <TextInput
             className="fr-mt-2w"
-            label="W&B Run Name"
-            hint="Name of the W&B run. Automatically generated if not set."
+            label="Experiment Run Name"
+            hint="Name of the experiment run. Automatically generated if not set."
+            placeholder="llama-causallm-200"
             value={inputs?.wandb_name || ""}
             onChange={(e) => handleInputsChange("wandb_name", e.target.value)}
             messageType={errors.wandb_name ? "error" : undefined}
             message={errors.wandb_name || undefined}
-          />
+          /> */}
           <TextInput
-            label="W&B Project Name"
-            hint="Name of the W&B project. Defaults to 'huggingface' if not set."
+            label="Experiment Project Name"
+            hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
+            placeholder="acknowledgments-entity-extraction"
             value={inputs?.wandb_project || ""}
             onChange={(e) => handleInputsChange("wandb_project", e.target.value)}
             messageType={errors.wandb_project ? "error" : undefined}
             message={errors.wandb_project || undefined}
           />
           <Toggle
-            label="Disable W&B"
+            label="Disable experiment reporting"
             checked={inputs?.wandb_disabled}
             onChange={(e) => handleInputsChange("wandb_disabled", e.target.checked)}
           />
@@ -275,7 +336,6 @@ export default function JobsSubmit() {
             <ModalTitle>Confirm job</ModalTitle>
             <ModalContent>
               <Text>Are you sure you want to submit the following job ?</Text>
-              <Text className="fr-mb-1v fr-text--legend">{`- type: ${jobType}`}</Text>
               {Object.entries(inputs).map(([key, value]) => (
                 <Text className="fr-mb-1v fr-text--legend">{`- ${key}: ${String(value)}`}</Text>
               ))}

@@ -10,6 +10,14 @@ export type Dataset = {
   tags: Array<string>
 }
 
+export type DatasetConfigInfo = {
+  config_name: string
+  dataset_name?: string
+  storage_path: string
+  size?: number
+  last_modified?: string
+}
+
 export type DatasetConfig = {
   name: string
   dataset_name?: string

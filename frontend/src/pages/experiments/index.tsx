@@ -23,8 +23,10 @@ function ExperimentsRuns({ project }: ExperimentsRunsArgs) {
 
 export default function Experiments() {
   const { data: projects, isFetching, error } = useListExperiments()
-  const [selectProjectId, setSelectProjectId] = useState<string>(projects?.[0]?.id || "")
+  const [selectProjectId, setSelectProjectId] = useState<string>("UHJvamVjdDp2MTp1bmNhdGVnb3JpemVkOmRhdGFlc3I=")
+  //TODO remove plain id
 
+  console.log("projects", projects)
   console.log("selectProjectId", selectProjectId)
 
   return (

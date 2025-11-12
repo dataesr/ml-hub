@@ -4,7 +4,7 @@ from huggingface_hub import dataset_info, list_datasets
 from app.ovhai import ovhai_object_download, ovhai_object_list, ovhai_object_upload
 from app.datasets.schemas import DatasetConfig
 from app.logger import get_logger
-from app.utils import json_read, json_write
+from app.utils import json_read, json_write, timestamp
 
 logger = get_logger(__name__)
 
@@ -66,7 +66,7 @@ def list_configs(dataset_name: str = None):
 def create_config(extras: dict):
     config_name = extras.pop("name")
     if not config_name:
-        config_name = str(uuid.uuid4())
+        config_name = timestamp(print_time=False)
     config = DatasetConfig(name=config_name, **extras)
     logger.debug(f"{config_name}: {config=}")
     return config

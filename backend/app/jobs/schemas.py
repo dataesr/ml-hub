@@ -17,21 +17,23 @@ JOB_STATE = Literal[
 ]
 
 JOB_PIPELINE = Literal["causallm", "causallm-unsloth"]
+JOB_DATASET_FORMAT = Literal["auto", "conversational", "text"]
+# JOB_MODE = Literal["train", "push"]
+JOB_MODE = Literal["train"]
 
 
 class JOB_INPUTS(BaseModel):
-    id: str | None = None
-    name: str
-    gpu: int | None = None
     model_name: str
     dataset_name: str
-    dataset_format: Literal["auto", "conversational", "text"] | None = None
+    pipeline: JOB_PIPELINE
+    name: str | None = None
+    gpu: int | None = None
+    dataset_format: JOB_DATASET_FORMAT | None = None
     dataset_instruction: str | None = None
     dataset_text_format: str | None = None
     dataset_chat_template: str | None = None
     dataset_volume: bool | None = False
-    mode: Literal["train", "push"] | None = None
-    pipeline: JOB_PIPELINE | None = None
+    mode: JOB_MODE | None = None
     push_model_dir: str | None = None
     hf_hub: str | None = None
     hf_hub_private: bool | None = False
