@@ -16,6 +16,8 @@ JOB_STATE = Literal[
     "SYNC_FAILED",
 ]
 
+JOB_PIPELINE = Literal["causallm", "causallm-unsloth"]
+
 
 class JOB_INPUTS(BaseModel):
     id: str | None = None
@@ -29,6 +31,7 @@ class JOB_INPUTS(BaseModel):
     dataset_chat_template: str | None = None
     dataset_volume: bool | None = False
     mode: Literal["train", "push"] | None = None
+    pipeline: JOB_PIPELINE | None = None
     push_model_dir: str | None = None
     hf_hub: str | None = None
     hf_hub_private: bool | None = False

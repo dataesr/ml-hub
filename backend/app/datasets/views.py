@@ -26,9 +26,9 @@ def datasets_get(owner: str, name: str):
 
 # TODO: rename configs routes; not really explicit
 @router.get("/configs")
-def datasets_configs_list():
+def datasets_configs_list(dataset_name: str = None):
     try:
-        configs = datasets_svc.list_configs()
+        configs = datasets_svc.list_configs(dataset_name)
         return configs
     except Exception as error:
         raise HTTPException(status_code=404, detail=str(error))
@@ -44,9 +44,9 @@ def datasets_configs_add(config: DatasetConfig):
 
 
 @router.get("/configs/{name}")
-def datasets_configs_get(name: str):
+def datasets_configs_get(name: str, dataset_name: str = None):
     try:
-        config = datasets_svc.get_config(name)
+        config = datasets_svc.get_config(name, dataset_name)
         return config
     except Exception as error:
         raise HTTPException(status_code=404, detail=str(error))

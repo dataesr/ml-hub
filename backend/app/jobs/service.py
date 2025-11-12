@@ -72,6 +72,8 @@ def _get_run_cmd(inputs: JOB_INPUTS):
             raise Exception(f"Error while adding dataset extras {str(error)}")
     if inputs.mode:
         cmd += f" --mode {inputs.mode}"
+    if inputs.pipeline:
+        cmd += f" --pipeline {inputs.pipeline}"
     if inputs.push_model_dir:
         cmd += f" --push_model_dir {inputs.push_model_dir}"
     if inputs.hf_hub:

@@ -25,40 +25,72 @@ def get(owner: str, name: str):
     return dataset.__dict__
 
 
-def list_configs():
-    configs = ovhai_object_list(CONTAINER_DATASETS, FOLDER_EXTRAS)
+def _configs_get_folder(dataset_name: str = None):
+    folder = FOLDER_EXTRAS
+    if dataset_name:
+        folder = os.path.join(FOLDER_EXTRAS, dataset_name)
+    if not folder.endswith("/"):
+        folder += "/"
+    return folder
+
+
+def _config_get_storage_path(config_name: str, dataset_name: str = None):
+    full_name = config_name
+    if dataset_name:
+        full_name = os.path.join(dataset_name, full_name)
+    if not full_name.endswith(".json"):
+        full_name += ".json"
+    storage_path = os.path.join(FOLDER_EXTRAS, full_name)
+    return storage_path
+
+
+def list_configs(dataset_name: str = None):
+    prefix = _configs_get_folder(dataset_name)
+    objects = ovhai_object_list(CONTAINER_DATASETS, prefix)
+    configs = []
+    for obj in objects:
+        key: str = obj.get("key", "")
+        config_name = key.removeprefix(prefix).removesuffix(".json")
+        configs.append(
+            {
+                "dataset_name": dataset_name,
+                "config_name": config_name,
+                "storage_path": key,
+                "size": obj.get("size"),
+                "last_modified": obj.get("last_modified"),
+            }
+        )
     return configs
 
 
 def create_config(extras: dict):
-    config_name = extras.get("name")
+    config_name = extras.pop("name")
     if not config_name:
-        config_name = f"{extras.get('dataset_name')}/{str(uuid.uuid4())}"
+        config_name = str(uuid.uuid4())
     config = DatasetConfig(name=config_name, **extras)
+    logger.debug(f"{config_name}: {config=}")
     return config
 
 
-def get_config(name: str):
-    configs = ovhai_object_list(CONTAINER_DATASETS, FOLDER_EXTRAS)
-    remote_path = os.path.join(FOLDER_EXTRAS, name)
-    if not remote_path.endswith(".json"):
-        remote_path += ".json"
-    keys = [str(config.get("key", "")) for config in configs]
-    if remote_path not in keys:
-        raise FileNotFoundError(f"Config {name} (path={remote_path}) not found on storage")
-    disk_path = ovhai_object_download(remote_path, CONTAINER_DATASETS, FOLDER_TMP, FOLDER_EXTRAS)
-    if not os.path.isfile(disk_path):
-        raise FileNotFoundError(f"Config {name} error while downloading")
-    data = json_read(disk_path, remove=True)
+def get_config(config_name: str, dataset_name: str = None):
+    configs = list_configs(dataset_name)
+    storage_path = _config_get_storage_path(config_name, dataset_name)
+    found_paths = [config.get("storage_path") for config in configs]
+    if storage_path not in found_paths:
+        raise FileNotFoundError(f"Config {config_name} (path={storage_path}) not found on storage")
+    file_path = ovhai_object_download(storage_path, CONTAINER_DATASETS)
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"Config {config_name} error while downloading")
+    data = json_read(file_path, remove=True)
     config = create_config(data)
     return config
 
 
 def add_config(config: DatasetConfig):
-    config_name = config.name
+    storage_path = _config_get_storage_path(config.name, config.dataset_name)
     config_content = config.model_dump(mode="json")
     # logger.debug(f"{config_content=}")
-    path = json_write(path=os.path.join(FOLDER_TMP, config_name), data=config_content)
-    ovhai_object_upload(path, CONTAINER_DATASETS, FOLDER_EXTRAS, FOLDER_TMP)
-    os.remove(path)
-    return config_name
+    file_path = json_write(path=storage_path, data=config_content)
+    ovhai_object_upload(file_path, CONTAINER_DATASETS)
+    os.remove(file_path)
+    return storage_path

@@ -47,6 +47,18 @@ def stop(id: str):
 
 
 ### Generation tasks
+def _get_inference_url(app_id: str = None, inference_url: str = None):
+    if not app_id and not inference_url:
+        raise ValueError(f"Please specify an inference url or app id!")
+    if not inference_url:
+        try:
+            app = get(id)
+            inference_url = app["status"]["url"]
+        except Exception as error:
+            raise ValueError(f"Error while getting url from app {app_id}: {str(error)}")
+    return inference_url
+
+
 def completions_pipeline(
     texts: list,
     id: str = None,
@@ -65,42 +77,39 @@ def completions_pipeline(
     Returns:
         tuple[list, dict]: completions, task_data
     """
-    if not id and not url:
-        raise ValueError(f"Please specify an inference url or app id!")
-    if not url:
-        try:
-            app = get(id)
-            url = app["status"]["url"]
-        except Exception as error:
-            raise ValueError(f"Error while getting url from app {id}: {str(error)}")
+    inference_url = _get_inference_url(app_id=id, inference_url=url)
 
     # Format prompts
     prompts = texts  # TODO
 
     # Submit generation task
-    task_id = completions_submit(prompts, url, prompts_params, sampling_params)
+    task_id = completions_submit(prompts, url=inference_url, prompts_params=prompts_params, sampling_params=sampling_params)
     logger.debug(f"for the {len(texts)} texts, task_id = {task_id}")
 
     # Get generation task completions
-    completions, task_data = completions_get(task_id, url)  # TODO: add timeout?
+    completions, task_data = completions_get(task_id, url=inference_url)  # TODO: add timeout?
     logger.debug(f"got {len(completions)}")
 
     return completions, task_data
 
 
-def completions_submit(prompts: list, inference_url: str, prompts_params: dict = None, sampling_params: dict = None) -> str:
+def completions_submit(
+    prompts: list, id: str = None, url: str = None, prompts_params: dict = None, sampling_params: dict = None
+) -> str:
     """Submit a completion task
 
     Args:
         prompts (list): list of prompts
-        inference_url (str): inference app url
+        id (str): inference app id
+        url (str): inference app url
         prompts_params (dict, optional): prompts additionnal params
         sampling_params (dict, optional): inference sampling params
 
     Returns:
         str: submitted task id
     """
-    submit_url = inference_url
+    submit_url = _get_inference_url(app_id=id, inference_url=url)
+
     body = {"prompts": prompts}
     if prompts_params:
         body["prompts_params"] = prompts_params
@@ -123,17 +132,38 @@ def completions_get_safe(url):
     return response
 
 
-def completions_get(task_id: str, inference_url: str, timeout: int = None) -> tuple:
+def completions_get_all(id: str = None, url: str = None):
+    """Get all tasks from inference app
+
+    Args:
+        id (str): inference app id
+        url (str): inference app url
+
+    Returns:
+        list: list of task_data
+    """
+    inference_url = _get_inference_url(app_id=id, inference_url=url)
+    tasks_url = f"{inference_url}/tasks"
+
+    response = requests.get(tasks_url)
+    response.raise_for_status()
+    data = response.json()
+    return data
+
+
+def completions_get(task_id: str, id: str = None, url: str = None, timeout: int = None) -> tuple:
     """Get results of a completion task
 
     Args:
         task_id (str): task id
-        inference_url (str): inference app url
+        id (str): inference app id
+        url (str): inference app url
         timeout (int, optional): timeout for catching task results
 
     Returns:
         tuple[list, dict]: completions, task_data
     """
+    inference_url = _get_inference_url(app_id=id, inference_url=url)
     completions_url = f"{inference_url}/{task_id}"
     start_time = time.time()
 
