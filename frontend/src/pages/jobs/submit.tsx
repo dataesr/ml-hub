@@ -204,7 +204,10 @@ export default function JobsSubmit() {
             />
           </Container>
         )}
-        <Accordion title="Dataset options" className="fr-mt-5w">
+        <Accordion title="Training options" className="fr-mt-5w">
+          TO BE DEVELOPPED
+        </Accordion>
+        <Accordion title="Dataset options">
           <SegmentedControl
             className="fr-mb-2w"
             name="datasetConfig"
@@ -296,7 +299,7 @@ export default function JobsSubmit() {
             messageType={errors.wandb_name ? "error" : undefined}
             message={errors.wandb_name || undefined}
           /> */}
-          <TextInput
+          {/* <TextInput
             label="Experiment Project Name"
             hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
             placeholder="acknowledgments-entity-extraction"
@@ -304,7 +307,7 @@ export default function JobsSubmit() {
             onChange={(e) => handleInputsChange("wandb_project", e.target.value)}
             messageType={errors.wandb_project ? "error" : undefined}
             message={errors.wandb_project || undefined}
-          />
+          /> */}
           <Toggle
             label="Disable experiment reporting"
             checked={inputs?.wandb_disabled}

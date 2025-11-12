@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Literal
+from typing import Any, Literal
 
 JOB_STATE = Literal[
     "QUEUED",
@@ -40,3 +40,4 @@ class JOB_INPUTS(BaseModel):
     wandb_name: str | None = None
     wandb_project: str | None = None
     wandb_disabled: bool | None = False
+    training_args: dict[str, Any] | None = None

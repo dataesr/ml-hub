@@ -44,6 +44,9 @@ def _get_run_cmd(inputs: JOB_INPUTS):
         envs.append({"name": "WANDB_PROJECT", "value": inputs.wandb_project})
     if inputs.wandb_disabled:
         envs.append({"name": "WANDB_MODE", "value": "disabled"})
+    if inputs.training_args:
+        for key, value in inputs.training_args.items():
+            envs.append({"name": key, "value": str(value)})
     for env in envs:
         cmd += f" --env {env['name']}={env['value']}"
 
