@@ -19,16 +19,16 @@ SECRET_ENVS: list[ENV] = [
 ]
 
 
-def _get_name(model_name: str, pipeline: str):
+def _get_run_name(model_name: str, pipeline: str):
     name = model_name.split("/")[1].split("-")[0]
-    name += pipeline
+    name += f"-{pipeline}"
     return name.lower()
 
 
 def _get_run_cmd(inputs: JOB_INPUTS):
     # Job command
     cmd = "ovhai job run -o json"
-    cmd += f" --name {inputs.name or _get_name(inputs.model_name, inputs.pipeline)}"
+    cmd += f" --name {inputs.name or _get_run_name(inputs.model_name, inputs.pipeline)}"
 
     # GPU
     if inputs.gpu:

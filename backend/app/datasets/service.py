@@ -50,11 +50,13 @@ def list_configs(dataset_name: str = None):
     configs = []
     for obj in objects:
         key: str = obj.get("key", "")
-        config_name = key.removeprefix(prefix).removesuffix(".json")
+        config_file_name = key.removeprefix(prefix).split("/")[-1]
+        config_name = config_file_name.removesuffix(".json")
+        dataset_name = key.removeprefix(prefix).removesuffix(config_file_name).removesuffix("/") or None
         configs.append(
             {
-                "dataset_name": dataset_name,
                 "config_name": config_name,
+                "dataset_name": dataset_name,
                 "storage_path": key,
                 "size": obj.get("size"),
                 "last_modified": obj.get("last_modified"),

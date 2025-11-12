@@ -48,7 +48,7 @@ export default function JobsSubmit() {
   const { data: selectedConfig } = useGetDatasetConfig(inputs?.dataset_config, inputs?.dataset_name)
 
   const navigate = useNavigate()
-  const required = inputs.name && inputs.model_name && inputs.dataset_name && ((pushToHF && inputs?.hf_hub) || !pushToHF)
+  const required = inputs.model_name && inputs.dataset_name && ((pushToHF && inputs?.hf_hub) || !pushToHF)
 
   const resetInputs = () => {
     setPushToHF(false)
@@ -116,8 +116,8 @@ export default function JobsSubmit() {
     return () => Object.values(debouncedTimersRef).forEach((t) => t && clearTimeout(t))
   }, [])
 
-  console.log("input", inputs)
-  console.log("errors", errors)
+  // console.log("input", inputs)
+  // console.log("errors", errors)
 
   return (
     <Container className="fr-my-3w">
