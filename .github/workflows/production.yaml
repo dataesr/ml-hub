@@ -19,24 +19,14 @@ jobs:
       - name: 🏁 Checkout
         uses: actions/checkout@v4
 
-      - name: 🏷️ Get tag
-        id: tag
-        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
       - name: 🔑 Login ghcr.io
         run: docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🐋 Build Docker image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository }}
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          docker build -t $IMAGE_ID:${{ steps.tag.outputs.tag }} -t $IMAGE_ID:latest .
+      - name: 🐋 Build docker image
+        run: make docker-build
 
-      - name: 📦 Push Docker image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository }}
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          docker push -a $IMAGE_ID
+      - name: 📦 Push docker image
+        run: make docker-push
 
   release:
     name: 📦 Create new Github release
