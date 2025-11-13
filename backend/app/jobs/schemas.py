@@ -28,6 +28,7 @@ class JOB_INPUTS(BaseModel):
     pipeline: JOB_PIPELINE
     name: str | None = None
     gpu: int | None = None
+    dataset_config: str | None = None
     dataset_format: JOB_DATASET_FORMAT | None = None
     dataset_instruction: str | None = None
     dataset_text_format: str | None = None

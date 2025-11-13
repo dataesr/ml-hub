@@ -68,14 +68,18 @@ def _get_run_cmd(inputs: JOB_INPUTS):
     cmd += f" {DOCKER} -- {DOCKER_CMD}"
     cmd += f" --model_name {inputs.model_name}"
     cmd += f" --dataset_name {inputs.dataset_name}"
-    if inputs.dataset_format:
+    if inputs.dataset_config:
+        cmd += f" --dataset_config {inputs.dataset_config}"
+    if not dataset_extras and inputs.dataset_format:
         cmd += f" --dataset_format {inputs.dataset_format}"
     if dataset_extras:
         dataset_extras["dataset_name"] = inputs.dataset_name
+        if inputs.dataset_format:
+            dataset_extras["dataset_format"] = inputs.dataset_format
         try:
-            dataset_extras_name = add_config(create_config(dataset_extras))
-            if dataset_extras_name:
-                cmd += f" --dataset_extras_name {dataset_extras_name}"
+            dataset_config = add_config(create_config(dataset_extras))
+            if dataset_config:
+                cmd += f" --dataset_config {dataset_config}"
         except Exception as error:
             logger.debug(f"dataset extras = {dataset_extras}")
             raise Exception(f"Error while adding dataset extras {str(error)}")
