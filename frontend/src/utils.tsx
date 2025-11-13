@@ -12,8 +12,9 @@ export const formatDate = (date: Date | string): string => {
 }
 
 export const formatDuration = (duration: number): string => {
-  const d = new Date(duration * 1000)
-  return d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", second: "2-digit" })
+  const d = new Date(0)
+  d.setSeconds(duration) // specify value for SECONDS here
+  return d.toISOString().substring(11, 19)
 }
 
 export const scrollToTop = () => {
