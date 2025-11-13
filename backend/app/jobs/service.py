@@ -61,7 +61,7 @@ def _get_run_cmd(inputs: JOB_INPUTS):
 
     # Volumes
     cmd += f" --volume {VOLUME_JOBS}"
-    if inputs.dataset_volume or dataset_extras:
+    if inputs.dataset_volume or inputs.dataset_config or dataset_extras:
         cmd += f" --volume {VOLUME_DATASETS}"
 
     # Docker args
