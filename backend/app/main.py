@@ -8,20 +8,33 @@ from app.models.views import router as models_router
 from app.jobs.views import router as jobs_router
 from app.inference.views import router as inference_router
 from app.experiments.views import router as experiments_router
+from app.logger import get_logger
 
-app = FastAPI(title="ML HUB API")
+logger = get_logger(__name__)
 
-# Allow your React app to call the API
-dev_origins = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost", "http://127.0.0.1"]
-allow_origins = os.getenv("CORS_ORIGINS") or dev_origins
+app = FastAPI(title="ML HUB API", redirect_slashes=True)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allow_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS in dev mode only
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+if ENVIRONMENT == "development":
+    dev_origins = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost",
+        "http://127.0.0.1",
+    ]
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=dev_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    logger.info("CORS enabled for development")
+else:
+    logger.info("CORS disabled for production")
+
 
 # Backend api routes at /api
 api_router = APIRouter(prefix="/api")

@@ -30,7 +30,7 @@ export async function listJobs(state: string): Promise<Job[]> {
 }
 
 export async function createJob(job: JobInputs): Promise<Job> {
-  const data = await api.post(`${API_JOBS_URL}`, job)
+  const data = await api.post(API_JOBS_URL, job)
   return buildJob(data)
 }
 

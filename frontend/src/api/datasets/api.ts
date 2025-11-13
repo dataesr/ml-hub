@@ -5,7 +5,7 @@ const API_DATASETS_URL = "/datasets"
 const API_DATASETS_CONFIGS = "/configs"
 
 export async function listDatasets(owner?: string): Promise<Dataset[]> {
-  return api.get(`${API_DATASETS_URL}/${owner || ""}`)
+  return api.get(owner ? `${API_DATASETS_URL}/${owner}` : API_DATASETS_URL)
 }
 
 export async function getDataset(name: string): Promise<Dataset> {
@@ -21,5 +21,5 @@ export async function getDatasetConfig(name: string, dataset_name: string): Prom
 }
 
 export async function addDatasetConfig(config: DatasetConfig): Promise<any> {
-  return api.post(API_DATASETS_CONFIGS, config)
+  return api.post(`${API_DATASETS_CONFIGS}/`, config)
 }
