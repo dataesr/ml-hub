@@ -9,6 +9,7 @@ import JobsSubmit from "./pages/jobs/submit"
 import InferenceApps from "./pages/inference"
 import Explore from "./pages/explore"
 import Evaluate from "./pages/evaluate"
+import EvaluateSubmit from "./pages/evaluate/submit"
 
 export default function Router() {
   return (
@@ -23,6 +24,7 @@ export default function Router() {
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/jobs/submit" element={<JobsSubmit />} />
         <Route path="/evaluate" element={<Evaluate />} />
+        <Route path="/evaluate/submit" element={<EvaluateSubmit />} />
         <Route path="/inference" element={<InferenceApps />} />
         {/* <Route path="/experiments" element={<Experiments />} /> */}
       </Route>

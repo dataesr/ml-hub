@@ -1,6 +1,10 @@
-import { Breadcrumb, Container, Link, Text } from "@dataesr/dsfr-plus"
+import { Breadcrumb, Button, ButtonGroup, Container, Link, Text } from "@dataesr/dsfr-plus"
+import { useNavigate } from "react-router-dom"
 
 export default function Evaluate() {
+  // const { data, isFetching, error } = useSomething()
+  const navigate = useNavigate()
+
   return (
     <Container fluid>
       <Container fluid className="bg-evaluate fr-pb-0">
@@ -12,6 +16,19 @@ export default function Evaluate() {
           <Text size="lead" className="fr-mb-1w">
             Evaluate and compare models
           </Text>
+          <ButtonGroup isInlineFrom="xs">
+            <Button icon="refresh-line" variant="tertiary" onClick={() => null}>
+              Refresh
+            </Button>
+            <Button
+              icon="arrow-right-line"
+              iconPosition="right"
+              onClick={() => navigate("/evaluate/submit")}
+              disabled={false}
+            >
+              Submit a new evaluation
+            </Button>
+          </ButtonGroup>
         </Container>
       </Container>
       <Container className="fr-my-2w">in progress ....</Container>

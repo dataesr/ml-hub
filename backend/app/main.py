@@ -8,6 +8,7 @@ from app.models.views import router as models_router
 from app.jobs.views import router as jobs_router
 from app.inference.views import router as inference_router
 from app.experiments.views import router as experiments_router
+from app.evaluate.views import router as evaluate_router
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -43,6 +44,7 @@ api_router.include_router(models_router)
 api_router.include_router(jobs_router)
 api_router.include_router(inference_router)
 api_router.include_router(experiments_router)
+api_router.include_router(evaluate_router)
 app.include_router(api_router)
 
 
