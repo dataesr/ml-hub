@@ -1,4 +1,4 @@
-import { Container, Select, SelectOption, Title } from "@dataesr/dsfr-plus"
+import { Container, Select, SelectOption } from "@dataesr/dsfr-plus"
 import ErrorCallOut from "../../components/error-call-out"
 import LoadingSpinner from "../../components/loading-spinner"
 import { useState } from "react"
@@ -30,10 +30,7 @@ export default function Experiments() {
   console.log("selectProjectId", selectProjectId)
 
   return (
-    <Container className="fr-my-5w">
-      <Title as="h2" className="fr-mb-4w">
-        W&B Experiments
-      </Title>
+    <Container className="fr-my-2w">
       {error && <ErrorCallOut error={error} />}
       {isFetching && <LoadingSpinner position="left" />}
       {!isFetching && projects && (

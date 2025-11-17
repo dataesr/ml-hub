@@ -1,4 +1,4 @@
-import { Container, Title } from "@dataesr/dsfr-plus"
+import { Container } from "@dataesr/dsfr-plus"
 import { dateStringToNumber } from "../../utils"
 import ErrorCallOut from "../../components/error-call-out"
 import LoadingSpinner from "../../components/loading-spinner"
@@ -24,10 +24,7 @@ export default function Datasets() {
   const { data: datasets, isFetching, error } = useListDatasets()
 
   return (
-    <Container className="fr-my-5w">
-      <Title as="h2" className="fr-mb-4w">
-        HuggingFace Datasets
-      </Title>
+    <Container className="fr-my-2w">
       {error && <ErrorCallOut error={error} />}
       {isFetching && <LoadingSpinner position="left" />}
       {!isFetching && datasets && <DatasetsList datasets={datasets} />}

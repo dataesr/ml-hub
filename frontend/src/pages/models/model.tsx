@@ -16,7 +16,7 @@ export default function Model() {
 
   return (
     <Container className="fr-my-3w">
-      <Button size="sm" variant="tertiary" icon="arrow-left-line" onClick={() => navigate("/models")}>
+      <Button size="sm" variant="tertiary" icon="arrow-left-line" onClick={() => navigate("/explore?t=models")}>
         Back to models
       </Button>
       <Title as="h3" className="fr-mb-2w fr-mt-5w">

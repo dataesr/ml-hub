@@ -4,7 +4,7 @@ import { Card } from "@codegouvfr/react-dsfr/Card"
 export default function Home() {
   return (
     <Container className="fr-my-5w">
-      <Title as="h2" className="fr-mb-4w">
+      <Title as="h2" className="fr-mb-10w">
         Home
       </Title>
       <Row gutters>

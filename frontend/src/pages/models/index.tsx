@@ -1,4 +1,4 @@
-import { Container, Title } from "@dataesr/dsfr-plus"
+import { Container } from "@dataesr/dsfr-plus"
 import ModelCard from "./components/model-card"
 import { dateStringToNumber } from "../../utils"
 import ErrorCallOut from "../../components/error-call-out"
@@ -24,10 +24,7 @@ export default function Models() {
   const { data: models, isFetching, error } = useListModels()
 
   return (
-    <Container className="fr-my-5w">
-      <Title as="h2" className="fr-mb-4w">
-        HuggingFace Models
-      </Title>
+    <Container className="fr-my-2w">
       {error && <ErrorCallOut error={error} />}
       {isFetching && <LoadingSpinner position="left" />}
       {!isFetching && models && <ModelsList models={models} />}

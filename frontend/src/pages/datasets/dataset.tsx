@@ -14,7 +14,7 @@ export default function Dataset() {
 
   return (
     <Container className="fr-my-3w">
-      <Button size="sm" variant="tertiary" icon="arrow-left-line" onClick={() => navigate("/datasets")}>
+      <Button size="sm" variant="tertiary" icon="arrow-left-line" onClick={() => navigate("/explore?t=datasets")}>
         Back to datasets
       </Button>
       <Title as="h3" className="fr-mb-2w fr-mt-5w">

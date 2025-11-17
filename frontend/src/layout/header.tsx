@@ -6,13 +6,16 @@ import {
   Button,
   Nav,
   Link,
+  NavItem,
   // NavItem,
 } from "@dataesr/dsfr-plus"
 import SwitchTheme from "./switch-theme"
 import { useState } from "react"
+import { useLocation } from "react-router-dom"
 
 export default function Header() {
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
+  const { pathname } = useLocation()
 
   const openThemeModal = () => {
     setIsThemeModalOpen(true)
@@ -25,7 +28,7 @@ export default function Header() {
   return (
     <HeaderWrapper>
       <Logo splitCharacter="|" text="Ministère|de l'enseignement|supérieur|et de la recherche" />
-      <Service name="ML-HUB" tagline="ML & AI models" />
+      <Service name="ML-HUB" tagline="DataESR ML & AI playground" />
       <FastAccess>
         <Button>
           <button
@@ -39,16 +42,24 @@ export default function Header() {
         </Button>
       </FastAccess>
       <Nav>
-        <Link href="/">Home</Link>
-        <Link href="/models">Models</Link>
-        <Link href="/datasets">Datasets</Link>
-        <Link href="/jobs">Jobs</Link>
-        <Link href="/experiments">Experiments</Link>
-        <Link href="/">Evaluate</Link>
-        <Link href="/inference">Inference</Link>
-        {/* <NavItem title={"DoadiNavItem"}>
-          <Link href="/">DoadiNavItem</Link>
-        </NavItem> */}
+        <Link href="/" current={pathname === "/"}>
+          Home
+        </Link>
+        <NavItem title="Explore" current={pathname.split("/").includes("explore")}>
+          <Link href="/explore?t=models">Models</Link>
+          <Link href="/explore?t=datasets">Datasets</Link>
+          <Link href="/explore?t=experiments">Experiments</Link>
+        </NavItem>
+        <NavItem title="Train" current={pathname.split("/").includes("jobs")}>
+          <Link href="/jobs">Jobs</Link>
+          <Link href="/jobs/submit">New</Link>
+        </NavItem>
+        <Link href="/evaluate" current={pathname.split("/").includes("evaluate")}>
+          Evaluate
+        </Link>
+        <Link href="/inference" current={pathname.split("/").includes("inference")}>
+          Inference
+        </Link>
         <SwitchTheme isOpen={isThemeModalOpen} onClose={closeThemeModal} />
       </Nav>
     </HeaderWrapper>

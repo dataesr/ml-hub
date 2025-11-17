@@ -7,7 +7,7 @@ export default function Layout() {
   return (
     <>
       <Header />
-      <Container>
+      <Container as="main" role="main" fluid>
         <Outlet />
       </Container>
       <MainFooter />

@@ -124,7 +124,7 @@ export default function JobsSubmit() {
       <Button size="sm" variant="tertiary" icon="arrow-left-line" onClick={() => navigate("/jobs")}>
         Back to jobs
       </Button>
-      <Title as="h2" className="fr-mb-4w fr-mt-5w">
+      <Title as="h3" className="fr-mb-4w fr-mt-5w">
         New Training Job
       </Title>
       <Container fluid style={{ maxWidth: "600px" }}>
