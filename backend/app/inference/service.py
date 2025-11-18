@@ -1,11 +1,12 @@
 import requests
 import time
 import os
+import pandas as pd
 from retry import retry
 from app.ovhai import cmd_run
 from app.inference.schemas import APP_STATE, APP_STATE_STOP, APP_STATE_START, APP_STATE_ERROR, COMPLETIONS_TASK_STATE
 from app.logger import get_logger
-from app.utils import env_exist, json_write
+from app.utils import env_exist, json_write, data_to_pandas
 from app.ovhai import ovhai_object_upload
 
 logger = get_logger(__name__)
@@ -242,12 +243,34 @@ def completions_get(task_id: str, id: str = None, url: str = None, timeout: int 
         return completions, data
 
 
+def _completions_get_prompts(inputs: dict | list | pd.DataFrame, inputs_col: str):
+    if isinstance(inputs, list):
+        return inputs
+    df = data_to_pandas(inputs)
+    if len(df.columns) == 1:
+        prompts = df[df.columns[0]].to_list()
+    elif not inputs_col in df.columns:
+        logger.warning(f"No column 'input' in inputs data, taking first column (column={df.columns[0]})")
+        prompts = df[df.columns[0]].to_list()
+    else:
+        prompts = df[inputs_col].to_list()
+    return prompts
+
+
+def _completions_write(data: dict | list, write_path: str):
+    file_path = json_write(path=write_path, data=data)
+    ovhai_object_upload(file_path, CONTAINER_COMPLETIONS)
+    os.remove(file_path)
+
+
 def completions_pipeline(
     id: str,
     model_name: str,
-    texts: list,
+    inputs: dict | pd.DataFrame | list,
+    inputs_col: str = "input",
     prompts_params: dict = None,
     sampling_params: dict = None,
+    write_results: bool = False,
 ) -> tuple:
     """Pipeline for generation of completions
 
@@ -265,20 +288,19 @@ def completions_pipeline(
     start_model(id=id, model_name=model_name, wait_running=True)
 
     # Format prompts
-    prompts = texts  # TODO
+    prompts = _completions_get_prompts(inputs, inputs_col=inputs_col)
 
     # Submit generation task
     task_id = completions_submit(prompts, id=id, prompts_params=prompts_params, sampling_params=sampling_params)
-    logger.debug(f"Task id {task_id} submitted: {len(texts)} texts")
+    logger.debug(f"Task id {task_id} submitted: {len(prompts)} texts")
 
     # Get generation task completions
     completions, task_data = completions_get(task_id, id=id)  # TODO: add timeout?
     logger.debug(f"Task id {task_id} results: {len(completions)} completions")
 
+    # Write on disk if needed
+    if write_results:
+        data = {"completions": completions, "task_data": task_data}
+        _completions_write(data, write_path=f"{model_name}/{task_id}")
+
     return completions, task_data
-
-
-def completions_write(data: dict | list, write_path: str):
-    file_path = json_write(path=write_path, data=data)
-    ovhai_object_upload(file_path, CONTAINER_COMPLETIONS)
-    os.remove(file_path)

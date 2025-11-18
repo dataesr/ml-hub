@@ -27,7 +27,15 @@ def get(owner: str, name: str):
 
 
 def load(dataset_name: str, split: str = None, as_pandas: bool = False) -> Dataset | pd.DataFrame:
-    dataset = load_dataset(dataset_name, split=split)
+    try:
+        logger.debug(f"Trying to load {dataset_name} from Hugging Face...")
+        dataset = load_dataset(dataset_name, split=split)
+    except:
+        logger.debug(f"Trying to load from storage...")
+        file_path = json_read(dataset_name)
+        dataset = load_dataset("json", data_files={"file": [file_path]}, split="file")
+        os.remove(file_path)
+
     if dataset:
         logger.debug(f"✅ Dataset {dataset_name} loaded!")
         logger.debug(f"Dataset schema: {dataset.features}")

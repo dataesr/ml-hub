@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import pandas as pd
 from typing import Any
 from app.types import ENV
 from app.logger import get_logger
@@ -51,3 +52,16 @@ def timestamp(print_time: bool = True) -> str:
     if not print_time:
         return time.strftime("%Y%m%d")
     return time.strftime("%Y%m%d-%H%M%S")
+
+
+def data_to_pandas(data: Any) -> pd.DataFrame:
+    if isinstance(data, pd.DataFrame):
+        return data
+
+    if isinstance(data, dict):
+        try:
+            return pd.DataFrame.from_dict(data, orient="index")
+        except Exception as error:
+            raise TypeError(f"Couldnt conver list to pandas (details={str(error)})")
+
+    raise TypeError(f"Couldnt convert type {type(data)} to pandas")

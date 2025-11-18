@@ -52,11 +52,11 @@ def pipeline(inference_id: str, task_id: str, inputs: EVALUATE_INPUTS) -> tuple:
     # Stop inference app
     inference_svc.stop(inference_id)
 
-    # Write results
-    res_path = os.path.join(inputs.model_name, time.strftime("%Y%m%d_%H%M"))
-    inference_svc.completions_write(data=dataset.to_json(orient="records"))
+    # Write results #TODO: put in inference svc
+    write_path = os.path.join(inputs.model_name, time.strftime("%Y%m%d_%H%M"))
+    inference_svc._completions_write(dataset.to_json(orient="records"), write_path)
 
-    logger.info(f"✅ Evaluation completed and saved on {res_path}")
+    logger.info(f"✅ Evaluation completed and saved on {write_path}")
 
 
 async def worker():
