@@ -2,20 +2,10 @@ from typing import Any, Literal
 
 from pydantic import BaseModel
 
-APP_STATE = Literal[
-    "QUEUED",
-    "PENDING",
-    "INITIALIZING",
-    "FINALIZING",
-    "RUNNING",
-    "TIMEOUT",
-    "FAILED",
-    "ERROR",
-    "DONE",
-    "INTERRUPTED",
-    "INTERRUPTING",
-    "SYNC_FAILED",
-]
+APP_STATE = Literal["QUEUED", "PENDING", "INITIALIZING", "SCALING", "RUNNING", "STOPPING", "STOPPED", "FAILED", "ERROR"]
+APP_STATE_STOP = ["STOPPING", "STOPPED", "FAILED", "ERROR"]
+APP_STATE_START = ["QUEUED", "PENDING", "INITALIZING", "SCALING", "RUNNING"]
+APP_STATE_ERROR = ["FAILED", "ERROR"]
 
 COMPLETIONS_TASK_STATE = Literal["error", "queued", "running", "done"]
 COMPLETIONS_PROMPTS_PARAMS = dict[str, Any]

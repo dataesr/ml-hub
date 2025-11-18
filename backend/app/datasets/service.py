@@ -1,5 +1,6 @@
 import os
-import uuid
+import pandas as pd
+from datasets import load_dataset, Dataset
 from huggingface_hub import dataset_info, list_datasets
 from app.ovhai import ovhai_object_download, ovhai_object_list, ovhai_object_upload
 from app.datasets.schemas import DatasetConfig
@@ -13,7 +14,7 @@ FOLDER_EXTRAS = "extras/"
 FOLDER_TMP = "tmp/"
 OWNER = "dataesr"
 
-
+## Huggingface
 def get_all(owner: str, limit: int = 100):
     datasets = list_datasets(author=owner, limit=limit)
     datasets = [dataset.__dict__ for dataset in datasets]
@@ -25,6 +26,23 @@ def get(owner: str, name: str):
     return dataset.__dict__
 
 
+def load(dataset_name: str, split: str = None, as_pandas: bool = False) -> Dataset | pd.DataFrame:
+    dataset = load_dataset(dataset_name, split=split)
+    if dataset:
+        logger.debug(f"✅ Dataset {dataset_name} loaded!")
+        logger.debug(f"Dataset schema: {dataset.features}")
+        logger.debug(f"Dataset size: {len(dataset)}")
+        logger.debug(f"Dataset sample: {dataset[0]}")
+    else:
+        logger.error(f"Error while loading {dataset_name}")
+        raise Exception(f"Error while loading {dataset_name}")
+
+    if as_pandas:
+        return dataset.to_pandas()
+    return dataset
+
+
+## Custom configs
 def _configs_get_folder(dataset_name: str = None):
     folder = FOLDER_EXTRAS
     if dataset_name:

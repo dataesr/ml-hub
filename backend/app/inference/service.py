@@ -1,13 +1,16 @@
 import requests
 import time
+import os
 from retry import retry
 from app.ovhai import cmd_run
-from app.inference.schemas import APP_STATE, COMPLETIONS_TASK_STATE
+from app.inference.schemas import APP_STATE, APP_STATE_STOP, APP_STATE_START, APP_STATE_ERROR, COMPLETIONS_TASK_STATE
 from app.logger import get_logger
-from app.utils import env_exist
+from app.utils import env_exist, json_write
+from app.ovhai import ovhai_object_upload
 
 logger = get_logger(__name__)
 
+CONTAINER_COMPLETIONS = "llm-completions"
 
 ### Inferences apps
 def get_all(state: APP_STATE = None):
@@ -23,17 +26,63 @@ def get(id: str):
     return data
 
 
+def has_env(id: str, env_name: str, env_value: str):
+    app = get(id)
+    if env_exist(app["spec"]["envVars"], env_name=env_name, env_value=env_value):
+        return True
+    return False
+
+
 def update_env(id: str, env_name: str, env_value: str):
-    data = get(id)
-    if not env_exist(data["spec"]["envVars"], env_name=env_name, env_value=env_value):
+    if not has_env(id, env_name=env_name, env_value=env_value):
         cmd = f"ovhai app update {id} --env {env_name}={env_value} -o json"
-        updated_data = cmd_run(cmd, capture_json=True)
+        updated_app = cmd_run(cmd, capture_json=True)
 
         # check modification is ok
-        if not env_exist(updated_data["spec"]["envVars"], env_name=env_name, env_value=env_value):
+        if not env_exist(updated_app["spec"]["envVars"], env_name=env_name, env_value=env_value):
             raise Exception(f"Error while updating app environment {env_name}")
 
     logger.info(f"Successfully updated app environment {env_name}")
+
+
+def get_state(id: str):
+    app = get(id)
+    state = app["status"]["state"]
+    return state
+
+
+def get_url(id: str):
+    app = get(id)
+    url = app["status"]["url"]
+    return url
+
+
+def is_stopped(id: str):
+    state = get_state(id)
+    if state in APP_STATE_STOP:
+        return True
+    return False
+
+
+def is_started(id: str):
+    state = get_state(id)
+    if state in APP_STATE_START:
+        return True
+    return False
+
+
+def is_running(id: str):
+    state = get_state(id)
+    if state == "RUNNING":
+        return True
+    return False
+
+
+def is_error(id: str):
+    state = get_state(id)
+    if state in APP_STATE_ERROR:
+        return True
+    return False
 
 
 def start(id: str):
@@ -46,51 +95,59 @@ def stop(id: str):
     cmd_run(cmd)
 
 
-### Generation tasks
-def _get_inference_url(app_id: str = None, inference_url: str = None):
-    if not app_id and not inference_url:
+def start_model(id: str, model_name: str, wait_running: bool = False, wait_timeout: int = 60 * 15):
+    if has_env(id, env_name="model_name", env_value=model_name):
+        if is_started(id):
+            logger.debug(f"App {id} already started...")
+        else:
+            start(id)
+    else:
+        if is_started(id):
+            stop(id)
+            time.sleep(5)
+        update_env(id, env_name="model_name", env_value=model_name)
+        start(id)
+
+    if wait_running:
+        start_time = time.time()
+        while True:
+            if is_running(id):
+                return
+            elif is_error(id):
+                raise RuntimeError(f"App {id} starting failed")
+            else:
+                logger.debug(f"App {id} starting.....")
+                time.sleep(30)
+
+            current_time = time.time()
+            if (current_time - start_time) > wait_timeout:
+                raise RuntimeError(f"App {id} starting took too long ({current_time})")
+
+
+### Completions tasks
+def _completions_get_url(id: str = None, url: str = None):
+    if not id and not url:
         raise ValueError(f"Please specify an inference url or app id!")
-    if not inference_url:
+    if not url:
         try:
-            app = get(id)
-            inference_url = app["status"]["url"]
+            url = get_url(id)
         except Exception as error:
-            raise ValueError(f"Error while getting url from app {app_id}: {str(error)}")
-    return inference_url
+            raise ValueError(f"Error while getting url from app {id}: {str(error)}")
+    return f"{url}/generate"
 
 
-def completions_pipeline(
-    texts: list,
-    id: str = None,
-    url: str = None,
-    prompts_params: dict = None,
-    sampling_params: dict = None,
-) -> tuple:
-    """Pipeline for generation of completions
-
-    Args:
-        texts (list): list of texts
-        inference_url (str): inference app url
-        prompts_params (dict, optional): prompts params (instruction, chat_template, text_format..)
-        sampling_params (dict, optional): inference sampling params
-
-    Returns:
-        tuple[list, dict]: completions, task_data
-    """
-    inference_url = _get_inference_url(app_id=id, inference_url=url)
-
-    # Format prompts
-    prompts = texts  # TODO
-
-    # Submit generation task
-    task_id = completions_submit(prompts, url=inference_url, prompts_params=prompts_params, sampling_params=sampling_params)
-    logger.debug(f"for the {len(texts)} texts, task_id = {task_id}")
-
-    # Get generation task completions
-    completions, task_data = completions_get(task_id, url=inference_url)  # TODO: add timeout?
-    logger.debug(f"got {len(completions)}")
-
-    return completions, task_data
+@retry(delay=5, tries=3)
+def _completions_safe_request(url, post_method: bool = False, post_json: dict = None, return_json: bool = True):
+    if post_method:
+        response = requests.post(url, json=post_json)
+    else:
+        response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f"Error while getting completion task (details={response.text})")
+    if return_json:
+        data = response.json()
+        return data
+    return response
 
 
 def completions_submit(
@@ -108,7 +165,7 @@ def completions_submit(
     Returns:
         str: submitted task id
     """
-    submit_url = _get_inference_url(app_id=id, inference_url=url)
+    submit_url = _completions_get_url(id=id, url=url)
 
     body = {"prompts": prompts}
     if prompts_params:
@@ -116,20 +173,11 @@ def completions_submit(
     if sampling_params:
         body["sampling_params"] = sampling_params
 
-    response = requests.post(submit_url, json=body)
-    response.raise_for_status()
-    data = response.json()
+    data = _completions_safe_request(submit_url, post_method=True, post_json=body)
     task_id = data.get("task_id")
     task_status = data.get("status")
-    logger.debug(f"Generate task {task_id} created (state={task_status})")
+    logger.debug(f"Completions task {task_id} created (state={task_status})")
     return task_id
-
-
-@retry(delay=5, tries=3)
-def completions_get_safe(url):
-    response = requests.get(url)
-    response.raise_for_status()
-    return response
 
 
 def completions_get_all(id: str = None, url: str = None):
@@ -142,16 +190,14 @@ def completions_get_all(id: str = None, url: str = None):
     Returns:
         list: list of task_data
     """
-    inference_url = _get_inference_url(app_id=id, inference_url=url)
-    tasks_url = f"{inference_url}/tasks"
+    completions_url = _completions_get_url(id=id, url=url)
+    tasks_url = f"{completions_url}/tasks"
 
-    response = requests.get(tasks_url)
-    response.raise_for_status()
-    data = response.json()
+    data = _completions_safe_request(url=tasks_url)
     return data
 
 
-def completions_get(task_id: str, id: str = None, url: str = None, timeout: int = None) -> tuple:
+def completions_get(task_id: str, id: str = None, url: str = None, timeout: int = 60 * 15) -> tuple:
     """Get results of a completion task
 
     Args:
@@ -163,13 +209,12 @@ def completions_get(task_id: str, id: str = None, url: str = None, timeout: int 
     Returns:
         tuple[list, dict]: completions, task_data
     """
-    inference_url = _get_inference_url(app_id=id, inference_url=url)
-    completions_url = f"{inference_url}/{task_id}"
+    completions_url = _completions_get_url(app_id=id, inference_url=url)
+    task_url = f"{completions_url}/{task_id}"
     start_time = time.time()
 
     while True:
-        response = completions_get_safe(completions_url)
-        data = response.json()
+        data = _completions_safe_request(task_url)
         task_time = int(time.time() - start_time)
 
         task_status: COMPLETIONS_TASK_STATE | None = data.get("status")
@@ -195,3 +240,45 @@ def completions_get(task_id: str, id: str = None, url: str = None, timeout: int 
             logger.error(f"Generate task {task_id} error: invalid completions format ({type(completions)})")
             raise ValueError(f"Generate task {task_id} error: invalid completions format ({type(completions)})")
         return completions, data
+
+
+def completions_pipeline(
+    id: str,
+    model_name: str,
+    texts: list,
+    prompts_params: dict = None,
+    sampling_params: dict = None,
+) -> tuple:
+    """Pipeline for generation of completions
+
+    Args:
+        id (str): inference app id
+        model_name (str): model name
+        texts (list): list of texts
+        prompts_params (dict, optional): prompts params (instruction, chat_template, text_format..)
+        sampling_params (dict, optional): inference sampling params
+
+    Returns:
+        tuple[list, dict]: completions, task_data
+    """
+    # Start inference app
+    start_model(id=id, model_name=model_name, wait_running=True)
+
+    # Format prompts
+    prompts = texts  # TODO
+
+    # Submit generation task
+    task_id = completions_submit(prompts, id=id, prompts_params=prompts_params, sampling_params=sampling_params)
+    logger.debug(f"Task id {task_id} submitted: {len(texts)} texts")
+
+    # Get generation task completions
+    completions, task_data = completions_get(task_id, id=id)  # TODO: add timeout?
+    logger.debug(f"Task id {task_id} results: {len(completions)} completions")
+
+    return completions, task_data
+
+
+def completions_write(data: dict | list, write_path: str):
+    file_path = json_write(path=write_path, data=data)
+    ovhai_object_upload(file_path, CONTAINER_COMPLETIONS)
+    os.remove(file_path)
