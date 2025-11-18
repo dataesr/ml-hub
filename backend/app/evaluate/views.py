@@ -13,26 +13,17 @@ async def evaluate_startup():
 
 @router.post("/evaluate")
 async def start_test(inputs: EVALUATE_INPUTS):
-    try:
-        task_data = await evaluate_svc.add_task(inputs)
-        return task_data.model_dump()
-    except Exception as error:
-        raise HTTPException(status_code=400, detail=str(error))
+    task_data = await evaluate_svc.add_task(inputs)
+    return task_data.model_dump()
 
 
 @router.get("/evaluate")
 async def evaluate_list():
-    try:
-        tasks = await evaluate_tasks.dict()
-        return tasks
-    except Exception as error:
-        raise HTTPException(status_code=400, detail=str(error))
+    tasks = await evaluate_tasks.dict()
+    return tasks
 
 
 @router.get("/evaluate/{task_id}")
 async def evaluate_get(task_id: str):
-    try:
-        task = await evaluate_tasks.get(task_id)
-        return task.model_dump()
-    except Exception as error:
-        raise HTTPException(status_code=404, detail=str(error))
+    task = await evaluate_tasks.get(task_id)
+    return task.model_dump()

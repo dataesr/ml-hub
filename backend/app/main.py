@@ -1,7 +1,8 @@
 import os
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from app.ovhai import ovhai_initialize
 from app.datasets.views import router as datasets_router
 from app.models.views import router as models_router
@@ -35,6 +36,16 @@ if ENVIRONMENT == "development":
     logger.info("CORS enabled for development")
 else:
     logger.info("CORS disabled for production")
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc: HTTPException):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 # Backend api routes at /api
