@@ -5,6 +5,7 @@ import asyncio
 import json
 from pydantic import BaseModel
 from typing import Any, Literal, Dict
+from app.types import DICT_PARAMS
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -93,9 +94,5 @@ class EVALUATE_INPUTS(BaseModel):
     dataset_name: str
     dataset_split: str | None = None
     dataset_config: str | None = None
-    dataset_format: EVALUATE_DATASET_FORMAT | None = None
-    dataset_instruction: str | None = None
-    dataset_text_format: str | None = None
-    dataset_chat_template: str | None = None
-    dataset_volume: bool | None = False
-    sampling_params: dict[str, Any] | None = None
+    prompts_params: DICT_PARAMS | None = None
+    sampling_params: DICT_PARAMS | None = None

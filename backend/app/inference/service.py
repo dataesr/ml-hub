@@ -2,9 +2,19 @@ import requests
 import time
 import os
 import pandas as pd
+from datasets import Dataset
 from retry import retry
 from app.ovhai import cmd_run
-from app.inference.schemas import APP_STATE, APP_STATE_STOP, APP_STATE_START, APP_STATE_ERROR, COMPLETIONS_TASK_STATE
+from app.inference.schemas import (
+    APP_STATE,
+    APP_STATE_STOP,
+    APP_STATE_START,
+    APP_STATE_ERROR,
+    COMPLETIONS_TASK_STATE,
+    COMPLETIONS_PROMPTS_INPUTS,
+    COMPLETIONS_PROMPTS_PARAMS,
+    COMPLETIONS_SAMPLING_PARAMS,
+)
 from app.logger import get_logger
 from app.utils import env_exist, json_write, data_to_pandas
 from app.ovhai import ovhai_object_upload
@@ -243,33 +253,58 @@ def completions_get(task_id: str, id: str = None, url: str = None, timeout: int 
         return completions, data
 
 
-def _completions_get_prompts(inputs: dict | list | pd.DataFrame, inputs_col: str):
-    if isinstance(inputs, list):
-        return inputs
-    df = data_to_pandas(inputs)
-    if len(df.columns) == 1:
-        prompts = df[df.columns[0]].to_list()
-    elif not inputs_col in df.columns:
-        logger.warning(f"No column 'input' in inputs data, taking first column (column={df.columns[0]})")
-        prompts = df[df.columns[0]].to_list()
-    else:
-        prompts = df[inputs_col].to_list()
-    return prompts
+def _completions_get_prompts(inputs: COMPLETIONS_PROMPTS_INPUTS, inputs_col: str, to_list: bool = False):
+    data = None
+
+    # list str
+    if isinstance(inputs, list) and all(isinstance(input, str) for input in inputs):
+        data = pd.DataFrame({inputs_col: inputs})
+
+    # dict
+    if isinstance(inputs, list) and all(isinstance(input, dict) for input in inputs):
+        data = pd.DataFrame.from_records(inputs)
+        if not inputs_col in data.columns:
+            raise ValueError(f"Prompts inputs: field '{inputs_col}' not found on dict")
+
+    # pd.DataFrame
+    if isinstance(inputs, pd.DataFrame):
+        if not inputs_col in inputs.columns:
+            raise ValueError(f"Prompts inputs: column '{inputs_col}' not found on DataFrame")
+        data = inputs
+
+    # Dataset
+    if isinstance(inputs, Dataset):
+        if not inputs_col in inputs.column_names:
+            raise ValueError(f"Prompts inputs: column '{inputs_col}' not found on Dataset")
+        data = inputs.to_pandas()
+
+    if not data:
+        raise ValueError(
+            "Prompts inputs: Unsupported type. Must be list[str], list[dict], pandas DataFrame or HuggingFace Dataset."
+        )
+
+    if to_list:
+        return data[inputs_col].astype(str).tolist()
+
+    return data
 
 
-def _completions_write(data: dict | list, write_path: str):
+def _completions_write(data: dict, write_path: str):
     file_path = json_write(path=write_path, data=data)
     ovhai_object_upload(file_path, CONTAINER_COMPLETIONS)
     os.remove(file_path)
+    logger.debug(f"Completions saved at {write_path}")
 
 
 def completions_pipeline(
     id: str,
     model_name: str,
-    inputs: dict | pd.DataFrame | list,
+    inputs: COMPLETIONS_PROMPTS_INPUTS,
     inputs_col: str = "input",
-    prompts_params: dict = None,
-    sampling_params: dict = None,
+    outputs_col: str = "completion",
+    prompts_params: COMPLETIONS_PROMPTS_PARAMS = None,
+    sampling_params: COMPLETIONS_SAMPLING_PARAMS = None,
+    return_only_completions: bool = True,
     write_results: bool = False,
 ) -> tuple:
     """Pipeline for generation of completions
@@ -277,9 +312,13 @@ def completions_pipeline(
     Args:
         id (str): inference app id
         model_name (str): model name
-        texts (list): list of texts
+        inputs (promts_inputs): list or data with prompts
+        inputs_col (str, optional): column name with prompts. Defaults to "input".
+        outputs_col (str, optional): column name with completions. Defaults to "completion".
         prompts_params (dict, optional): prompts params (instruction, chat_template, text_format..)
         sampling_params (dict, optional): inference sampling params
+        return_only_completions (bool, optional): return only completions. Defaults to True.
+        write_results (bool, optional): write results on bucket. Defaults to False.
 
     Returns:
         tuple[list, dict]: completions, task_data
@@ -288,7 +327,8 @@ def completions_pipeline(
     start_model(id=id, model_name=model_name, wait_running=True)
 
     # Format prompts
-    prompts = _completions_get_prompts(inputs, inputs_col=inputs_col)
+    data = _completions_get_prompts(inputs, inputs_col=inputs_col)
+    prompts = data[inputs_col].astype(str).to_list()
 
     # Submit generation task
     task_id = completions_submit(prompts, id=id, prompts_params=prompts_params, sampling_params=sampling_params)
@@ -298,9 +338,26 @@ def completions_pipeline(
     completions, task_data = completions_get(task_id, id=id)  # TODO: add timeout?
     logger.debug(f"Task id {task_id} results: {len(completions)} completions")
 
+    if return_only_completions and not write_results:
+        return completions, task_data
+
+    # Check completions
+    if not isinstance(completions, list):
+        raise TypeError(f"Generated completions must be a list, got {type(completions)}")
+    if len(completions) != len(prompts):
+        logger.error(f"Generated {len(completions)} completions from {len(prompts)} texts")
+        res = pd.DataFrame({outputs_col: completions})
+        output: pd.DataFrame = pd.concat([data, res])
+    else:
+        logger.info(f"✅ Generated {len(completions)}")
+        output = data
+        output[outputs_col] = pd.Series(completions)
+
     # Write on disk if needed
     if write_results:
-        data = {"completions": completions, "task_data": task_data}
-        _completions_write(data, write_path=f"{model_name}/{task_id}")
+        _completions_write(output.to_dict(orient="records"), write_path=f"{model_name}/{task_id}")
 
-    return completions, task_data
+    if return_only_completions:
+        return completions, task_data
+
+    return output, task_data

@@ -25,38 +25,36 @@ def get():
 
 
 def pipeline(inference_id: str, task_id: str, inputs: EVALUATE_INPUTS) -> tuple:
-    logger.info(f"▶️ Start evaluation of model {inputs.model_name}")
+    logger.info(f"▶️ Start eval of model {inputs.model_name} ({task_id})")
 
     # Get input texts
     dataset = datasets_svc.load(inputs.dataset_name, split=inputs.dataset_split, as_pandas=True)
-    texts = dataset["input"].to_list()
+
+    # Get prompts params
+    prompts_params = {}
+    if inputs.dataset_config:
+        try:
+            prompts_params = datasets_svc.get_config(inputs.dataset_config, inputs.dataset_name).model_dump()
+        except Exception as error:
+            logger.error(f"Couldnt load dataset config: {error}")
+    if inputs.prompts_params:
+        prompts_params.update(inputs.prompts_params)
 
     # Run completions pipeline
-    completions, task_data = inference_svc.completions_pipeline(
+    output, task_data = inference_svc.completions_pipeline(
         inference_id,
         inputs.model_name,
-        texts,
+        inputs=dataset,
         sampling_params=inputs.sampling_params,
+        prompts_params=prompts_params,
+        return_only_completions=False,
+        write_results=True,
     )
 
-    # Check completions
-    assert isinstance(completions, list)
-    if len(completions) != len(texts):
-        logger.error(f"Generated {len(completions)} completions from {len(texts)} texts")
-        res = pd.DataFrame({"completions": completions})
-        dataset = pd.concat([dataset, res])
-    else:
-        logger.info(f"✅ Generated {len(completions)}")
-        dataset["completions"] = pd.Series(completions)
+    # TODO:
+    # results = evaluate_completions(output)
 
-    # Stop inference app
-    inference_svc.stop(inference_id)
-
-    # Write results #TODO: put in inference svc
-    write_path = os.path.join(inputs.model_name, time.strftime("%Y%m%d_%H%M"))
-    inference_svc._completions_write(dataset.to_json(orient="records"), write_path)
-
-    logger.info(f"✅ Evaluation completed and saved on {write_path}")
+    logger.info(f"✅ Eval {task_id} completed")
 
 
 async def worker():
