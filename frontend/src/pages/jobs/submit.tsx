@@ -257,16 +257,16 @@ export default function JobsSubmit() {
           )}
         </Accordion>
         <Accordion title="Experiment options">
-          {/* <TextInput
-            className="fr-mt-2w"
-            label="Experiment Run Name"
-            hint="Name of the experiment run. Automatically generated if not set."
-            placeholder="llama-causallm-200"
-            value={inputs?.wandb_name || ""}
-            onChange={(e) => handleInputsChange("wandb_name", e.target.value)}
-            messageType={errors.wandb_name ? "error" : undefined}
-            message={errors.wandb_name || undefined}
-          /> */}
+          <SmartTextInput
+            value={inputs?.wandb_run_tag || ""}
+            onChange={(value) => handleInputsChange("wandb_run_tag", value)}
+            onError={(error) => handleErrorsChange("wandb_run_tag", error)}
+            validateSync={validateAplhaNum}
+            maxLength={12}
+            label="Experiment Run Tag"
+            hint="Add a tag to the experiment run name"
+            placeholder="markdown-v2"
+          />
           <Toggle
             label="Disable experiment reporting"
             checked={inputs?.wandb_disabled}

@@ -40,5 +40,6 @@ class JOB_INPUTS(BaseModel):
     hf_hub_private: bool | None = False
     wandb_name: str | None = None
     wandb_project: str | None = None
+    wandb_run_tag: str | None = None
     wandb_disabled: bool | None = False
     training_args: dict[str, Any] | None = None

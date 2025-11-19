@@ -59,7 +59,7 @@ export type JobInputs = {
   push_model_dir?: string
   hf_hub?: string
   hf_hub_private?: boolean
-  wandb_name?: string
   wandb_project?: string
+  wandb_run_tag?: string
   wandb_disabled?: true
 }
