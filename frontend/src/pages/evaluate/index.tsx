@@ -1,8 +1,12 @@
 import { Breadcrumb, Button, ButtonGroup, Container, Link, Text } from "@dataesr/dsfr-plus"
 import { useNavigate } from "react-router-dom"
+import ErrorCallOut from "../../components/error-call-out"
+import LoadingSpinner from "../../components/loading-spinner"
+import { useListEvals } from "../../api/evaluate/hooks"
+import EvaluateTable from "./components/evals-table"
 
 export default function Evaluate() {
-  // const { data, isFetching, error } = useSomething()
+  const { data: evals, isFetching, error } = useListEvals()
   const navigate = useNavigate()
 
   return (
@@ -31,7 +35,11 @@ export default function Evaluate() {
           </ButtonGroup>
         </Container>
       </Container>
-      <Container className="fr-my-2w">in progress ....</Container>
+      <Container className="fr-my-2w">
+        {error && <ErrorCallOut error={error} />}
+        {isFetching && !evals && <LoadingSpinner position="left" />}
+        {evals && <EvaluateTable evals={evals} />}
+      </Container>
     </Container>
   )
 }
