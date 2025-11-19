@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import {
   Accordion,
   Alert,
@@ -19,10 +19,11 @@ import {
 } from "@dataesr/dsfr-plus"
 import { scrollToTop } from "../../utils"
 import { useNavigate } from "react-router-dom"
-import { validateDebouncedInput, validateInput } from "../jobs/helpers/validate"
 import { Job, JobInputs } from "../../api/jobs/types"
 import { createJob } from "../../api/jobs/api"
 import { useGetDatasetConfig, useListDatasetConfigs } from "../../api/datasets/hooks"
+import { SmartTextInput } from "../../components/inputs/smart-input"
+import { validateAplhaNum, validateRepoName, validateText } from "../../helpers/validate"
 
 const DEFAULT_INPUTS: JobInputs = {
   model_name: "",
@@ -38,11 +39,12 @@ export default function EvaluateSubmit() {
   const [alertError, setAlertError] = useState<string>("")
   const [alertSuccess, setAlertSuccess] = useState<string>("")
   const [openSubmit, setOpenSubmit] = useState<boolean>(false)
-  const debouncedTimersRef = useState<Record<string, number>>({})[0]
 
   const [controlConfig, setControlConfig] = useState<string>("custom")
   const { data: configs } = useListDatasetConfigs(inputs?.dataset_name)
   const { data: selectedConfig } = useGetDatasetConfig(inputs?.dataset_config, inputs?.dataset_name)
+
+  console.log(controlConfig)
 
   const navigate = useNavigate()
   const required = inputs.model_name && inputs.dataset_name
@@ -65,21 +67,6 @@ export default function EvaluateSubmit() {
   const handleInputsChange = (key: string, value: any) => {
     setInputs({ ...inputs, [key]: value })
     setAlertError("")
-
-    if (debouncedTimersRef[key]) {
-      clearTimeout(debouncedTimersRef[key])
-    }
-
-    // keys that may trigger API calls
-    if (["model_name", "dataset_name"].includes(key)) {
-      debouncedTimersRef[key] = setTimeout(async () => {
-        const message = await validateDebouncedInput(key, value)
-        handleErrorsChange(key, message)
-      }, 1500)
-    } else {
-      const message = validateInput(key, value)
-      handleErrorsChange(key, message)
-    }
   }
 
   const onCheck = (e: React.FormEvent) => {
@@ -100,10 +87,6 @@ export default function EvaluateSubmit() {
     }
   }
 
-  useEffect(() => {
-    return () => Object.values(debouncedTimersRef).forEach((t) => t && clearTimeout(t))
-  }, [])
-
   // console.log("input", inputs)
   // console.log("errors", errors)
 
@@ -116,25 +99,26 @@ export default function EvaluateSubmit() {
         New evaluation
       </Title>
       <Container fluid style={{ maxWidth: "600px" }}>
-        <TextInput
-          label="Model Name"
-          hint="HuggingFace repository of the model to test."
-          placeholder="meta-llama/Llama-3.2-1B"
+        <SmartTextInput
           value={inputs.model_name}
-          onChange={(e) => handleInputsChange("model_name", e.target.value)}
+          onChange={(value) => handleInputsChange("model_name", value)}
+          onError={(value) => handleErrorsChange("model_name", value)}
+          validateSync={(value) => validateText(value, true)}
+          validateAsync={(value) => validateRepoName(value, true, true)}
+          label="Model Name"
+          hint="HuggingFace repository of the model to train."
+          placeholder="meta-llama/Llama-3.2-1B"
           required
-          messageType={errors.model_name ? "error" : undefined}
-          message={errors.model_name || undefined}
         />
-        <TextInput
+        <SmartTextInput
+          value={inputs.dataset_name}
+          onChange={(value) => handleInputsChange("dataset_name", value)}
+          onError={(value) => handleErrorsChange("dataset_name", value)}
+          validateSync={(value) => validateText(value, true)}
           label="Dataset Name"
           hint="HuggingFace repository or OVH file path of the dataset."
           placeholder="dataesr/training-dataset"
-          value={inputs.dataset_name}
-          onChange={(e) => handleInputsChange("dataset_name", e.target.value)}
           required
-          messageType={errors.dataset_name ? "error" : undefined}
-          message={errors.dataset_name || undefined}
         />
         <Select
           label="Evaluate Pipeline"
@@ -145,24 +129,15 @@ export default function EvaluateSubmit() {
           <SelectOption key={"causallm"}>CausalLM</SelectOption>
           <SelectOption key={"causallm-unsloth"}>CausalLM with Unsloth</SelectOption>
         </Select>
-        <TextInput
+        <SmartTextInput
+          value={inputs.wandb_project || ""}
+          onChange={(value) => handleInputsChange("wandb_project", value)}
+          onError={(value) => handleErrorsChange("wandb_project", value)}
+          validateSync={validateAplhaNum}
           label="Experiment Project Name"
           hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
           placeholder="entity-extraction-acknowledgments"
-          value={inputs?.wandb_project || ""}
-          onChange={(e) => handleInputsChange("wandb_project", e.target.value)}
-          messageType={errors.wandb_project ? "error" : undefined}
-          message={errors.wandb_project || undefined}
         />
-        {/* <TextInput
-          label="Job Name"
-          hint="Name of the job. Automatically generated if not set."
-          value={inputs.name}
-          onChange={(e) => handleInputsChange("name", e.target.value)}
-          maxLength={20}
-          messageType={errors.name ? "error" : undefined}
-          message={errors.name || undefined}
-        /> */}
         <Accordion title="Dataset options">
           <SegmentedControl
             className="fr-mb-2w"
@@ -174,7 +149,7 @@ export default function EvaluateSubmit() {
               setControlConfig(value)
             }}
           >
-            <SegmentedElement value="custom" label="Custom" />
+            <SegmentedElement defaultChecked={true} value="custom" label="Custom" />
             <SegmentedElement value="existing" label="Existing" />
           </SegmentedControl>
           {controlConfig === "existing" && (

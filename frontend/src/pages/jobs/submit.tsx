@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import {
   Accordion,
   Alert,
@@ -21,10 +21,11 @@ import {
 } from "@dataesr/dsfr-plus"
 import { scrollToTop } from "../../utils"
 import { useNavigate } from "react-router-dom"
-import { validateDebouncedInput, validateInput } from "./helpers/validate"
+import { validateText, validateAplhaNum, validateRepoName } from "../../helpers/validate"
 import { Job, JobInputs } from "../../api/jobs/types"
 import { createJob } from "../../api/jobs/api"
 import { useGetDatasetConfig, useListDatasetConfigs } from "../../api/datasets/hooks"
+import { SmartTextInput } from "../../components/inputs/smart-input"
 
 const DEFAULT_INPUTS: JobInputs = {
   model_name: "",
@@ -41,7 +42,6 @@ export default function JobsSubmit() {
   const [alertError, setAlertError] = useState<string>("")
   const [alertSuccess, setAlertSuccess] = useState<string>("")
   const [openSubmit, setOpenSubmit] = useState<boolean>(false)
-  const debouncedTimersRef = useState<Record<string, number>>({})[0]
 
   const [controlConfig, setControlConfig] = useState<string>("custom")
   const { data: configs } = useListDatasetConfigs(inputs?.dataset_name)
@@ -69,21 +69,6 @@ export default function JobsSubmit() {
   const handleInputsChange = (key: string, value: any) => {
     setInputs({ ...inputs, [key]: value })
     setAlertError("")
-
-    if (debouncedTimersRef[key]) {
-      clearTimeout(debouncedTimersRef[key])
-    }
-
-    // keys that may trigger API calls
-    if (["model_name", "dataset_name", "hf_hub"].includes(key)) {
-      debouncedTimersRef[key] = setTimeout(async () => {
-        const message = await validateDebouncedInput(key, value)
-        handleErrorsChange(key, message)
-      }, 1500)
-    } else {
-      const message = validateInput(key, value)
-      handleErrorsChange(key, message)
-    }
   }
 
   const handlePushToHFChange = (push: boolean) => {
@@ -112,10 +97,6 @@ export default function JobsSubmit() {
     }
   }
 
-  useEffect(() => {
-    return () => Object.values(debouncedTimersRef).forEach((t) => t && clearTimeout(t))
-  }, [])
-
   // console.log("input", inputs)
   // console.log("errors", errors)
 
@@ -128,25 +109,26 @@ export default function JobsSubmit() {
         New Training Job
       </Title>
       <Container fluid style={{ maxWidth: "600px" }}>
-        <TextInput
+        <SmartTextInput
+          value={inputs.model_name}
+          onChange={(value) => handleInputsChange("model_name", value)}
+          onError={(value) => handleErrorsChange("model_name", value)}
+          validateSync={(value) => validateText(value, true)}
+          validateAsync={(value) => validateRepoName(value, true, true)}
           label="Model Name"
           hint="HuggingFace repository of the model to train."
           placeholder="meta-llama/Llama-3.2-1B"
-          value={inputs.model_name}
-          onChange={(e) => handleInputsChange("model_name", e.target.value)}
           required
-          messageType={errors.model_name ? "error" : undefined}
-          message={errors.model_name || undefined}
         />
-        <TextInput
+        <SmartTextInput
+          value={inputs.dataset_name}
+          onChange={(value) => handleInputsChange("dataset_name", value)}
+          onError={(value) => handleErrorsChange("dataset_name", value)}
+          validateSync={(value) => validateText(value, true)}
           label="Dataset Name"
           hint="HuggingFace repository or OVH file path of the dataset."
           placeholder="dataesr/training-dataset"
-          value={inputs.dataset_name}
-          onChange={(e) => handleInputsChange("dataset_name", e.target.value)}
           required
-          messageType={errors.dataset_name ? "error" : undefined}
-          message={errors.dataset_name || undefined}
         />
         <Select
           label="Training Pipeline"
@@ -157,24 +139,15 @@ export default function JobsSubmit() {
           <SelectOption key={"causallm"}>CausalLM</SelectOption>
           <SelectOption key={"causallm-unsloth"}>CausalLM with Unsloth</SelectOption>
         </Select>
-        <TextInput
+        <SmartTextInput
+          value={inputs.wandb_project || ""}
+          onChange={(value) => handleInputsChange("wandb_project", value)}
+          onError={(value) => handleErrorsChange("wandb_project", value)}
+          validateSync={validateAplhaNum}
           label="Experiment Project Name"
           hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
           placeholder="entity-extraction-acknowledgments"
-          value={inputs?.wandb_project || ""}
-          onChange={(e) => handleInputsChange("wandb_project", e.target.value)}
-          messageType={errors.wandb_project ? "error" : undefined}
-          message={errors.wandb_project || undefined}
         />
-        {/* <TextInput
-          label="Job Name"
-          hint="Name of the job. Automatically generated if not set."
-          value={inputs.name}
-          onChange={(e) => handleInputsChange("name", e.target.value)}
-          maxLength={20}
-          messageType={errors.name ? "error" : undefined}
-          message={errors.name || undefined}
-        /> */}
         <Toggle
           label="Run job on GPU"
           checked={Boolean(inputs.gpu)}
@@ -187,15 +160,15 @@ export default function JobsSubmit() {
         />
         {pushToHF && (
           <Container fluid className="fr-mt-2w">
-            <TextInput
+            <SmartTextInput
+              value={inputs.hf_hub || ""}
+              onChange={(value) => handleInputsChange("hf_hub", value)}
+              onError={(value) => handleErrorsChange("hf_hub", value)}
+              validateAsync={(value) => validateRepoName(value, pushToHF, false, "dataesr")}
               label="HuggingFace Name"
               hint="Name of the HuggingFace repository to push the model."
               placeholder="dataesr/my-trained-model"
-              value={inputs?.hf_hub || ""}
-              onChange={(e) => handleInputsChange("hf_hub", e.target.value)}
               required={pushToHF}
-              messageType={errors.hf_hub ? "error" : undefined}
-              message={errors.hf_hub || undefined}
             />
             <Checkbox
               label="Make the repository private"
@@ -218,7 +191,7 @@ export default function JobsSubmit() {
               setControlConfig(value)
             }}
           >
-            <SegmentedElement value="custom" label="Custom" />
+            <SegmentedElement defaultChecked={true} value="custom" label="Custom" />
             <SegmentedElement value="existing" label="Existing" />
           </SegmentedControl>
           {controlConfig === "existing" && (
@@ -282,11 +255,6 @@ export default function JobsSubmit() {
           /> */}
             </Container>
           )}
-          {/* <Toggle
-            label="Link OVH dataset volume"
-            checked={inputs?.dataset_volume || false}
-            onChange={(e) => handleInputsChange("dataset_volume", e.target.checked)}
-          /> */}
         </Accordion>
         <Accordion title="Experiment options">
           {/* <TextInput
@@ -298,15 +266,6 @@ export default function JobsSubmit() {
             onChange={(e) => handleInputsChange("wandb_name", e.target.value)}
             messageType={errors.wandb_name ? "error" : undefined}
             message={errors.wandb_name || undefined}
-          /> */}
-          {/* <TextInput
-            label="Experiment Project Name"
-            hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
-            placeholder="acknowledgments-entity-extraction"
-            value={inputs?.wandb_project || ""}
-            onChange={(e) => handleInputsChange("wandb_project", e.target.value)}
-            messageType={errors.wandb_project ? "error" : undefined}
-            message={errors.wandb_project || undefined}
           /> */}
           <Toggle
             label="Disable experiment reporting"
