@@ -8,14 +8,12 @@ interface SmartInputProps<T> {
   validateSync?: (value: T) => string | null // Instant validation
   validateAsync?: (value: T) => Promise<string | null> // API validation
   debounceTime?: number
-  [key: string]: any
 }
 interface ComponentProps {
   component: React.ComponentType<any>
 }
 export const SmartInput = <T extends string | boolean | number>({
   component: Component,
-  name,
   value,
   onChange,
   onError,
@@ -23,7 +21,7 @@ export const SmartInput = <T extends string | boolean | number>({
   validateAsync,
   debounceTime = 1500,
   ...childProps
-}: ComponentProps & SmartInputProps<T>) => {
+}: ComponentProps & SmartInputProps<T> & React.ComponentProps<typeof Component>) => {
   const [internalError, setInternalError] = useState<string | null>(null)
   const debounceTimer = useRef(null)
 
@@ -79,6 +77,10 @@ export const SmartInput = <T extends string | boolean | number>({
   )
 }
 
-export function SmartTextInput({ value, onChange, ...props }: SmartInputProps<string>) {
+export function SmartTextInput({
+  value,
+  onChange,
+  ...props
+}: SmartInputProps<string> & React.ComponentProps<typeof TextInput>) {
   return <SmartInput {...props} value={value} onChange={onChange} component={TextInput} />
 }
