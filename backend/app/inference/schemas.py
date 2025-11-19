@@ -18,5 +18,9 @@ class COMPLETIONS_INPUTS(BaseModel):
     inference_app_start: bool | None = False
     inputs: COMPLETIONS_PROMPTS_INPUTS
     inputs_col: str | None = "input"
+    outputs_col: str | None = "completion"
     prompts_params: DICT_PARAMS | None = None
     sampling_params: DICT_PARAMS | None = None
+
+    class Config:
+        arbitrary_types_allowed = True

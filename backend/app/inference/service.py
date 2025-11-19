@@ -12,9 +12,8 @@ from app.inference.schemas import (
     APP_STATE_ERROR,
     COMPLETIONS_TASK_STATE,
     COMPLETIONS_PROMPTS_INPUTS,
-    COMPLETIONS_PROMPTS_PARAMS,
-    COMPLETIONS_SAMPLING_PARAMS,
 )
+from app.types import DICT_PARAMS
 from app.logger import get_logger
 from app.utils import env_exist, json_write, data_to_pandas
 from app.ovhai import ovhai_object_upload
@@ -302,8 +301,8 @@ def completions_pipeline(
     inputs: COMPLETIONS_PROMPTS_INPUTS,
     inputs_col: str = "input",
     outputs_col: str = "completion",
-    prompts_params: COMPLETIONS_PROMPTS_PARAMS = None,
-    sampling_params: COMPLETIONS_SAMPLING_PARAMS = None,
+    prompts_params: DICT_PARAMS = None,
+    sampling_params: DICT_PARAMS = None,
     return_only_completions: bool = True,
     write_results: bool = False,
 ) -> tuple:
