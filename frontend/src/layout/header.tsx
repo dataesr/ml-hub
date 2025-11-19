@@ -51,7 +51,7 @@ export default function Header() {
           <Link href="/explore?t=experiments">Experiments</Link>
         </NavItem>
         <Link href="/jobs" current={pathname.split("/").includes("jobs")}>
-          Jobs
+          Train
         </Link>
         <Link href="/evaluate" current={pathname.split("/").includes("evaluate")}>
           Evaluate
