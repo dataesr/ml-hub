@@ -10,6 +10,11 @@ install:
 
 docker-build:
 	@echo Building a new docker image
+	docker build -t $(GHCR_IMAGE_NAME):staging .
+	@echo Docker image built
+
+docker-build-prod:
+	@echo Building a new docker image
 	docker build -t $(GHCR_IMAGE_NAME):$(CURRENT_VERSION) -t $(GHCR_IMAGE_NAME):latest .
 	@echo Docker image built
 
