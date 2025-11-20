@@ -294,7 +294,7 @@ def _completions_write(data: dict, write_path: str):
     os.remove(file_path)
     logger.debug(f"Completions saved at {write_path}")
 
-
+# TODO: force inputs_col and outputs_col and return error if already exists in original data
 def completions_pipeline(
     id: str,
     model_name: str,

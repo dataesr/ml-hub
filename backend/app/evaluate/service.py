@@ -1,7 +1,6 @@
 import asyncio
-import time
-import os
 import pandas as pd
+from typing import Literal
 from app.logger import get_logger
 from app.evaluate.schemas import EVALUATE_INPUTS, EVALUATE_TASK, EVALUATE_TASKS_STORE
 from app.datasets import service as datasets_svc
@@ -24,6 +23,12 @@ def get():
     return
 
 
+# def compute_score(dataset: pd.DataFrame, formatter: Literal["json", "tsv"] = "json"):
+#     dataset
+#     return dataset
+
+
+# TODO: allow only 100 entries
 def pipeline(inference_id: str, task_id: str, inputs: EVALUATE_INPUTS) -> tuple:
     logger.info(f"▶️ Start eval of model {inputs.model_name} ({task_id})")
 
