@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from app.ovhai import ovhai_initialize
+from app.mlflow import mlflow_initialize
 from app.datasets.views import router as datasets_router
 from app.models.views import router as models_router
 from app.jobs.views import router as jobs_router
@@ -61,6 +62,9 @@ app.include_router(api_router)
 
 # Init ovhai cli
 ovhai_initialize()
+
+# Init mlflow
+mlflow_initialize()
 
 @app.get("/health")
 def health_check():

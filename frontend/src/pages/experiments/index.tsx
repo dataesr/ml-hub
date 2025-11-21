@@ -6,11 +6,10 @@ import RunsTable from "./components/runs-table"
 import { useListExperiments, useListRuns } from "../../api/experiments/hooks"
 
 interface ExperimentsRunsArgs {
-  project: string
+  id: string
 }
-function ExperimentsRuns({ project }: ExperimentsRunsArgs) {
-  const { data: runs, isFetching, error } = useListRuns(project)
-  console.log("project", project)
+function ExperimentsRuns({ id }: ExperimentsRunsArgs) {
+  const { data: runs, isFetching, error } = useListRuns(id)
 
   return (
     <Container fluid>
@@ -22,25 +21,25 @@ function ExperimentsRuns({ project }: ExperimentsRunsArgs) {
 }
 
 export default function Experiments() {
-  const { data: projects, isFetching, error } = useListExperiments()
-  const [selectProjectId, setSelectProjectId] = useState<string>("UHJvamVjdDp2MTp1bmNhdGVnb3JpemVkOmRhdGFlc3I=")
+  const { data: experiments, isFetching, error } = useListExperiments()
+  const [selectedExperimentId, setSelectedExperimentId] = useState<string>("")
   //TODO remove plain id
 
-  console.log("projects", projects)
-  console.log("selectProjectId", selectProjectId)
+  console.log("experiments", experiments)
+  console.log("selectProjectId", selectedExperimentId)
 
   return (
     <Container className="fr-my-2w">
       {error && <ErrorCallOut error={error} />}
       {isFetching && <LoadingSpinner position="left" />}
-      {!isFetching && projects && (
+      {!isFetching && experiments && (
         <Container fluid style={{ width: "max-content" }}>
-          <Select selectedKey={selectProjectId} onSelectionChange={(key) => setSelectProjectId(String(key))}>
-            {projects.map(({ id, name }) => (
+          <Select selectedKey={selectedExperimentId} onSelectionChange={(key) => setSelectedExperimentId(String(key))}>
+            {experiments.map(({ id, name }) => (
               <SelectOption key={id}>{name}</SelectOption>
             ))}
           </Select>
-          {selectProjectId && <ExperimentsRuns project={projects.find(({ id }) => id == selectProjectId).name} />}
+          {selectedExperimentId && <ExperimentsRuns id={selectedExperimentId} />}
         </Container>
       )}
     </Container>

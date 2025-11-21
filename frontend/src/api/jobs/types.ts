@@ -52,14 +52,11 @@ export type JobInputs = {
   pipeline?: string
   dataset_config?: string
   dataset_format?: "auto" | "conversational" | "text"
-  dataset_instruction?: string
-  dataset_text_format?: string
-  dataset_volume?: boolean
   mode?: "train" | "push"
   push_model_dir?: string
   hf_hub?: string
   hf_hub_private?: boolean
-  wandb_project?: string
-  wandb_run_tag?: string
-  wandb_disabled?: true
+  experiments_params?: Record<string, any>
+  prompts_params?: Record<string, any>
+  training_params?: Record<string, any>
 }

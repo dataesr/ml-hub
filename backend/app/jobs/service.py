@@ -15,7 +15,7 @@ VOLUME_DATASETS = "llm-datasets@1azgra/:/workspace/datasets:ro"
 
 SECRET_ENVS: list[ENV] = [
     {"name": "HF_TOKEN", "value": os.getenv("HF_TOKEN")},
-    {"name": "WANDB_API_KEY", "value": os.getenv("WANDB_API_KEY")},
+    {"name": "MLFLOW_TRACKING_URI", "value": os.getenv("MLFLOW_TRACKING_URI")},
 ]
 
 
@@ -38,30 +38,27 @@ def _get_run_cmd(inputs: JOB_INPUTS):
 
     # ENVS
     envs = SECRET_ENVS
-    if inputs.wandb_name:
-        envs.append({"name": "WANDB_NAME", "value": inputs.wandb_name})
-    if inputs.wandb_project:
-        envs.append({"name": "WANDB_PROJECT", "value": inputs.wandb_project})
-    if inputs.wandb_disabled:
-        envs.append({"name": "WANDB_MODE", "value": "disabled"})
-    if inputs.training_args:
-        for key, value in inputs.training_args.items():
-            envs.append({"name": key, "value": str(value)})
+    experiments_params = inputs.experiments_params
+    if experiments_params.name:
+        envs.append({"name": "MLFLOW_RUN_NAME", "value": experiments_params.name})
+    if experiments_params.name_tag:
+        envs.append({"name": "MLFLOW_RUN_NAME_TAG", "value": experiments_params.name_tag})
+    if experiments_params.project:
+        envs.append({"name": "MLFLOW_EXPERIMENT_NAME", "value": experiments_params.project})
+    if experiments_params.disable:
+        envs.append({"name": "MLFLOW_MODE", "value": "disabled"})
+    if inputs.training_params:
+        for key, value in inputs.training_params.items():
+            envs.append({"name": key.upper(), "value": str(value)})
     for env in envs:
         cmd += f" --env {env['name']}={env['value']}"
 
     # Dataset extras
-    dataset_extras = {}
-    if inputs.dataset_instruction:
-        dataset_extras["instruction"] = inputs.dataset_instruction
-    if inputs.dataset_text_format:
-        dataset_extras["text_format"] = inputs.dataset_text_format
-    if inputs.dataset_chat_template:
-        dataset_extras["chat_template"] = inputs.dataset_chat_template
+    dataset_extras = inputs.prompts_params
 
     # Volumes
     cmd += f" --volume {VOLUME_JOBS}"
-    if inputs.dataset_volume or inputs.dataset_config or dataset_extras:
+    if inputs.dataset_config or dataset_extras:
         cmd += f" --volume {VOLUME_DATASETS}"
 
     # Docker args

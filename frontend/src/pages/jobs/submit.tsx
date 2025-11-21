@@ -2,13 +2,16 @@ import { useState } from "react"
 import {
   Accordion,
   Alert,
+  Badge,
   Button,
   Checkbox,
+  Col,
   Container,
   Modal,
   ModalContent,
   ModalFooter,
   ModalTitle,
+  Row,
   SegmentedControl,
   SegmentedElement,
   Select,
@@ -42,6 +45,7 @@ export default function JobsSubmit() {
   const [alertError, setAlertError] = useState<string>("")
   const [alertSuccess, setAlertSuccess] = useState<string>("")
   const [openSubmit, setOpenSubmit] = useState<boolean>(false)
+  const [trainingArg, setTrainingArg] = useState<{ key: string; value: string }>(null)
 
   const [controlConfig, setControlConfig] = useState<string>("custom")
   const { data: configs } = useListDatasetConfigs(inputs?.dataset_name)
@@ -68,6 +72,21 @@ export default function JobsSubmit() {
 
   const handleInputsChange = (key: string, value: any) => {
     setInputs({ ...inputs, [key]: value })
+    setAlertError("")
+  }
+
+  const handleExperimentsChange = (key: string, value: any) => {
+    setInputs({ ...inputs, experiments_params: { ...inputs?.experiments_params, [key]: value } })
+    setAlertError("")
+  }
+
+  const handlePromptsChange = (key: string, value: any) => {
+    setInputs({ ...inputs, prompts_params: { ...inputs?.prompts_params, [key]: value } })
+    setAlertError("")
+  }
+
+  const handleTrainingChange = (key: string, value: any) => {
+    setInputs({ ...inputs, training_params: { ...inputs?.training_params, [key]: value } })
     setAlertError("")
   }
 
@@ -140,9 +159,9 @@ export default function JobsSubmit() {
           <SelectOption key={"causallm-unsloth"}>CausalLM with Unsloth</SelectOption>
         </Select>
         <SmartTextInput
-          value={inputs.wandb_project || ""}
-          onChange={(value) => handleInputsChange("wandb_project", value)}
-          onError={(value) => handleErrorsChange("wandb_project", value)}
+          value={inputs?.experiments_params?.project || ""}
+          onChange={(value) => handleExperimentsChange("project", value)}
+          onError={(value) => handleErrorsChange("experiments_project", value)}
           validateSync={validateAplhaNum}
           label="Experiment Project Name"
           hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
@@ -178,7 +197,49 @@ export default function JobsSubmit() {
           </Container>
         )}
         <Accordion title="Training options" className="fr-mt-5w">
-          TO BE DEVELOPPED
+          {inputs?.training_params && (
+            <Row>
+              {Object.entries(inputs.training_params).map(([key, value]) => (
+                <Badge>{`${key}: ${value}`}</Badge>
+              ))}
+            </Row>
+          )}
+          <Row>
+            <Col>
+              <SmartTextInput
+                value={trainingArg?.key || ""}
+                onChange={(value) => setTrainingArg({ ...trainingArg, key: value })}
+                onError={(value) => handleErrorsChange("training_arg", value)}
+                validateSync={validateAplhaNum}
+                label="Training Param Name"
+                hint="Name of the training param to add."
+                placeholder="num_batch_size"
+              />
+            </Col>
+            <Col>
+              <SmartTextInput
+                value={trainingArg?.value || ""}
+                onChange={(value) => setTrainingArg({ ...trainingArg, value: value })}
+                onError={(value) => handleErrorsChange("training_arg", value)}
+                validateSync={validateAplhaNum}
+                label="Training Param Value"
+                hint="Value of the training param to add."
+                placeholder="2"
+              />
+            </Col>
+            <Col>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  handleTrainingChange(trainingArg.key, trainingArg.value)
+                  setTrainingArg(null)
+                }}
+                disabled={!trainingArg?.key || !trainingArg.value}
+              >
+                Add
+              </Button>
+            </Col>
+          </Row>
         </Accordion>
         <Accordion title="Dataset options">
           <SegmentedControl
@@ -226,21 +287,21 @@ export default function JobsSubmit() {
                 className="fr-mt-2w"
                 label="Dataset prompts instruction"
                 hint="Custom instruction that will be applied to all prompts."
-                value={inputs?.dataset_instruction || selectedConfig?.instruction || ""}
+                value={inputs?.prompts_params?.instruction || selectedConfig?.instruction || ""}
                 placeholder="You are a helpful assistant..."
-                onChange={(e) => handleInputsChange("dataset_instruction", e.target.value)}
-                messageType={errors.dataset_instruction ? "error" : undefined}
-                message={errors.dataset_instruction || undefined}
+                onChange={(e) => handlePromptsChange("instruction", e.target.value)}
+                // messageType={errors.dataset_instruction ? "error" : undefined}
+                // message={errors.dataset_instruction || undefined}
               />
               <TextInput
                 className="fr-mt-2w"
                 label="Dataset prompts text format"
                 hint="Text format that will be applied to all prompts."
-                value={inputs?.dataset_text_format || selectedConfig?.text_format || ""}
+                value={inputs?.prompts_params?.instruction || selectedConfig?.text_format || ""}
                 placeholder="### Instruction:\n {instruction}..."
-                onChange={(e) => handleInputsChange("dataset_text_format", e.target.value)}
-                messageType={errors.dataset_text_format ? "error" : undefined}
-                message={errors.dataset_text_format || undefined}
+                onChange={(e) => handleInputsChange("text_format", e.target.value)}
+                // messageType={errors.dataset_text_format ? "error" : undefined}
+                // message={errors.dataset_text_format || undefined}
                 disabled={inputs?.dataset_format === "conversational"}
               />
               {/* <TextInput
@@ -258,9 +319,9 @@ export default function JobsSubmit() {
         </Accordion>
         <Accordion title="Experiment options">
           <SmartTextInput
-            value={inputs?.wandb_run_tag || ""}
-            onChange={(value) => handleInputsChange("wandb_run_tag", value)}
-            onError={(error) => handleErrorsChange("wandb_run_tag", error)}
+            value={inputs?.experiments_params?.name_tag || ""}
+            onChange={(value) => handleExperimentsChange("name_tag", value)}
+            onError={(error) => handleErrorsChange("experiments_name_tag", error)}
             validateSync={validateAplhaNum}
             maxLength={12}
             label="Experiment Run Tag"
@@ -269,8 +330,8 @@ export default function JobsSubmit() {
           />
           <Toggle
             label="Disable experiment reporting"
-            checked={inputs?.wandb_disabled}
-            onChange={(e) => handleInputsChange("wandb_disabled", e.target.checked)}
+            checked={inputs?.experiments_params?.disabled || false}
+            onChange={(e) => handleExperimentsChange("disabled", e.target.checked)}
           />
         </Accordion>
         {alertError && (

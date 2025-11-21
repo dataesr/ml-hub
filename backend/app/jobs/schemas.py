@@ -1,5 +1,7 @@
 from pydantic import BaseModel
-from typing import Any, Literal
+from typing import Literal
+from app.experiments.schemas import EXPERIMENTS_PARAMS
+from app.types import DICT_PARAMS
 
 JOB_STATE = Literal[
     "QUEUED",
@@ -22,24 +24,24 @@ JOB_DATASET_FORMAT = Literal["auto", "conversational", "text"]
 JOB_MODE = Literal["train"]
 
 
+class PROMPTS_PARAMS(BaseModel):
+    instruction: str | None = None
+    text_format: str | None = None
+    chat_template: str | None = None
+
+
 class JOB_INPUTS(BaseModel):
     model_name: str
     dataset_name: str
     pipeline: JOB_PIPELINE
-    name: str | None = None
+    experiment_project: str | None = None
     gpu: int | None = None
     dataset_config: str | None = None
     dataset_format: JOB_DATASET_FORMAT | None = None
-    dataset_instruction: str | None = None
-    dataset_text_format: str | None = None
-    dataset_chat_template: str | None = None
-    dataset_volume: bool | None = False
     mode: JOB_MODE | None = None
     push_model_dir: str | None = None
     hf_hub: str | None = None
     hf_hub_private: bool | None = False
-    wandb_name: str | None = None
-    wandb_project: str | None = None
-    wandb_run_tag: str | None = None
-    wandb_disabled: bool | None = False
-    training_args: dict[str, Any] | None = None
+    experiments_params: EXPERIMENTS_PARAMS | None = None
+    prompts_params: PROMPTS_PARAMS | None = None
+    training_params: DICT_PARAMS | None = None
