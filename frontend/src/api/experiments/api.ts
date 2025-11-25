@@ -7,7 +7,8 @@ const API_RUNS_URL = API_EXPERIMENTS_URL + "/runs"
 function buildExperiment(data: any): Experiment {
   return {
     ...data,
-    createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
+    created_at: data.created_at ? new Date(data.created_at) : undefined,
+    updated_at: data.updated_at ? new Date(data.updated_at) : undefined,
   }
 }
 
