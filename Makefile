@@ -1,7 +1,9 @@
 CURRENT_VERSION=$(shell cat backend/app/version.py | cut -d \" -f 2)
+DOCKER_FILE_MLFLOW=Dockerfile_mlflow
 DOCKER_IMAGE_NAME=dataesr/ml-hub
+DOCKER_IMAGE_NAME_MLFLOW=dataesr/mlflow
 GHCR_IMAGE_NAME=ghcr.io/$(DOCKER_IMAGE_NAME)
-
+GHCR_IMAGE_NAME_MLFLOW=ghcr.io/$(DOCKER_IMAGE_NAME_MLFLOW)
 
 install:
 	@echo Installing dependencies...
@@ -21,6 +23,17 @@ docker-build-prod:
 docker-push:
 	@echo Pushing a new docker image
 	docker push -a $(GHCR_IMAGE_NAME)
+	@echo Docker image pushed
+
+
+docker-build-mlflow:
+	@echo Building a new docker image
+	docker build -f $(DOCKER_FILE_MLFLOW) -t $(GHCR_IMAGE_NAME_MLFLOW):latest .
+	@echo Docker image built
+
+docker-push-mlflow:
+	@echo Pushin a new docker image
+	docker push $(GHCR_IMAGE_NAME_MLFLOW):latest
 	@echo Docker image pushed
 
 release:
