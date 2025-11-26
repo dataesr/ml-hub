@@ -6,6 +6,6 @@
 
 ## Local development
 
-- Docker Compose: `docker compose up --build`
-- Backend: `pip install -r backend/requirements.txt && uvicorn app.main:app --reload --app-dir backend`
+- All: `docker compose up --build -d`
+- Backend: `docker compose build backend && docker compose up backend -d`
 - Frontend: `cd frontend && npm ci && npm run dev`
