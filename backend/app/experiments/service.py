@@ -26,12 +26,30 @@ def get_all():
 
 def get(id: str):
     project = client.get_experiment(experiment_id=id)
-    return project.__dict__
+    project = {
+        "id": project.experiment_id,
+        "name": project.name,
+        "created_at": project.creation_time,
+        "updated_at": project.last_update_time,
+        "tags": project.tags,
+    }
+    return project
 
 
 def list_runs(id: str, state: RunStatus = None):
     runs = client.search_runs(experiment_ids=[id])
-    runs = [run.info.__dict__ for run in runs]
+    runs = [
+        {
+            "id": run.info.run_id,
+            "name": run.info.run_name,
+            "status": run.info.status,
+            "experiment_id": run.info.experiment_id,
+            "user_id": run.info.user_id,
+            "start_time": run.info.start_time,
+            "end_time": run.info.end_time,
+        }
+        for run in runs
+    ]
     if state:
         runs = [run for run in runs if run["status"] == state]
     return runs
@@ -39,4 +57,16 @@ def list_runs(id: str, state: RunStatus = None):
 
 def get_run(run_id: str):
     run = client.get_run(run_id=run_id)
-    return run.__dict__
+    run = {
+        "id": run.info.run_id,
+        "name": run.info.run_name,
+        "status": run.info.status,
+        "experiment_id": run.info.experiment_id,
+        "user_id": run.info.user_id,
+        "start_time": run.info.start_time,
+        "end_time": run.info.end_time,
+        "metrics": run.data.metrics,
+        "params": run.data.params,
+        "tags": run.data.tags,
+    }
+    return run
