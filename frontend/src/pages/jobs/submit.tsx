@@ -16,6 +16,8 @@ import {
   SegmentedElement,
   Select,
   SelectOption,
+  Tag,
+  TagGroup,
   Text,
   TextArea,
   TextInput,
@@ -198,15 +200,16 @@ export default function JobsSubmit() {
         )}
         <Accordion title="Training options" className="fr-mt-5w">
           {inputs?.training_params && (
-            <Row>
+            <TagGroup>
               {Object.entries(inputs.training_params).map(([key, value]) => (
-                <Badge>{`${key}: ${value}`}</Badge>
+                <Tag color="blue-cumulus">{`${key}: ${value}`}</Tag>
               ))}
-            </Row>
+            </TagGroup>
           )}
           <Row>
-            <Col>
+            <Col md="5">
               <SmartTextInput
+                className="fr-pr-2w"
                 value={trainingArg?.key || ""}
                 onChange={(value) => setTrainingArg({ ...trainingArg, key: value })}
                 onError={(value) => handleErrorsChange("training_arg", value)}
@@ -216,8 +219,9 @@ export default function JobsSubmit() {
                 placeholder="num_batch_size"
               />
             </Col>
-            <Col>
+            <Col md="5">
               <SmartTextInput
+                className="fr-pr-2w"
                 value={trainingArg?.value || ""}
                 onChange={(value) => setTrainingArg({ ...trainingArg, value: value })}
                 onError={(value) => handleErrorsChange("training_arg", value)}
@@ -227,7 +231,7 @@ export default function JobsSubmit() {
                 placeholder="2"
               />
             </Col>
-            <Col>
+            <Col md="2">
               <Button
                 variant="secondary"
                 onClick={() => {
