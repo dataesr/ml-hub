@@ -31,6 +31,7 @@ class PROMPTS_PARAMS(BaseModel):
 
 
 class JOB_INPUTS(BaseModel):
+    name: str | None = None
     model_name: str
     dataset_name: str
     pipeline: JOB_PIPELINE

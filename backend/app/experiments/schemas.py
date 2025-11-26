@@ -5,4 +5,4 @@ class EXPERIMENTS_PARAMS(BaseModel):
     name: str | None = None
     name_tag: str | None = None
     project: str | None = None
-    disable: bool | None = True
+    disable: bool | None = False
