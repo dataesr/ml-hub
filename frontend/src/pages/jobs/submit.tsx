@@ -211,7 +211,7 @@ export default function JobsSubmit() {
               <SmartTextInput
                 className="fr-pr-2w"
                 value={trainingArg?.key || ""}
-                onChange={(value) => setTrainingArg({ ...trainingArg, key: value })}
+                onChange={(value) => setTrainingArg({ ...trainingArg, key: String(value).toUpperCase() })}
                 onError={(value) => handleErrorsChange("training_arg", value)}
                 validateSync={validateAplhaNum}
                 label="Training Param Name"
@@ -364,7 +364,9 @@ export default function JobsSubmit() {
             <ModalContent>
               <Text>Are you sure you want to submit the following job ?</Text>
               {Object.entries(inputs).map(([key, value]) => (
-                <Text className="fr-mb-1v fr-text--legend">{`- ${key}: ${String(value)}`}</Text>
+                <Text className="fr-mb-1v fr-text--legend">{`- ${key}: ${
+                  typeof value === "object" ? JSON.stringify(value) : String(value)
+                }`}</Text>
               ))}
             </ModalContent>
             <ModalFooter>
