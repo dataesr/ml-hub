@@ -41,14 +41,13 @@ def _get_run_cmd(inputs: JOB_INPUTS):
     # ENVS
     envs = SECRET_ENVS
     experiments_params = inputs.experiments_params
-    if experiments_params.name:
-        envs.append({"name": "MLFLOW_RUN_NAME", "value": experiments_params.name})
-    if experiments_params.name_tag:
-        envs.append({"name": "MLFLOW_RUN_NAME_TAG", "value": experiments_params.name_tag})
-    if experiments_params.project:
-        envs.append({"name": "MLFLOW_EXPERIMENT_NAME", "value": experiments_params.project})
-    if experiments_params.disable:
-        envs.append({"name": "MLFLOW_MODE", "value": "disabled"})
+    if not experiments_params.disable:
+        if experiments_params.name:
+            envs.append({"name": "MLFLOW_RUN_NAME", "value": experiments_params.name})
+        if experiments_params.name_tag:
+            envs.append({"name": "MLFLOW_RUN_NAME_TAG", "value": experiments_params.name_tag})
+        if experiments_params.project:
+            envs.append({"name": "MLFLOW_EXPERIMENT_NAME", "value": experiments_params.project})
     if inputs.training_params:
         for key, value in inputs.training_params.items():
             envs.append({"name": key.upper(), "value": str(value)})
