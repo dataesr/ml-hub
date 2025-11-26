@@ -54,8 +54,7 @@ export type JobInputs = {
   dataset_format?: "auto" | "conversational" | "text"
   mode?: "train" | "push"
   push_model_dir?: string
-  hf_hub?: string
-  hf_hub_private?: boolean
+  hf_push_repo?: string
   experiments_params?: Record<string, any>
   prompts_params?: Record<string, any>
   training_params?: Record<string, any>

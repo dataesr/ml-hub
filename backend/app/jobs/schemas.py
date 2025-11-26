@@ -41,8 +41,7 @@ class JOB_INPUTS(BaseModel):
     dataset_format: JOB_DATASET_FORMAT | None = None
     mode: JOB_MODE | None = None
     push_model_dir: str | None = None
-    hf_hub: str | None = None
-    hf_hub_private: bool | None = False
+    hf_push_repo: str | None = None
     experiments_params: EXPERIMENTS_PARAMS | None = None
     prompts_params: PROMPTS_PARAMS | None = None
     training_params: DICT_PARAMS | None = None

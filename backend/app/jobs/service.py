@@ -40,6 +40,8 @@ def _get_run_cmd(inputs: JOB_INPUTS):
 
     # ENVS
     envs = SECRET_ENVS
+    if inputs.hf_push_repo:
+        envs.append({"name": "HF_PUSH_REPO", "value": inputs.hf_push_repo})
     experiments_params = inputs.experiments_params
     if not experiments_params.disable:
         if experiments_params.name:
@@ -87,10 +89,6 @@ def _get_run_cmd(inputs: JOB_INPUTS):
         cmd += f" --pipeline {inputs.pipeline}"
     if inputs.push_model_dir:
         cmd += f" --push_model_dir {inputs.push_model_dir}"
-    if inputs.hf_hub:
-        cmd += f" --hf_hub {inputs.hf_hub}"
-    if inputs.hf_hub_private:
-        cmd += f" --hf_hub_private"
 
     logger.debug(f"job cmd = {cmd}")
     return cmd

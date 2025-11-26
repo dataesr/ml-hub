@@ -2,9 +2,7 @@ import { useState } from "react"
 import {
   Accordion,
   Alert,
-  Badge,
   Button,
-  Checkbox,
   Col,
   Container,
   Modal,
@@ -54,7 +52,7 @@ export default function JobsSubmit() {
   const { data: selectedConfig } = useGetDatasetConfig(inputs?.dataset_config, inputs?.dataset_name)
 
   const navigate = useNavigate()
-  const required = inputs.model_name && inputs.dataset_name && ((pushToHF && inputs?.hf_hub) || !pushToHF)
+  const required = inputs.model_name && inputs.dataset_name && ((pushToHF && inputs?.hf_push_repo) || !pushToHF)
 
   const resetInputs = () => {
     setPushToHF(false)
@@ -94,7 +92,7 @@ export default function JobsSubmit() {
 
   const handlePushToHFChange = (push: boolean) => {
     if (!push) {
-      const { hf_hub, hf_hub_private, ...newInputs } = inputs
+      const { hf_push_repo, ...newInputs } = inputs
       setInputs(newInputs)
     }
     setPushToHF(push)
@@ -182,19 +180,14 @@ export default function JobsSubmit() {
         {pushToHF && (
           <Container fluid className="fr-mt-2w">
             <SmartTextInput
-              value={inputs.hf_hub || ""}
-              onChange={(value) => handleInputsChange("hf_hub", value)}
-              onError={(value) => handleErrorsChange("hf_hub", value)}
+              value={inputs.hf_push_repo || ""}
+              onChange={(value) => handleInputsChange("hf_push_repo", value)}
+              onError={(value) => handleErrorsChange("hf_push_repo", value)}
               validateAsync={(value) => validateRepoName(value, pushToHF, false, "dataesr")}
               label="HuggingFace Name"
               hint="Name of the HuggingFace repository to push the model."
               placeholder="dataesr/my-trained-model"
               required={pushToHF}
-            />
-            <Checkbox
-              label="Make the repository private"
-              checked={inputs?.hf_hub_private || false}
-              onChange={(e) => handleInputsChange("hf_hub_private", e.target.checked)}
             />
           </Container>
         )}
