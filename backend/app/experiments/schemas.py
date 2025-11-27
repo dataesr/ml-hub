@@ -1,5 +1,8 @@
-from typing import Literal
+from pydantic import BaseModel
 
 
-RUN_STATES = Literal["crashed", "failed", "finished", "killed", "running", "pending"]
-ARTIFACT_TYPES = Literal["model", "dataset"]
+class EXPERIMENTS_PARAMS(BaseModel):
+    name: str | None = None
+    name_tag: str | None = None
+    project: str | None = None
+    disable: bool | None = False

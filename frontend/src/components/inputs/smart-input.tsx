@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react"
 interface SmartInputProps<T> {
   value: T
   onChange: (value: T) => void
-  onError?: (nerror: string | null) => void
+  onError?: (error: string | null) => void
   validateSync?: (value: T) => string | null // Instant validation
   validateAsync?: (value: T) => Promise<string | null> // API validation
   debounceTime?: number

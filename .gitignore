@@ -28,3 +28,6 @@ dist-ssr
 
 # Test notebooks
 *test*.ipynb
+
+# pycaches
+__pycache__/

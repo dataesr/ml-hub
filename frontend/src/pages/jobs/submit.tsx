@@ -3,16 +3,19 @@ import {
   Accordion,
   Alert,
   Button,
-  Checkbox,
+  Col,
   Container,
   Modal,
   ModalContent,
   ModalFooter,
   ModalTitle,
+  Row,
   SegmentedControl,
   SegmentedElement,
   Select,
   SelectOption,
+  Tag,
+  TagGroup,
   Text,
   TextArea,
   TextInput,
@@ -42,13 +45,14 @@ export default function JobsSubmit() {
   const [alertError, setAlertError] = useState<string>("")
   const [alertSuccess, setAlertSuccess] = useState<string>("")
   const [openSubmit, setOpenSubmit] = useState<boolean>(false)
+  const [trainingArg, setTrainingArg] = useState<{ key: string; value: string }>(null)
 
   const [controlConfig, setControlConfig] = useState<string>("custom")
   const { data: configs } = useListDatasetConfigs(inputs?.dataset_name)
   const { data: selectedConfig } = useGetDatasetConfig(inputs?.dataset_config, inputs?.dataset_name)
 
   const navigate = useNavigate()
-  const required = inputs.model_name && inputs.dataset_name && ((pushToHF && inputs?.hf_hub) || !pushToHF)
+  const required = inputs.model_name && inputs.dataset_name && ((pushToHF && inputs?.hf_push_repo) || !pushToHF)
 
   const resetInputs = () => {
     setPushToHF(false)
@@ -71,9 +75,24 @@ export default function JobsSubmit() {
     setAlertError("")
   }
 
+  const handleExperimentsChange = (key: string, value: any) => {
+    setInputs({ ...inputs, experiments_params: { ...inputs?.experiments_params, [key]: value } })
+    setAlertError("")
+  }
+
+  const handlePromptsChange = (key: string, value: any) => {
+    setInputs({ ...inputs, prompts_params: { ...inputs?.prompts_params, [key]: value } })
+    setAlertError("")
+  }
+
+  const handleTrainingChange = (key: string, value: any) => {
+    setInputs({ ...inputs, training_params: { ...inputs?.training_params, [key]: value } })
+    setAlertError("")
+  }
+
   const handlePushToHFChange = (push: boolean) => {
     if (!push) {
-      const { hf_hub, hf_hub_private, ...newInputs } = inputs
+      const { hf_push_repo, ...newInputs } = inputs
       setInputs(newInputs)
     }
     setPushToHF(push)
@@ -140,9 +159,9 @@ export default function JobsSubmit() {
           <SelectOption key={"causallm-unsloth"}>CausalLM with Unsloth</SelectOption>
         </Select>
         <SmartTextInput
-          value={inputs.wandb_project || ""}
-          onChange={(value) => handleInputsChange("wandb_project", value)}
-          onError={(value) => handleErrorsChange("wandb_project", value)}
+          value={inputs?.experiments_params?.project || ""}
+          onChange={(value) => handleExperimentsChange("project", value)}
+          onError={(value) => handleErrorsChange("experiments_project", value)}
           validateSync={validateAplhaNum}
           label="Experiment Project Name"
           hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
@@ -161,24 +180,63 @@ export default function JobsSubmit() {
         {pushToHF && (
           <Container fluid className="fr-mt-2w">
             <SmartTextInput
-              value={inputs.hf_hub || ""}
-              onChange={(value) => handleInputsChange("hf_hub", value)}
-              onError={(value) => handleErrorsChange("hf_hub", value)}
+              value={inputs.hf_push_repo || ""}
+              onChange={(value) => handleInputsChange("hf_push_repo", value)}
+              onError={(value) => handleErrorsChange("hf_push_repo", value)}
               validateAsync={(value) => validateRepoName(value, pushToHF, false, "dataesr")}
               label="HuggingFace Name"
               hint="Name of the HuggingFace repository to push the model."
               placeholder="dataesr/my-trained-model"
               required={pushToHF}
             />
-            <Checkbox
-              label="Make the repository private"
-              checked={inputs?.hf_hub_private || false}
-              onChange={(e) => handleInputsChange("hf_hub_private", e.target.checked)}
-            />
           </Container>
         )}
         <Accordion title="Training options" className="fr-mt-5w">
-          TO BE DEVELOPPED
+          {inputs?.training_params && (
+            <TagGroup>
+              {Object.entries(inputs.training_params).map(([key, value]) => (
+                <Tag color="blue-cumulus">{`${key}: ${value}`}</Tag>
+              ))}
+            </TagGroup>
+          )}
+          <Row>
+            <Col md="5">
+              <SmartTextInput
+                className="fr-pr-2w"
+                value={trainingArg?.key || ""}
+                onChange={(value) => setTrainingArg({ ...trainingArg, key: String(value).toUpperCase() })}
+                onError={(value) => handleErrorsChange("training_arg", value)}
+                validateSync={validateAplhaNum}
+                label="Training Param Name"
+                hint="Name of the training param to add."
+                placeholder="num_batch_size"
+              />
+            </Col>
+            <Col md="5">
+              <SmartTextInput
+                className="fr-pr-2w"
+                value={trainingArg?.value || ""}
+                onChange={(value) => setTrainingArg({ ...trainingArg, value: value })}
+                onError={(value) => handleErrorsChange("training_arg", value)}
+                validateSync={validateAplhaNum}
+                label="Training Param Value"
+                hint="Value of the training param to add."
+                placeholder="2"
+              />
+            </Col>
+            <Col md="2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  handleTrainingChange(trainingArg.key, trainingArg.value)
+                  setTrainingArg(null)
+                }}
+                disabled={!trainingArg?.key || !trainingArg.value}
+              >
+                Add
+              </Button>
+            </Col>
+          </Row>
         </Accordion>
         <Accordion title="Dataset options">
           <SegmentedControl
@@ -226,21 +284,21 @@ export default function JobsSubmit() {
                 className="fr-mt-2w"
                 label="Dataset prompts instruction"
                 hint="Custom instruction that will be applied to all prompts."
-                value={inputs?.dataset_instruction || selectedConfig?.instruction || ""}
+                value={inputs?.prompts_params?.instruction || selectedConfig?.instruction || ""}
                 placeholder="You are a helpful assistant..."
-                onChange={(e) => handleInputsChange("dataset_instruction", e.target.value)}
-                messageType={errors.dataset_instruction ? "error" : undefined}
-                message={errors.dataset_instruction || undefined}
+                onChange={(e) => handlePromptsChange("instruction", e.target.value)}
+                // messageType={errors.dataset_instruction ? "error" : undefined}
+                // message={errors.dataset_instruction || undefined}
               />
               <TextInput
                 className="fr-mt-2w"
                 label="Dataset prompts text format"
                 hint="Text format that will be applied to all prompts."
-                value={inputs?.dataset_text_format || selectedConfig?.text_format || ""}
+                value={inputs?.prompts_params?.instruction || selectedConfig?.text_format || ""}
                 placeholder="### Instruction:\n {instruction}..."
-                onChange={(e) => handleInputsChange("dataset_text_format", e.target.value)}
-                messageType={errors.dataset_text_format ? "error" : undefined}
-                message={errors.dataset_text_format || undefined}
+                onChange={(e) => handleInputsChange("text_format", e.target.value)}
+                // messageType={errors.dataset_text_format ? "error" : undefined}
+                // message={errors.dataset_text_format || undefined}
                 disabled={inputs?.dataset_format === "conversational"}
               />
               {/* <TextInput
@@ -258,9 +316,9 @@ export default function JobsSubmit() {
         </Accordion>
         <Accordion title="Experiment options">
           <SmartTextInput
-            value={inputs?.wandb_run_tag || ""}
-            onChange={(value) => handleInputsChange("wandb_run_tag", value)}
-            onError={(error) => handleErrorsChange("wandb_run_tag", error)}
+            value={inputs?.experiments_params?.name_tag || ""}
+            onChange={(value) => handleExperimentsChange("name_tag", value)}
+            onError={(error) => handleErrorsChange("experiments_name_tag", error)}
             validateSync={validateAplhaNum}
             maxLength={12}
             label="Experiment Run Tag"
@@ -269,8 +327,8 @@ export default function JobsSubmit() {
           />
           <Toggle
             label="Disable experiment reporting"
-            checked={inputs?.wandb_disabled}
-            onChange={(e) => handleInputsChange("wandb_disabled", e.target.checked)}
+            checked={inputs?.experiments_params?.disabled || false}
+            onChange={(e) => handleExperimentsChange("disabled", e.target.checked)}
           />
         </Accordion>
         {alertError && (
@@ -299,7 +357,9 @@ export default function JobsSubmit() {
             <ModalContent>
               <Text>Are you sure you want to submit the following job ?</Text>
               {Object.entries(inputs).map(([key, value]) => (
-                <Text className="fr-mb-1v fr-text--legend">{`- ${key}: ${String(value)}`}</Text>
+                <Text className="fr-mb-1v fr-text--legend">{`- ${key}: ${
+                  typeof value === "object" ? JSON.stringify(value) : String(value)
+                }`}</Text>
               ))}
             </ModalContent>
             <ModalFooter>

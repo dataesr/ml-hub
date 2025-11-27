@@ -4,13 +4,14 @@ import LoadingSpinner from "../../components/loading-spinner"
 import { useState } from "react"
 import RunsTable from "./components/runs-table"
 import { useListExperiments, useListRuns } from "../../api/experiments/hooks"
+import { Experiment } from "../../api/experiments/types"
+import ExperimentCard from "./components/experiment-card"
 
 interface ExperimentsRunsArgs {
-  project: string
+  id: string
 }
-function ExperimentsRuns({ project }: ExperimentsRunsArgs) {
-  const { data: runs, isFetching, error } = useListRuns(project)
-  console.log("project", project)
+function ExperimentsRuns({ id }: ExperimentsRunsArgs) {
+  const { data: runs, isFetching, error } = useListRuns(id)
 
   return (
     <Container fluid>
@@ -21,28 +22,43 @@ function ExperimentsRuns({ project }: ExperimentsRunsArgs) {
   )
 }
 
+function ExperimentsList({ experiments }: { experiments: Experiment[] }) {
+  const sortedExperiments = experiments.sort(
+    (a, b) => (b.updated_at || b.created_at).getTime() - (a.updated_at || a.created_at).getTime()
+  )
+
+  return (
+    <Container fluid style={{ maxWidth: "900px" }}>
+      {sortedExperiments.map((experiment) => (
+        <ExperimentCard key={experiment.id} experiment={experiment} />
+      ))}
+    </Container>
+  )
+}
+
 export default function Experiments() {
-  const { data: projects, isFetching, error } = useListExperiments()
-  const [selectProjectId, setSelectProjectId] = useState<string>("UHJvamVjdDp2MTp1bmNhdGVnb3JpemVkOmRhdGFlc3I=")
+  const { data: experiments, isFetching, error } = useListExperiments()
+  // const [selectedExpId, setSelectedExpId] = useState<string>("")
   //TODO remove plain id
 
-  console.log("projects", projects)
-  console.log("selectProjectId", selectProjectId)
+  console.log("experiments", experiments)
+  // console.log("selectProjectId", selectedExpId)
 
   return (
     <Container className="fr-my-2w">
       {error && <ErrorCallOut error={error} />}
       {isFetching && <LoadingSpinner position="left" />}
-      {!isFetching && projects && (
+      {!isFetching && experiments && <ExperimentsList experiments={experiments} />}
+      {/* {!isFetching && experiments && (
         <Container fluid style={{ width: "max-content" }}>
-          <Select selectedKey={selectProjectId} onSelectionChange={(key) => setSelectProjectId(String(key))}>
-            {projects.map(({ id, name }) => (
+          <Select selectedKey={selectedExpId} onSelectionChange={(key) => setSelectedExpId(String(key))}>
+            {experiments.map(({ id, name }) => (
               <SelectOption key={id}>{name}</SelectOption>
             ))}
           </Select>
-          {selectProjectId && <ExperimentsRuns project={projects.find(({ id }) => id == selectProjectId).name} />}
+          {selectedExpId && <ExperimentsRuns id={selectedExpId} />}
         </Container>
-      )}
+      )} */}
     </Container>
   )
 }

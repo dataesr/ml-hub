@@ -1,41 +1,29 @@
 from fastapi import APIRouter
 import app.experiments.service as exp_svc
-from app.experiments.schemas import ARTIFACT_TYPES, RUN_STATES
+from mlflow.entities import RunStatus
 
 router = APIRouter()
 
 
 @router.get("/experiments")
 def experiments_projects_list():
-    projects = exp_svc.list_projects()
+    projects = exp_svc.get_all()
     return projects
 
 
-@router.get("/experiments/{project}")
-def experiments_projects_get(project: str):
-    project = exp_svc.get_project(project)
+@router.get("/experiments/{id}")
+def experiments_projects_get(id: str):
+    project = exp_svc.get(id)
     return project
 
 
-@router.get("/experiments/runs/{project}")
-def experiments_runs_list(project: str, state: RUN_STATES = None):
-    runs = exp_svc.list_runs(project, state)
+@router.get("/experiments/{id}/runs")
+def experiments_runs_list(id: str, state: str = None):
+    runs = exp_svc.list_runs(id, state)
     return runs
 
 
-@router.get("/experiments/runs/{project}/{id}")
-def experiments_runs_get(project: str, id: str):
-    run = exp_svc.get_run(project, id)
+@router.get("/experiments/runs/{run_id}")
+def experiments_runs_get(run_id: str):
+    run = exp_svc.get_run(run_id)
     return run
-
-
-@router.get("/experiments/artifacts/{project}")
-def experiments_artifacts_list(project: str, type: ARTIFACT_TYPES = "model"):
-    artifacts = exp_svc.list_artifacts(project, type)
-    return artifacts
-
-
-@router.get("/experiments/artifacts/{project}/{name}")
-def experiments_artifacts_get(project: str, name: str, type: ARTIFACT_TYPES = "model"):
-    artifact = exp_svc.get_artifact(project, name, type)
-    return artifact

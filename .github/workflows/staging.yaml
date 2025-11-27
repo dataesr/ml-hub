@@ -1,4 +1,4 @@
-name: Production deployment
+name: Staging deployment
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
   deploy:
     name: ✨ Update staging deployment
     runs-on: ubuntu-latest
-    needs: release
+    needs: publish-ghcr
     steps:
       - name: Deploy to Cluster
         id: kubectl-deploy

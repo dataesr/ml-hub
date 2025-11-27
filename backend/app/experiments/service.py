@@ -1,71 +1,72 @@
-import wandb
+import os
+from mlflow import MlflowClient
+from mlflow.entities import RunStatus
 from app.logger import get_logger
-from app.experiments.schemas import ARTIFACT_TYPES, RUN_STATES
 
 logger = get_logger(__name__)
 
+client = MlflowClient(tracking_uri=os.getenv("MLFLOW_TRACKING_URI"))
+logger.debug(f"client_tracking_uri = {client.tracking_uri}")
 
-wb = wandb.Api(overrides={"entity": "dataesr"})
 
-
-def list_projects():
-    projects = wb.projects()
-    projects = [project._attrs for project in projects]
+def get_all():
+    projects = client.search_experiments(view_type="ALL")
+    projects = [
+        {
+            "id": project.experiment_id,
+            "name": project.name,
+            "created_at": project.creation_time,
+            "updated_at": project.last_update_time,
+            "tags": project.tags,
+        }
+        for project in projects
+    ]
     return projects
 
 
-def get_project(project: str):
-    # VBA: doesnt works i dont know why
-    project = wb.project(name=project)
-    logger.debug(f"{project =} {project.__dict__}")
-    return project._attrs
+def get(id: str):
+    project = client.get_experiment(experiment_id=id)
+    project = {
+        "id": project.experiment_id,
+        "name": project.name,
+        "created_at": project.creation_time,
+        "updated_at": project.last_update_time,
+        "tags": project.tags,
+    }
+    return project
 
 
-def list_runs(project: str, state: RUN_STATES = None):
-    runs = wb.runs(project)
+def list_runs(id: str, state: RunStatus = None):
+    runs = client.search_runs(experiment_ids=[id])
     runs = [
         {
-            "id": run.id,
-            "name": run.name,
-            "displayName": run.displayName,
-            "state": run.state,
-            "createdAt": run.createdAt,
-            "url": run.url,
+            "id": run.info.run_id,
+            "name": run.info.run_name,
+            "status": run.info.status,
+            "experiment_id": run.info.experiment_id,
+            "user_id": run.info.user_id,
+            "start_time": run.info.start_time,
+            "end_time": run.info.end_time,
         }
         for run in runs
     ]
     if state:
-        runs = [run for run in runs if run["state"] == state]
+        runs = [run for run in runs if run["status"] == state]
     return runs
 
 
-def get_run(project: str, id: str):
-    run = wb.run(path=f"{project}/{id}")
-    return run._attrs
-
-
-def list_artifacts(project: str, type: ARTIFACT_TYPES = "model"):
-    artifacts = wb.artifact_collections(project_name=project, type_name=type)
-    artifacts = [artifact._attrs for artifact in artifacts]
-    return artifacts
-
-
-def get_artifact(project: str, name: str, type: ARTIFACT_TYPES = "model"):
-    artifact_name = f"{project}/{name}"
-    artifact = wb.artifact_collection(name=artifact_name, type_name=type)
-    artifact = artifact._attrs
-    versions = wb.artifacts(name=artifact_name, type_name=type)
-    artifact["versions"] = [
-        {
-            "version": version.version,
-            "name": version.name,
-            "entity": version.entity,
-            "project": version.project,
-            "aliases": version.aliases,
-            "created_at": version.created_at,
-            "final": version._final,
-            "metadata": version.metadata,
-        }
-        for version in versions
-    ]
-    return artifact
+def get_run(run_id: str):
+    run = client.get_run(run_id=run_id)
+    run = {
+        "id": run.info.run_id,
+        "name": run.info.run_name,
+        "status": run.info.status,
+        "experiment_id": run.info.experiment_id,
+        "user_id": run.info.user_id,
+        "start_time": run.info.start_time,
+        "end_time": run.info.end_time,
+        "metrics": run.data.metrics,
+        "params": run.data.params,
+        "tags": run.data.tags,
+    }
+    return run
