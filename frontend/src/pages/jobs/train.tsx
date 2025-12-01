@@ -25,12 +25,12 @@ import {
 import { scrollToTop } from "../../utils"
 import { useNavigate } from "react-router-dom"
 import { validateText, validateAplhaNum, validateRepoName } from "../../helpers/validate"
-import { Job, JobInputs } from "../../api/jobs/types"
-import { createJob } from "../../api/jobs/api"
+import { Job, JobTrainInputs } from "../../api/jobs/types"
+import { createJobTrain } from "../../api/jobs/api"
 import { useGetDatasetConfig, useListDatasetConfigs } from "../../api/datasets/hooks"
 import { SmartTextInput } from "../../components/inputs/smart-input"
 
-const DEFAULT_INPUTS: JobInputs = {
+const DEFAULT_INPUTS: JobTrainInputs = {
   model_name: "",
   dataset_name: "",
   pipeline: "causallm",
@@ -38,8 +38,8 @@ const DEFAULT_INPUTS: JobInputs = {
 }
 
 //TODO: split into several components
-export default function JobsSubmit() {
-  const [inputs, setInputs] = useState<JobInputs>(DEFAULT_INPUTS)
+export default function JobsTrain() {
+  const [inputs, setInputs] = useState<JobTrainInputs>(DEFAULT_INPUTS)
   const [pushToHF, setPushToHF] = useState<boolean>(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [alertError, setAlertError] = useState<string>("")
@@ -106,9 +106,9 @@ export default function JobsSubmit() {
 
   const onSubmit = async () => {
     try {
-      const newJob: Job = await createJob(inputs)
+      const newJob: Job = await createJobTrain(inputs)
       resetInputs()
-      setAlertSuccess(`Successfully created job ${newJob.spec.name} (${newJob.id})`)
+      setAlertSuccess(`Successfully created job ${newJob.name} (${newJob.id})`)
       setTimeout(() => navigate(`/jobs`), 2000)
     } catch (error) {
       console.error("Error creating job:", error)
@@ -164,7 +164,7 @@ export default function JobsSubmit() {
           onError={(value) => handleErrorsChange("experiments_project", value)}
           validateSync={validateAplhaNum}
           label="Experiment Project Name"
-          hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
+          hint="Name of the experiment project. Use 'Default' if not set."
           placeholder="entity-extraction-acknowledgments"
         />
         <Toggle

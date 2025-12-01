@@ -1,16 +1,17 @@
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
-import { Button, Tag, Text } from "@dataesr/dsfr-plus"
+import { Badge, Button, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate, formatDuration } from "../../../utils"
-import { getStateColor } from "../helpers/colors"
+import { getStateColor, getTaskColor } from "../helpers/colors"
 import { OVHAI_TRAINING_URL } from "../../../api/url"
 import { Job } from "../../../api/jobs/types"
 
 const TABLE_CONFIG = [
   { header: "Name / ID", component: "name" },
+  { header: "Task", component: "task" },
   { header: "Status", component: "status" },
   { header: "Resources", component: "resources" },
-  { header: "Started", component: "startedAt" },
+  { header: "Started", component: "started_at" },
   { header: "Duration", component: "duration" },
   { header: "Actions", component: "actions" },
 ]
@@ -18,9 +19,9 @@ const TABLE_CONFIG = [
 const buildTableComponents = (job: Job) => {
   const name = (
     <>
-      <CopyToClipboard copyText={job.spec.name}>
+      <CopyToClipboard copyText={job.name}>
         <Text size="sm" bold>
-          {job.spec.name}
+          {job.name}
         </Text>
       </CopyToClipboard>
       <CopyToClipboard copyText={job.id}>
@@ -30,18 +31,19 @@ const buildTableComponents = (job: Job) => {
       </CopyToClipboard>
     </>
   )
-  const status = <Tag color={getStateColor(job.status.state)}>{job.status.state}</Tag>
-  const resources = job.spec.resources.gpu ? (
+  const task = <Badge color={getTaskColor(job.task)}>{job.task}</Badge>
+  const status = <Tag color={getStateColor(job.state)}>{job.state}</Tag>
+  const resources = job.resources.gpu ? (
     <>
-      <Text size="sm">GPU: {job.spec.resources.gpu}</Text>
-      <Text size="sm">{job.spec.resources.gpuModel}</Text>
+      <Text size="sm">GPU: {job.resources.gpu}</Text>
+      <Text size="sm">{job.resources.gpuModel}</Text>
     </>
   ) : (
-    <Text size="sm">CPU: {job.spec.resources.cpu}</Text>
+    <Text size="sm">CPU: {job.resources.cpu}</Text>
   )
-  const startedAt = job.status.startedAt ? formatDate(job.status.startedAt) : "-"
-  const finalizedAt = job.status.finalizedAt ? formatDate(job.status.finalizedAt) : "-"
-  const duration = job.status.duration ? formatDuration(job.status.duration) : "-"
+  const started_at = job.started_at ? formatDate(job.started_at) : "-"
+  const finalized_at = job.finalized_at ? formatDate(job.finalized_at) : "-"
+  const duration = job.duration ? formatDuration(job.duration) : "-"
 
   const actions = (
     <Button
@@ -56,10 +58,11 @@ const buildTableComponents = (job: Job) => {
 
   return {
     name,
+    task,
     status,
     resources,
-    startedAt,
-    finalizedAt,
+    started_at,
+    finalized_at,
     duration,
     actions,
   }

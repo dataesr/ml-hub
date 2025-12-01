@@ -1,20 +1,18 @@
 import { api } from "../client"
-import { Job, JobInputs } from "./types"
+import { Job, JobInfereInputs, JobTrainInputs } from "./types"
 
 const API_JOBS_URL = "/jobs"
 
 function buildJob(data: any): Job {
   return {
     ...data,
-    createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
-    updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined,
-    status: {
-      ...data.status,
-      duration: data.status?.duration ? Number(data.status.duration) : undefined,
-      queuedAt: data.status?.queuedAt ? new Date(data.status.queuedAt) : undefined,
-      startedAt: data.status?.startedAt ? new Date(data.status.startedAt) : undefined,
-      finalizedAt: data.status?.finalizedAt ? new Date(data.status.finalizedAt) : undefined,
-    },
+    created_at: data.created_at ? new Date(data.created_at) : undefined,
+    updated_at: data.updated_at ? new Date(data.updatedAt) : undefined,
+    queued_at: data.queued_at ? new Date(data.queued_at) : undefined,
+    started_at: data.started_at ? new Date(data.started_at) : undefined,
+    stopped_at: data.stopped_at ? new Date(data.stopped_at) : undefined,
+    finalized_at: data.finalized_at ? new Date(data.finalized_at) : undefined,
+    duration: data.duration ? Number(data.duration) : undefined,
   }
 }
 
@@ -29,8 +27,13 @@ export async function listJobs(state: string): Promise<Job[]> {
   return Array.isArray(data) ? data.map(buildJob) : []
 }
 
-export async function createJob(job: JobInputs): Promise<Job> {
-  const data = await api.post(API_JOBS_URL, job)
+export async function createJobTrain(job: JobTrainInputs): Promise<Job> {
+  const data = await api.post(`${API_JOBS_URL}/train`, job)
+  return buildJob(data)
+}
+
+export async function createJobInfere(job: JobInfereInputs): Promise<Job> {
+  const data = await api.post(`${API_JOBS_URL}/infere`, job)
   return buildJob(data)
 }
 

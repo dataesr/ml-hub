@@ -1,5 +1,3 @@
-import { EnvironmentVariable } from "../../types"
-
 export type JobState =
   | "QUEUED"
   | "PENDING"
@@ -16,46 +14,50 @@ export type JobState =
 
 export type Job = {
   id: string
-  createdAt: Date
-  updatedAt?: Date
-  spec: {
-    name: string
-    image: string
-    command: Array<string>
-    envVars?: Array<EnvironmentVariable>
-    labels: {
-      ["ovh/id"]: string
-      ["ovh/type"]: string
-    }
-    resources: {
-      cpu?: number
-      gpu?: number
-      gpuModel?: string
-    }
+  name: string
+  task: string
+  state: JobState
+  created_at: Date
+  updated_at?: Date
+  queued_at?: Date
+  started_at?: Date
+  stopped_at?: Date
+  finalized_at?: Date
+  duration?: number
+  image: string
+  command: string
+  url: string
+  resources: {
+    cpu?: number
+    gpu?: number
+    gpuModel?: string
   }
-  status: {
-    state: JobState
-    url: string
-    duration?: number
-    exitCode?: number
-    queuedAt?: Date
-    startedAt?: Date
-    finalizedAt?: Date
-  }
+  labels: Record<string, string>
 }
 
 export type JobInputs = {
   name?: string
+  gpu?: number
+  experiments_params?: Record<string, any>
+}
+
+export type JobTrainInputs = JobInputs & {
   model_name: string
   dataset_name: string
-  gpu?: number
   pipeline?: string
   dataset_config?: string
   dataset_format?: "auto" | "conversational" | "text"
-  mode?: "train" | "push"
   push_model_dir?: string
   hf_push_repo?: string
-  experiments_params?: Record<string, any>
   prompts_params?: Record<string, any>
   training_params?: Record<string, any>
+}
+
+export type JobInfereInputs = JobInputs & {
+  model_name: string
+  dataset_name: string
+  dataset_split?: string
+  dataset_config?: string
+  prompts_params?: Record<string, any>
+  sampling_params?: Record<string, any>
 }

@@ -22,3 +22,14 @@ export const getStateColor = (state: JobState): ColorFamily => {
       return "blue-cumulus"
   }
 }
+
+export const getTaskColor = (task: string): ColorFamily => {
+  switch (task) {
+    case "finetuning":
+      return "yellow-moutarde"
+    case "inference":
+      return "blue-cumulus"
+    default:
+      return "beige-gris-galet"
+  }
+}

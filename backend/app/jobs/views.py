@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from app.jobs.schemas import JOB_INPUTS, JOB_STATE
+from fastapi import APIRouter
+from app.jobs.schemas import TRAIN_INPUTS, INFERE_INPUTS, JOB_STATE
 import app.jobs.service as jobs_svc
 
 router = APIRouter()
@@ -11,9 +11,15 @@ def jobs_list(state: JOB_STATE = None):
     return jobs
 
 
-@router.post("/jobs")
-def jobs_run(job_inputs: JOB_INPUTS):
-    job = jobs_svc.run(job_inputs)
+@router.post("/jobs/train")
+def jobs_train(job_inputs: TRAIN_INPUTS):
+    job = jobs_svc.run_train(job_inputs)
+    return job
+
+
+@router.post("/jobs/infere")
+def jobs_infere(job_inputs: INFERE_INPUTS):
+    job = jobs_svc.run_infere(job_inputs)
     return job
 
 

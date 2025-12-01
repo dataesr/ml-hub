@@ -15,10 +15,10 @@ export default function Jobs() {
         <Container>
           <Breadcrumb className="fr-pt-2w fr-mt-0 fr-mb-2w">
             <Link href="/">Home</Link>
-            <Link current>Train</Link>
+            <Link current>Jobs</Link>
           </Breadcrumb>
           <Text size="lead" className="fr-mb-1w">
-            Training jobs
+            OVH Jobs
           </Text>
           <ButtonGroup isInlineFrom="xs">
             <Button icon="refresh-line" variant="tertiary" onClick={() => refetch()}>
@@ -27,10 +27,18 @@ export default function Jobs() {
             <Button
               icon="arrow-right-line"
               iconPosition="right"
-              onClick={() => navigate("/jobs/submit")}
+              onClick={() => navigate("/jobs/train")}
               disabled={error != undefined}
             >
-              Submit a new job
+              New training
+            </Button>
+            <Button
+              icon="arrow-right-line"
+              iconPosition="right"
+              onClick={() => navigate("/jobs/infere")}
+              disabled={error != undefined}
+            >
+              New inference
             </Button>
           </ButtonGroup>
         </Container>

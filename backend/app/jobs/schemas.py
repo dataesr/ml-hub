@@ -28,20 +28,39 @@ class PROMPTS_PARAMS(BaseModel):
     instruction: str | None = None
     text_format: str | None = None
     chat_template: str | None = None
+    dataset_format: JOB_DATASET_FORMAT | None = None
 
 
 class JOB_INPUTS(BaseModel):
     name: str | None = None
+    gpu: int | None = 1
+    experiments_params: EXPERIMENTS_PARAMS | None = None
+
+
+TRAIN_PIPELINE = Literal["causallm", "causallm-unsloth"]
+TRAIN_DATASET_FORMAT = Literal["auto", "conversational", "text"]
+# JOB_MODE = Literal["train", "push"]
+TRAIN_MODE = Literal["train"]
+
+
+class TRAIN_INPUTS(JOB_INPUTS):
     model_name: str
     dataset_name: str
-    pipeline: JOB_PIPELINE
-    experiment_project: str | None = None
-    gpu: int | None = None
+    pipeline: TRAIN_PIPELINE
     dataset_config: str | None = None
-    dataset_format: JOB_DATASET_FORMAT | None = None
-    mode: JOB_MODE | None = None
+    dataset_format: TRAIN_DATASET_FORMAT | None = None
+    mode: TRAIN_MODE | None = None
     push_model_dir: str | None = None
     hf_push_repo: str | None = None
     experiments_params: EXPERIMENTS_PARAMS | None = None
     prompts_params: PROMPTS_PARAMS | None = None
     training_params: DICT_PARAMS | None = None
+
+
+class INFERE_INPUTS(JOB_INPUTS):
+    model_name: str
+    dataset_name: str
+    dataset_split: str | None = None
+    dataset_config: str | None = None
+    prompts_params: PROMPTS_PARAMS | None = None
+    sampling_params: DICT_PARAMS | None = None
