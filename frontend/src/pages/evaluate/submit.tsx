@@ -19,22 +19,21 @@ import {
 } from "@dataesr/dsfr-plus"
 import { scrollToTop } from "../../utils"
 import { useNavigate } from "react-router-dom"
-import { Job, JobInputs } from "../../api/jobs/types"
-import { createJob } from "../../api/jobs/api"
+import { Job, JobInfereInputs } from "../../api/jobs/types"
+import { createJobInfere } from "../../api/jobs/api"
 import { useGetDatasetConfig, useListDatasetConfigs } from "../../api/datasets/hooks"
 import { SmartTextInput } from "../../components/inputs/smart-input"
-import { validateAplhaNum, validateRepoName, validateText } from "../../helpers/validate"
+import { validateRepoName, validateText } from "../../helpers/validate"
 
-const DEFAULT_INPUTS: JobInputs = {
+const DEFAULT_INPUTS: JobInfereInputs = {
   model_name: "",
   dataset_name: "",
-  pipeline: "causallm",
   gpu: 1,
 }
 
 //TODO: split into several components
 export default function EvaluateSubmit() {
-  const [inputs, setInputs] = useState<JobInputs>(DEFAULT_INPUTS)
+  const [inputs, setInputs] = useState<JobInfereInputs>(DEFAULT_INPUTS)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [alertError, setAlertError] = useState<string>("")
   const [alertSuccess, setAlertSuccess] = useState<string>("")
@@ -69,6 +68,11 @@ export default function EvaluateSubmit() {
     setAlertError("")
   }
 
+  const handlePromptsChange = (key: string, value: any) => {
+    setInputs({ ...inputs, prompts_params: { ...inputs?.prompts_params, [key]: value } })
+    setAlertError("")
+  }
+
   const onCheck = (e: React.FormEvent) => {
     e.preventDefault()
     if (Object.entries(errors).length) setAlertError("Please fix the errors before creating the job.")
@@ -77,9 +81,9 @@ export default function EvaluateSubmit() {
 
   const onSubmit = async () => {
     try {
-      const newJob: Job = await createJob(inputs)
+      const newJob: Job = await createJobInfere(inputs)
       resetInputs()
-      setAlertSuccess(`Successfully created evaluation ${newJob.spec.name} (${newJob.id})`)
+      setAlertSuccess(`Successfully created evaluation ${newJob.name} (${newJob.id})`)
       setTimeout(() => navigate(`/evaluate`), 2000)
     } catch (error) {
       console.error("Error creating job:", error)
@@ -120,7 +124,7 @@ export default function EvaluateSubmit() {
           placeholder="dataesr/training-dataset"
           required
         />
-        <Select
+        {/* <Select
           label="Evaluate Pipeline"
           selectedKey={inputs.pipeline}
           onSelectionChange={(key) => handleInputsChange("pipeline", key)}
@@ -137,7 +141,7 @@ export default function EvaluateSubmit() {
           label="Experiment Project Name"
           hint="Name of the experiment project. Defaults to 'uncategorized' if not set."
           placeholder="entity-extraction-acknowledgments"
-        />
+        /> */}
         <Accordion title="Dataset options">
           <SegmentedControl
             className="fr-mb-2w"
@@ -172,7 +176,7 @@ export default function EvaluateSubmit() {
               <Select
                 label="Dataset prompts format"
                 defaultSelectedKey={"auto"}
-                selectedKey={inputs?.dataset_format || selectedConfig?.dataset_format || "auto"}
+                selectedKey={selectedConfig?.dataset_format || "auto"}
                 onSelectionChange={(key) => handleInputsChange("dataset_format", key)}
               >
                 <SelectOption key="auto">Auto</SelectOption>
@@ -184,22 +188,22 @@ export default function EvaluateSubmit() {
                 className="fr-mt-2w"
                 label="Dataset prompts instruction"
                 hint="Custom instruction that will be applied to all prompts."
-                value={inputs?.dataset_instruction || selectedConfig?.instruction || ""}
+                value={inputs?.prompts_params?.instruction || selectedConfig?.instruction || ""}
                 placeholder="You are a helpful assistant..."
-                onChange={(e) => handleInputsChange("dataset_instruction", e.target.value)}
-                messageType={errors.dataset_instruction ? "error" : undefined}
-                message={errors.dataset_instruction || undefined}
+                onChange={(e) => handlePromptsChange("instruction", e.target.value)}
+                // messageType={errors.dataset_instruction ? "error" : undefined}
+                // message={errors.dataset_instruction || undefined}
               />
               <TextInput
                 className="fr-mt-2w"
                 label="Dataset prompts text format"
                 hint="Text format that will be applied to all prompts."
-                value={inputs?.dataset_text_format || selectedConfig?.text_format || ""}
+                value={inputs?.prompts_params?.instruction || selectedConfig?.text_format || ""}
                 placeholder="### Instruction:\n {instruction}..."
-                onChange={(e) => handleInputsChange("dataset_text_format", e.target.value)}
-                messageType={errors.dataset_text_format ? "error" : undefined}
-                message={errors.dataset_text_format || undefined}
-                disabled={inputs?.dataset_format === "conversational"}
+                onChange={(e) => handleInputsChange("text_format", e.target.value)}
+                // messageType={errors.dataset_text_format ? "error" : undefined}
+                // message={errors.dataset_text_format || undefined}
+                // disabled={inputs?.dataset_format === "conversational"}
               />
               {/* <TextInput
             className="fr-mt-2w"
@@ -213,11 +217,6 @@ export default function EvaluateSubmit() {
           /> */}
             </Container>
           )}
-          {/* <Toggle
-            label="Link OVH dataset volume"
-            checked={inputs?.dataset_volume || false}
-            onChange={(e) => handleInputsChange("dataset_volume", e.target.checked)}
-          /> */}
         </Accordion>
         {alertError && (
           <Alert
