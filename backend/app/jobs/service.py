@@ -7,7 +7,7 @@ from app.logger import get_logger
 
 logger = get_logger(__name__)
 
-GPU = "ai1-1-gpu"
+GPU = "l4-1-gpu"
 DOCKER_TRAIN = "ghcr.io/dataesr/llm-finetuning:latest"
 DOCKER_INFERE = "ghcr.io/dataesr/llm-inference:latest"
 DOCKER_CMD = "uv run main.py"

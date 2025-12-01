@@ -238,8 +238,8 @@ export default function JobsInfere() {
               <Select
                 label="Dataset prompts format"
                 defaultSelectedKey={"auto"}
-                selectedKey={selectedConfig?.dataset_format || "auto"}
-                onSelectionChange={(key) => handleInputsChange("dataset_format", key)}
+                selectedKey={inputs?.prompts_params?.dataset_format || selectedConfig?.dataset_format || "auto"}
+                onSelectionChange={(key) => handlePromptsChange("dataset_format", key)}
               >
                 <SelectOption key="auto">Auto</SelectOption>
                 <SelectOption key="text">Text</SelectOption>
@@ -260,9 +260,9 @@ export default function JobsInfere() {
                 className="fr-mt-2w"
                 label="Dataset prompts text format"
                 hint="Text format that will be applied to all prompts."
-                value={inputs?.prompts_params?.instruction || selectedConfig?.text_format || ""}
+                value={inputs?.prompts_params?.text_format || selectedConfig?.text_format || ""}
                 placeholder="### Instruction:\n {instruction}..."
-                onChange={(e) => handleInputsChange("text_format", e.target.value)}
+                onChange={(e) => handlePromptsChange("text_format", e.target.value)}
                 // messageType={errors.dataset_text_format ? "error" : undefined}
                 // message={errors.dataset_text_format || undefined}
                 // disabled={inputs?.dataset_format === "conversational"}

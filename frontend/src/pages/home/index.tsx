@@ -14,7 +14,7 @@ export default function Home() {
             shadow
             desc="Explore DataESR models, datasets and more."
             enlargeLink
-            imageAlt="texte alternatif de l’image"
+            imageAlt="digital-search"
             imageUrl="artwork/pictograms/digital/search.svg"
             classes={{ imgTag: "fr-ratio-1x1" }}
             linkProps={{
@@ -29,16 +29,16 @@ export default function Home() {
           <Card
             background
             shadow
-            desc="Train new models."
+            desc="Launch training and other jobs."
             enlargeLink
-            imageAlt="texte alternatif de l’image"
+            imageAlt="system"
             imageUrl="artwork/pictograms/system/system.svg"
             classes={{ imgTag: "fr-ratio-1x1" }}
             linkProps={{
               href: "/jobs",
             }}
             size="small"
-            title="Train"
+            title="Jobs"
             titleAs="h3"
           />
         </Col>
@@ -48,7 +48,7 @@ export default function Home() {
             shadow
             desc="Evaluate and compare models."
             enlargeLink
-            imageAlt="texte alternatif de l’image"
+            imageAlt="digital-data-visualization"
             imageUrl="artwork/pictograms/digital/data-visualization.svg"
             classes={{ imgTag: "fr-ratio-1x1" }}
             linkProps={{
@@ -65,7 +65,7 @@ export default function Home() {
             shadow
             desc="Infere models."
             enlargeLink
-            imageAlt="texte alternatif de l’image"
+            imageAlt="leisure-community"
             imageUrl="artwork/pictograms/leisure/community.svg"
             classes={{ imgTag: "fr-ratio-1x1" }}
             linkProps={{
