@@ -26,15 +26,24 @@ def get(owner: str, name: str):
     return dataset.__dict__
 
 
+def load_from_storage(path: str, container: str = CONTAINER_DATASETS, as_pandas: bool = False) -> Dataset | pd.DataFrame:
+    file_path = ovhai_object_download(path, container)
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"Error while downloading {path}")
+    dataset = load_dataset("json", data_files={"file": [file_path]}, split="file")
+    os.remove(file_path)
+    if as_pandas:
+        return dataset.to_pandas()
+    return dataset
+
+
 def load(dataset_name: str, split: str = None, as_pandas: bool = False) -> Dataset | pd.DataFrame:
     try:
         logger.debug(f"Trying to load {dataset_name} from Hugging Face...")
         dataset = load_dataset(dataset_name, split=split)
     except:
         logger.debug(f"Trying to load from storage...")
-        file_path = json_read(dataset_name)
-        dataset = load_dataset("json", data_files={"file": [file_path]}, split="file")
-        os.remove(file_path)
+        dataset = load_from_storage(dataset_name)
 
     if dataset:
         logger.debug(f"✅ Dataset {dataset_name} loaded!")

@@ -33,7 +33,7 @@ const buildTableComponents = (job: Job) => {
   )
   const task = <Badge color={getTaskColor(job.task)}>{job.task}</Badge>
   const status = <Tag color={getStateColor(job.state)}>{job.state}</Tag>
-  const resources = job.resources.gpu ? (
+  const resources = job.resources?.gpu ? (
     <>
       <Text size="sm">GPU: {job.resources.gpu}</Text>
       <Text size="sm">{job.resources.gpuModel}</Text>

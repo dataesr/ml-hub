@@ -9,6 +9,8 @@ export default function Jobs() {
   const { data: jobs, isFetching, error, refetch } = useListJobs()
   const navigate = useNavigate()
 
+  console.log("jobs", jobs)
+  
   return (
     <Container fluid>
       <Container fluid className="bg-train fr-pb-0">

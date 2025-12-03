@@ -1,29 +1,17 @@
-from fastapi import APIRouter, HTTPException
-from app.evaluate.schemas import EVALUATE_INPUTS
-from app.evaluate.service import tasks as evaluate_tasks
+from fastapi import APIRouter
 from app.evaluate import service as evaluate_svc
+from app.evaluate.schemas import EVALUATE_INPUTS
 
 router = APIRouter()
 
 
-@router.on_event("startup")
-async def evaluate_startup():
-    await evaluate_svc.start_worker()
+@router.get("/evaluate")
+def evaluate_list():
+    evals = evaluate_svc.get_all()
+    return evals
 
 
 @router.post("/evaluate")
-async def start_test(inputs: EVALUATE_INPUTS):
-    task_data = await evaluate_svc.add_task(inputs)
-    return task_data.model_dump()
-
-
-@router.get("/evaluate")
-async def evaluate_list():
-    tasks = await evaluate_tasks.dict()
-    return tasks
-
-
-@router.get("/evaluate/{task_id}")
-async def evaluate_get(task_id: str):
-    task = await evaluate_tasks.get(task_id)
-    return task.model_dump()
+def evaluate_run(eval_inputs: EVALUATE_INPUTS):
+    evaluate_svc.evaluate(eval_inputs)
+    return {eval_inputs.dataset_name: "evaluated"}

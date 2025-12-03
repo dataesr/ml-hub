@@ -90,9 +90,7 @@ class EVALUATE_TASKS_STORE:
 
 
 class EVALUATE_INPUTS(BaseModel):
-    model_name: str
     dataset_name: str
-    dataset_split: str | None = None
-    dataset_config: str | None = None
-    prompts_params: DICT_PARAMS | None = None
-    sampling_params: DICT_PARAMS | None = None
+    model_id: str | None = None
+    container: str | None = None
+    experiment_project: str | None = None

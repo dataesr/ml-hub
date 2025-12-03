@@ -22,7 +22,7 @@ export function useGetApp(name: string) {
 
 export function useListApps(state: InferenceAppState = null) {
   const { data, error, isFetching, refetch } = useQuery({
-    queryKey: ["jobs", "list", state || "all"],
+    queryKey: ["apps", "list", state || "all"],
     queryFn: () => listInferenceApps(state),
     refetchOnWindowFocus: false,
     refetchOnMount: true,

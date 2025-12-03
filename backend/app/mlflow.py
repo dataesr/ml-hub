@@ -1,5 +1,6 @@
 import os
 import mlflow
+from typing import Any
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -12,3 +13,17 @@ def mlflow_initialize():
         return
 
     mlflow.set_tracking_uri(mlflow_uri)
+
+
+def mlflow_evaluate(
+    data: Any,
+    scorers: list,
+    model_id: str = None,
+    run_name: str = None,
+    run_tags: dict = None,
+    experiment_name: str = None,
+):
+    if experiment_name:
+        mlflow.set_experiment(experiment_name=experiment_name)
+    with mlflow.start_run(run_name=run_name, tags=run_tags):
+        mlflow.genai.evaluate(data=data, scorers=scorers, model_id=model_id)
