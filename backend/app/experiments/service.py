@@ -10,7 +10,7 @@ logger.debug(f"client_tracking_uri = {client.tracking_uri}")
 
 
 def get_all():
-    projects = client.search_experiments(view_type="ALL")
+    projects = client.search_experiments(view_type="ACTIVE_ONLY")
     projects = [
         {
             "id": project.experiment_id,
