@@ -22,18 +22,24 @@ logger = get_logger(__name__)
 
 CONTAINER_COMPLETIONS = "llm-completions"
 
+
 ### Inferences apps
+def _get_infos(data: dict):
+    data["external_url"] = f'{os.getenv("OVHAI_URL", "")}/deploy/{data["id"]}'
+    return data
+
+
 def get_all(state: APP_STATE = None):
     filter = f"-s {state}" if state else ""
     cmd = f"ovhai app list -o json {filter}"
     data = cmd_run(cmd, capture_json=True)
-    return data
+    return [_get_infos(d) for d in data]
 
 
 def get(id: str):
     cmd = f"ovhai app get {id} -o json"
     data = cmd_run(cmd, capture_json=True)
-    return data
+    return _get_infos(data)
 
 
 def has_env(id: str, env_name: str, env_value: str):

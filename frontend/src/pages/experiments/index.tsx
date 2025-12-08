@@ -1,26 +1,9 @@
-import { Container, Select, SelectOption } from "@dataesr/dsfr-plus"
+import { Container } from "@dataesr/dsfr-plus"
 import ErrorCallOut from "../../components/error-call-out"
 import LoadingSpinner from "../../components/loading-spinner"
-import { useState } from "react"
-import RunsTable from "./components/runs-table"
-import { useListExperiments, useListRuns } from "../../api/experiments/hooks"
+import { useListExperiments } from "../../api/experiments/hooks"
 import { Experiment } from "../../api/experiments/types"
 import ExperimentCard from "./components/experiment-card"
-
-interface ExperimentsRunsArgs {
-  id: string
-}
-function ExperimentsRuns({ id }: ExperimentsRunsArgs) {
-  const { data: runs, isFetching, error } = useListRuns(id)
-
-  return (
-    <Container fluid>
-      {error && <ErrorCallOut error={error} />}
-      {isFetching && !runs && <LoadingSpinner position="left" />}
-      {runs && <RunsTable runs={runs} />}
-    </Container>
-  )
-}
 
 function ExperimentsList({ experiments }: { experiments: Experiment[] }) {
   const sortedExperiments = experiments.sort(

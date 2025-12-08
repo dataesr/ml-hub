@@ -4,6 +4,7 @@ import Layout from "./layout";
 import Home from "./pages/home"
 import Model from "./pages/models/model"
 import Dataset from "./pages/datasets/dataset"
+import Experiment from "./pages/experiments/experiment"
 import Jobs from "./pages/jobs"
 import JobsTrain from "./pages/jobs/train"
 import JobsInfere from "./pages/jobs/infere"
@@ -18,10 +19,9 @@ export default function Router() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
-        {/* <Route path="/models" element={<Models />} /> */}
         <Route path="/models/:owner/:name" element={<Model />} />
-        {/* <Route path="/datasets" element={<Datasets />} /> */}
         <Route path="/datasets/:owner/:name" element={<Dataset />} />
+        <Route path="/experiments/:id" element={<Experiment />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/jobs/train" element={<JobsTrain />} />
         <Route path="/jobs/infere" element={<JobsInfere />} />

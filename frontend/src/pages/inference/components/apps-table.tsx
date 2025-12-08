@@ -1,7 +1,6 @@
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
 import { Button, Tag, Text } from "@dataesr/dsfr-plus"
-import { OVHAI_TRAINING_URL } from "../../../api/url"
 import { InferenceApp } from "../../../api/inference/types"
 import { getStateColor } from "../helpers/colors"
 
@@ -38,12 +37,7 @@ const buildTableComponents = (app: InferenceApp) => {
   )
 
   const actions = (
-    <Button
-      icon="external-link-line"
-      size="sm"
-      variant="text"
-      onClick={() => window.open(`${OVHAI_TRAINING_URL}/${app.id}`, "_blank")}
-    >
+    <Button icon="external-link-line" size="sm" variant="text" onClick={() => window.open(app.external_url, "_blank")}>
       Open
     </Button>
   )

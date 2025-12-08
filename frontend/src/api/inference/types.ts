@@ -36,6 +36,7 @@ export type InferenceApp = {
     state: InferenceAppState
     url: string
   }
+  external_url: string
 }
 
 type InferencePromptsParams = Record<string, any>

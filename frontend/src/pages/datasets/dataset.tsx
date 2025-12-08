@@ -5,7 +5,7 @@ import { HUGGING_FACE_URL } from "../../api/url"
 
 export default function Dataset() {
   const { owner, name } = useParams<{ owner: string; name: string }>()
-  const { data: currentModel, isFetching, error } = useGetDataset(`${owner}/${name}`)
+  const { data: currentDataset, isFetching, error } = useGetDataset(`${owner}/${name}`)
   const navigate = useNavigate()
 
   if (isFetching || error) return null
@@ -18,22 +18,22 @@ export default function Dataset() {
         Back to datasets
       </Button>
       <Title as="h3" className="fr-mb-2w fr-mt-5w">
-        {currentModel.id}
+        {currentDataset.id}
       </Title>
       <Text size="md" className="fr-mb-3w">
-        {currentModel.downloads != undefined && (
+        {currentDataset.downloads != undefined && (
           <span className="fr-mr-2w">
-            <strong>Downloads:</strong> {currentModel.downloads}
+            <strong>Downloads:</strong> {currentDataset.downloads}
           </span>
         )}
       </Text>
-      {currentModel.tags && currentModel.tags.length > 0 && (
+      {currentDataset.tags && currentDataset.tags.length > 0 && (
         <div className="fr-mb-3w">
           <Text size="sm" bold className="fr-mb-1w">
             Tags:
           </Text>
           <TagGroup>
-            {currentModel.tags.map((tag, index) => (
+            {currentDataset.tags.map((tag, index) => (
               <Tag key={index} color="blue-cumulus">
                 {tag}
               </Tag>
@@ -53,7 +53,7 @@ export default function Dataset() {
           icon="external-link-line"
           iconPosition="right"
           variant="secondary"
-          onClick={() => window.open(`${HUGGING_FACE_URL}/${currentModel.id}`, "_blank")}
+          onClick={() => window.open(`${HUGGING_FACE_URL}/${currentDataset.id}`, "_blank")}
         >
           Open on HuggingFace
         </Button>

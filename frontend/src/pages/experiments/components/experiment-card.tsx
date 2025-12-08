@@ -21,7 +21,7 @@ export default function ExperimentCard({ experiment }: ExperimentCardProps) {
                   {experiment.tags["mlflow.experimentKind"]}
                 </Tag>
               )}
-
+              <Tag size="sm">{`${experiment.runs} runs`}</Tag>
               {Object.keys(experiment?.tags || {})
                 ?.filter(filterTags)
                 .map((tag) => (
@@ -30,12 +30,7 @@ export default function ExperimentCard({ experiment }: ExperimentCardProps) {
             </TagGroup>
           </Col>
           <Col xs="2">
-            <Button
-              icon="external-link-line"
-              variant="text"
-              disabled
-              onClick={() => window.open(`/${experiment.id}`, "_blank")}
-            >
+            <Button icon="external-link-line" variant="text" onClick={() => window.open(experiment.external_url, "_blank")}>
               Open
             </Button>
           </Col>

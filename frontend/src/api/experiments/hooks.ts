@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { getExperimentsRun, listExperiments, listExperimentsRuns } from "./api"
+import { getExperiment, getExperimentsRun, listExperiments, listExperimentsRuns } from "./api"
 
 export function useListExperiments() {
   const { data, error, isFetching } = useQuery({
@@ -9,6 +9,23 @@ export function useListExperiments() {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     keepPreviousData: true,
+    // staleTime: 5 * 60 * 1000,
+  })
+
+  const values = useMemo(() => {
+    return { data, isFetching, error }
+  }, [data, isFetching, error])
+
+  return values
+}
+
+export function useGetExperiment(id: string) {
+  const { data, error, isFetching } = useQuery({
+    queryKey: ["experiments", "get", id],
+    queryFn: () => getExperiment(id),
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    // keepPreviousData: true,
     // staleTime: 5 * 60 * 1000,
   })
 
@@ -40,7 +57,7 @@ export function useListRuns(id: string) {
     queryKey: ["experiments", "runs", "list", id],
     queryFn: () => listExperimentsRuns(id),
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
     keepPreviousData: true,
     // staleTime: 5 * 60 * 1000,
   })

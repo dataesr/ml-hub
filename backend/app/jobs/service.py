@@ -168,6 +168,7 @@ def _get_infos(data: dict):
         "finalized_at": data["status"].get("finalizedAt"),
         "duration": data["status"].get("duration"),
         "url": data["status"].get("url"),
+        "external_url": f'{os.getenv("OVHAI_URL", "")}/training/{data["id"]}',
         "image": data["spec"]["image"],
         "resources": data["spec"]["resources"],
         "labels": data["spec"]["labels"],

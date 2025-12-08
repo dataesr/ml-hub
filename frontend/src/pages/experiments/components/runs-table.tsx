@@ -1,16 +1,17 @@
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
-import { Button, Tag, Text } from "@dataesr/dsfr-plus"
-import { formatDate } from "../../../utils"
-import { getStateColor } from "../helpers/colors"
+import { Badge, Button, Tag, Text } from "@dataesr/dsfr-plus"
+import { formatDate, formatDuration } from "../../../utils"
+import { getStateColor, getTypeColor } from "../helpers/colors"
 import { ExperimentRun } from "../../../api/experiments/types"
 
 const TABLE_CONFIG = [
   { header: "Name / ID", component: "name" },
+  { header: "Type", component: "type" },
   { header: "Status", component: "status" },
-  // { header: "Resources", component: "resources" },
-  { header: "Created", component: "createdAt" },
-  // { header: "Duration", component: "duration" },
+  { header: "Model", component: "model" },
+  { header: "Started", component: "startTime" },
+  { header: "Duration", component: "duration" },
   { header: "Actions", component: "actions" },
 ]
 
@@ -29,11 +30,16 @@ const buildTableComponents = (run: ExperimentRun) => {
       </CopyToClipboard>
     </>
   )
-  const status = <Tag color={getStateColor(run.state)}>{run.state}</Tag>
-  const createdAt = run.createdAt ? formatDate(run.createdAt) : "-"
+  const status = <Tag color={getStateColor(run.status)}>{run.status}</Tag>
+  const startTime = run.start_time ? formatDate(run.start_time) : "-"
+  const duration =
+    run.end_time && run.start_time ? formatDuration((run.end_time.getTime() - run.start_time.getTime()) / 1000) : "-"
+
+  const type = run?.tags?.run_type ? <Badge color={getTypeColor(run.tags.run_type)}>{run.tags.run_type}</Badge> : "-"
+  const model = run?.tags?.model_name || "-"
 
   const actions = (
-    <Button icon="external-link-line" size="sm" variant="text" onClick={() => window.open(`${run.url}`, "_blank")}>
+    <Button icon="external-link-line" size="sm" variant="text" onClick={() => window.open(run.external_url, "_blank")}>
       Open
     </Button>
   )
@@ -41,7 +47,10 @@ const buildTableComponents = (run: ExperimentRun) => {
   return {
     name,
     status,
-    createdAt,
+    startTime,
+    duration,
+    type,
+    model,
     actions,
   }
 }

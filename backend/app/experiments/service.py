@@ -19,6 +19,7 @@ def get_all():
             "updated_at": project.last_update_time,
             "tags": project.tags,
             "runs": len(client.search_runs(experiment_ids=[project.experiment_id])),
+            "external_url": f"{client.tracking_uri}/#/experiments/{project.experiment_id}/runs",
         }
         for project in projects
     ]
@@ -33,6 +34,7 @@ def get(id: str):
         "created_at": project.creation_time,
         "updated_at": project.last_update_time,
         "tags": project.tags,
+        "external_url": f"{client.tracking_uri}/#/experiments/{project.experiment_id}/runs",
     }
     return project
 
@@ -48,6 +50,8 @@ def list_runs(id: str, state: RunStatus = None):
             "user_id": run.info.user_id,
             "start_time": run.info.start_time,
             "end_time": run.info.end_time,
+            "tags": run.data.tags,
+            "external_url": f"{client.tracking_uri}/#/experiments/{run.info.experiment_id}/runs/{run.info.run_id}",
         }
         for run in runs
     ]
@@ -69,6 +73,7 @@ def get_run(run_id: str):
         "metrics": run.data.metrics,
         "params": run.data.params,
         "tags": run.data.tags,
+        "external_url": f"{client.tracking_uri}/#/experiments/{run.info.experiment_id}/runs/{run.info.run_id}",
     }
     return run
 

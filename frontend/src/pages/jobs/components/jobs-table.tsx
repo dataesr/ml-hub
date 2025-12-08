@@ -3,7 +3,6 @@ import CopyToClipboard from "../../../components/copy-to-clipboard"
 import { Badge, Button, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate, formatDuration } from "../../../utils"
 import { getStateColor, getTaskColor } from "../helpers/colors"
-import { OVHAI_TRAINING_URL } from "../../../api/url"
 import { Job } from "../../../api/jobs/types"
 
 const TABLE_CONFIG = [
@@ -46,12 +45,7 @@ const buildTableComponents = (job: Job) => {
   const duration = job.duration ? formatDuration(job.duration) : "-"
 
   const actions = (
-    <Button
-      icon="external-link-line"
-      size="sm"
-      variant="text"
-      onClick={() => window.open(`${OVHAI_TRAINING_URL}/${job.id}`, "_blank")}
-    >
+    <Button icon="external-link-line" size="sm" variant="text" onClick={() => window.open(job.external_url, "_blank")}>
       Open
     </Button>
   )

@@ -27,6 +27,7 @@ export type Job = {
   image: string
   command: string
   url: string
+  external_url: string
   resources: {
     cpu?: number
     gpu?: number

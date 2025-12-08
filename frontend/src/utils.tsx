@@ -11,9 +11,9 @@ export const formatDate = (date: Date | string): string => {
   })
 }
 
-export const formatDuration = (duration: number): string => {
+export const formatDuration = (seconds: number): string => {
   const d = new Date(0)
-  d.setSeconds(duration) // specify value for SECONDS here
+  d.setSeconds(seconds) // specify value for SECONDS here
   return d.toISOString().substring(11, 19)
 }
 

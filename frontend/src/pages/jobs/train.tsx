@@ -173,7 +173,7 @@ export default function JobsTrain() {
           onChange={(e) => handleInputsChange("gpu", Number(e.target.checked))}
         />
         <Toggle
-          label="Push model on HuggingFace (recommanded)"
+          label="Push model on HuggingFace (recommended)"
           checked={pushToHF}
           onChange={(e) => handlePushToHFChange(e.target.checked)}
         />
