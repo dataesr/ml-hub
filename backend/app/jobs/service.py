@@ -117,6 +117,8 @@ def _get_infere_cmd(inputs: INFERE_INPUTS):
             envs.append({"name": "MLFLOW_RUN_NAME_TAG", "value": experiments_params.name_tag})
         if experiments_params.project:
             envs.append({"name": "MLFLOW_EXPERIMENT_NAME", "value": experiments_params.project})
+        if experiments_params.model_id:
+            envs.append({"name": "MLFLOW_ACTIVE_MODEL_ID", "value": experiments_params.model_id})
     # if inputs.training_params:
     #     for key, value in inputs.training_params.items():
     #         envs.append({"name": key.upper(), "value": str(value)})

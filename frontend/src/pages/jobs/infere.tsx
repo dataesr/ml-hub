@@ -291,6 +291,15 @@ export default function JobsInfere() {
             hint="Add a tag to the experiment run name"
             placeholder="markdown-v2"
           />
+          <SmartTextInput
+            value={inputs?.experiments_params?.model_id || ""}
+            onChange={(value) => handleExperimentsChange("model_id", value)}
+            onError={(error) => handleErrorsChange("experiments_model_id", error)}
+            validateSync={validateAplhaNum}
+            label="Experiment Model Id"
+            hint="Link a registered model to the experiment run"
+            placeholder="m-12345"
+          />
           <Toggle
             label="Disable experiment reporting"
             checked={inputs?.experiments_params?.disabled || false}
