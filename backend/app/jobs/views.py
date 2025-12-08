@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.jobs.schemas import TRAIN_INPUTS, INFERE_INPUTS, JOB_STATE
 import app.jobs.service as jobs_svc
 
-router = APIRouter()
+router = APIRouter(tags=["jobs"])
 
 
 @router.get("/jobs")

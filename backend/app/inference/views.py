@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from app.inference.schemas import APP_STATE, COMPLETIONS_INPUTS
 import app.inference.service as inferences_svc
 
-router = APIRouter()
+router = APIRouter(tags=["inference"])
 
 
 @router.get("/inference")

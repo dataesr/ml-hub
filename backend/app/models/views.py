@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 import app.models.service as models_svc
 
-router = APIRouter()
+router = APIRouter(tags=["models"])
 
 
 @router.get("/models")

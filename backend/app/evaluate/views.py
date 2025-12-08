@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.evaluate import service as evaluate_svc
 from app.evaluate.schemas import EVALUATE_INPUTS
 
-router = APIRouter()
+router = APIRouter(tags=["evaluate"])
 
 
 @router.get("/evaluate")

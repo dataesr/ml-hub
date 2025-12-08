@@ -24,12 +24,18 @@ def clean_completion(text: str):
 def tsv_to_data(text: str) -> list[dict]:
     lines = text.strip().split("\n")
 
-    if not lines or len(lines) < 2:
+    if not lines:
         return None
 
     headers = lines[0].strip().split("\t")
 
+    if not headers:
+        return None
+
     data = []
+    if len(lines) < 2:
+        return data
+
     for line in lines[1:]:
         values = line.strip().split("\t")
         row_dict = dict(zip(headers[: len(values)], values))

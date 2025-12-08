@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from app.datasets import service as datasets_svc
 from app.datasets.schemas import DatasetConfig
 
-router = APIRouter()
+router = APIRouter(tags=["datasets"])
 
 
 @router.get("/datasets")

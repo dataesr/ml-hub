@@ -94,3 +94,4 @@ class EVALUATE_INPUTS(BaseModel):
     model_id: str | None = None
     container: str | None = None
     experiment_project: str | None = None
+    run_name: str | None = None

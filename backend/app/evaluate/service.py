@@ -31,5 +31,6 @@ def evaluate(eval_inputs: EVALUATE_INPUTS):
         dataset,
         scorers=[scorers.is_tsv, scorers.scorer_correct_entities, scorers.scorer_correct_grant_ids],
         experiment_name=eval_inputs.experiment_project,
+        run_name=eval_inputs.run_name,
     )
     return

@@ -25,5 +25,8 @@ def mlflow_evaluate(
 ):
     if experiment_name:
         mlflow.set_experiment(experiment_name=experiment_name)
-    with mlflow.start_run(run_name=run_name, tags=run_tags):
+    tags = {"run_type": "evaluation"}
+    if run_tags:
+        tags.update(tags)
+    with mlflow.start_run(run_name=run_name, tags=tags):
         mlflow.genai.evaluate(data=data, scorers=scorers, model_id=model_id)

@@ -18,6 +18,7 @@ def get_all():
             "created_at": project.creation_time,
             "updated_at": project.last_update_time,
             "tags": project.tags,
+            "runs": len(client.search_runs(experiment_ids=[project.experiment_id])),
         }
         for project in projects
     ]
@@ -70,3 +71,21 @@ def get_run(run_id: str):
         "tags": run.data.tags,
     }
     return run
+
+
+def list_registered_models():
+    models = client.search_registered_models()
+    models = [model.__dict__ for model in models]
+    return models
+
+
+def list_logged_models():
+    models = client.search_logged_models(experiment_ids=["4"])
+    models = [model.to_dictionary() for model in models]
+    return models
+
+
+def list_datasets():
+    ds = client.search_datasets(experiment_ids=["4"])
+    ds = [d.to_dict() for d in ds]
+    return ds
