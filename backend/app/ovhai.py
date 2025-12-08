@@ -71,7 +71,9 @@ def ovhai_object_download(object_name: str, container: str, output: str = None, 
 
 def ovhai_object_delete(container: str, object_name: str = None, prefix: str = None):
     to_delete = f"--all"
-    if prefix or object_name:
-        to_delete = f"--prefix {prefix}" if prefix else object_name
+    if prefix:
+        to_delete = f"--prefix {prefix}"
+    if object_name:
+        to_delete = object_name
     cmd = f"ovhai bucket object delete {container}@{DATA_STORE} {to_delete}"
     cmd_run(cmd)
