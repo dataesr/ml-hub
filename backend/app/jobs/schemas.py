@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from typing import Literal
+from typing import Literal, List
 from app.experiments.schemas import EXPERIMENTS_PARAMS
-from app.types import DICT_PARAMS
+from app.types import ENV, DICT_PARAMS
 
 JOB_STATE = Literal[
     "QUEUED",
@@ -35,6 +35,7 @@ class JOB_INPUTS(BaseModel):
     name: str | None = None
     gpu: int | None = 1
     experiments_params: EXPERIMENTS_PARAMS | None = None
+    envs: List[ENV] | None = None
 
 
 TRAIN_PIPELINE = Literal["causallm", "causallm-unsloth"]

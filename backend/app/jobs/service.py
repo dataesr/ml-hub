@@ -43,6 +43,8 @@ def _get_train_cmd(inputs: TRAIN_INPUTS):
 
     # ENVS
     envs = SECRET_ENVS
+    if inputs.envs:
+        envs += inputs.envs
     if inputs.hf_push_repo:
         envs.append({"name": "HF_PUSH_REPO", "value": inputs.hf_push_repo})
     experiments_params = inputs.experiments_params
@@ -109,6 +111,8 @@ def _get_infere_cmd(inputs: INFERE_INPUTS):
 
     # ENVS
     envs = SECRET_ENVS
+    if inputs.envs:
+        envs += inputs.envs
     experiments_params = inputs.experiments_params
     if not experiments_params.disable:
         if experiments_params.name:
