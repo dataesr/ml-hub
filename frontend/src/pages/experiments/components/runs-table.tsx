@@ -3,7 +3,7 @@ import CopyToClipboard from "../../../components/copy-to-clipboard"
 import { Badge, Button, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate, formatDuration } from "../../../utils"
 import { getStateColor, getTypeColor } from "../helpers/colors"
-import { ExperimentRun } from "../../../api/experiments/types"
+import { ExperimentRun, ExperimentRunBase } from "../../../api/experiments/types"
 
 const TABLE_CONFIG = [
   { header: "Name / ID", component: "name" },
@@ -55,7 +55,7 @@ const buildTableComponents = (run: ExperimentRun) => {
   }
 }
 
-export default function RunsTable({ runs }: { runs: ExperimentRun[] }) {
+export default function RunsTable({ runs }: { runs: ExperimentRun[] | ExperimentRunBase[] }) {
   const headers = TABLE_CONFIG.map((col) => col.header)
   const data = runs.map((run) => buildTableComponents(run)).map((run) => TABLE_CONFIG.map((col) => run[col.component]))
   return <Table className="fr-pt-0" headers={headers} data={data} />

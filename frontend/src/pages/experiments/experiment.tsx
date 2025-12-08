@@ -26,9 +26,9 @@ export default function Experiment() {
             Tags:
           </Text>
           <TagGroup>
-            {Object.values(experiment.tags).map((value, index) => (
+            {Object.entries(experiment.tags).map(([key, value], index) => (
               <Tag key={index} color="blue-cumulus">
-                {value}
+                {`${key}: ${value}`}
               </Tag>
             ))}
           </TagGroup>

@@ -22,10 +22,10 @@ export default function ExperimentCard({ experiment }: ExperimentCardProps) {
                 </Tag>
               )}
               <Tag size="sm">{`${experiment.runs} runs`}</Tag>
-              {Object.keys(experiment?.tags || {})
-                ?.filter(filterTags)
-                .map((tag) => (
-                  <Tag size="sm">{tag}</Tag>
+              {Object.entries(experiment?.tags || {})
+                ?.filter(([key]) => filterTags(key))
+                .map(([key, value]) => (
+                  <Tag size="sm">{`${key}: ${value}`}</Tag>
                 ))}
             </TagGroup>
           </Col>
