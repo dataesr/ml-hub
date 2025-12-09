@@ -62,6 +62,6 @@ def data_to_pandas(data: Any) -> pd.DataFrame:
         try:
             return pd.DataFrame.from_dict(data, orient="index")
         except Exception as error:
-            raise TypeError(f"Couldnt conver list to pandas (details={str(error)})")
+            raise TypeError(f"Couldnt convert list to pandas (details={str(error)})")
 
     raise TypeError(f"Couldnt convert type {type(data)} to pandas")
