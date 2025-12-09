@@ -1,9 +1,10 @@
 import os
-from app.ovhai import cmd_run
 from app.types import ENV
 from app.jobs.schemas import JOB_STATE, TRAIN_INPUTS, INFERE_INPUTS
-from app.datasets.service import create_config, add_config
+
+# from app.datasets.service import create_config, add_config
 from app.logger import get_logger
+from ai_core.cloud.compute import job_list, job_get, job_stop, job_start
 
 logger = get_logger(__name__)
 
@@ -81,7 +82,8 @@ def _get_train_cmd(inputs: TRAIN_INPUTS):
         if inputs.dataset_format:
             dataset_extras["dataset_format"] = inputs.dataset_format
         try:
-            dataset_config = add_config(create_config(dataset_extras))
+            # dataset_config = add_config(create_config(dataset_extras))
+            dataset_config = None
             if dataset_config:
                 cmd += f" --dataset_config {dataset_config}"
         except Exception as error:
@@ -147,7 +149,8 @@ def _get_infere_cmd(inputs: INFERE_INPUTS):
     if dataset_extras:
         dataset_extras["dataset_name"] = inputs.dataset_name
         try:
-            dataset_config = add_config(create_config(dataset_extras))
+            # dataset_config = add_config(create_config(dataset_extras))
+            dataset_config = None
             if dataset_config:
                 cmd += f" --dataset_config {dataset_config}"
         except Exception as error:
@@ -158,7 +161,7 @@ def _get_infere_cmd(inputs: INFERE_INPUTS):
     return cmd
 
 
-def _get_infos(data: dict):
+def _job_info(data: dict):
     infos = {
         "id": data["id"],
         "name": data["spec"]["name"],
@@ -181,30 +184,24 @@ def _get_infos(data: dict):
 
 
 def get_all(state: JOB_STATE = None):
-    filter = f"-s {state}" if state else "-a"
-    cmd = f"ovhai job list -o json {filter}"
-    data = cmd_run(cmd, capture_json=True)
-    return [_get_infos(d) for d in data]
+    jobs = job_list(state)
+    return [_job_info(job) for job in jobs]
 
 
 def get(id: str):
-    cmd = f"ovhai job get {id} -o json"
-    data = cmd_run(cmd, capture_json=True)
-    return _get_infos(data)
+    job = job_get(id)
+    return _job_info(job)
 
 
 def run_train(job_inputs: TRAIN_INPUTS):
-    cmd = _get_train_cmd(job_inputs)
-    data = cmd_run(cmd, capture_json=True)
-    return _get_infos(data)
+    job = job_start(_get_infere_cmd(job_inputs))
+    return _job_info(job)
 
 
 def run_infere(job_inputs: INFERE_INPUTS):
-    cmd = _get_infere_cmd(job_inputs)
-    data = cmd_run(cmd, capture_json=True)
-    return _get_infos(data)
+    job = job_start(_get_infere_cmd(job_inputs))
+    return _job_info(job)
 
 
 def stop(id: str):
-    cmd = f"ovhai job stop {id}"
-    cmd_run(cmd)
+    job_stop(id)

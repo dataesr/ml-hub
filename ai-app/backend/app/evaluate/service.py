@@ -1,9 +1,9 @@
 import pandas as pd
 from app.logger import get_logger
 from app.datasets import service as datasets_svc
-from app.mlflow import mlflow_evaluate
 from app.evaluate.helpers import scorers
 from app.evaluate.schemas import EVALUATE_INPUTS
+from ai_core.tracking.client import mlflow_evaluate
 from app.logger import get_logger
 
 logger = get_logger(__name__)

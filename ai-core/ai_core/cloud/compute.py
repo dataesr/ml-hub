@@ -46,6 +46,11 @@ def job_stop(id: str):
     ovhai_run_cmd(cmd)
 
 
+def job_start(cmd: str):
+    data = ovhai_run_cmd(cmd, capture_json=True)
+    return data
+
+
 ## --- compute apps ---
 def app_list(state: str = None):  # TODO: use schema
     filter = f"-s {state}" if state else ""

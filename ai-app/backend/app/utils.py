@@ -1,9 +1,7 @@
 import json
 import os
 import time
-import pandas as pd
 from typing import Any
-from app.types import ENV
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -40,28 +38,7 @@ def json_read(path: str, remove: bool = False) -> dict[str, Any]:
 
     return data
 
-
-def env_exist(envs: list[ENV], env_name: str, env_value: str):
-    for env in envs:
-        if env["name"] == env_name and env["value"] == env_value:
-            return True
-    return False
-
-
 def timestamp(print_time: bool = True) -> str:
     if not print_time:
         return time.strftime("%Y%m%d")
     return time.strftime("%Y%m%d-%H%M%S")
-
-
-def data_to_pandas(data: Any) -> pd.DataFrame:
-    if isinstance(data, pd.DataFrame):
-        return data
-
-    if isinstance(data, dict):
-        try:
-            return pd.DataFrame.from_dict(data, orient="index")
-        except Exception as error:
-            raise TypeError(f"Couldnt convert list to pandas (details={str(error)})")
-
-    raise TypeError(f"Couldnt convert type {type(data)} to pandas")

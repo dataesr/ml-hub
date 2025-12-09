@@ -31,39 +31,39 @@ def apps_stop(id: str):
     return {f"{id}": "stopped"}
 
 
-@router.get("/inference/{id}/tasks")
-def apps_list_tasks(id: str):
-    tasks = inferences_svc.completions_get_all(id)
-    return tasks
+# @router.get("/inference/{id}/tasks")
+# def apps_list_tasks(id: str):
+#     tasks = inferences_svc.completions_get_all(id)
+#     return tasks
 
 
-@router.post("/inference/{id}/tasks")
-def apps_create_task(id: str, completions_inputs: COMPLETIONS_INPUTS):
-    task_id = inferences_svc.completions_submit(
-        id=id,
-        prompts=completions_inputs.texts,
-        prompts_params=completions_inputs.prompts_params,
-        sampling_params=completions_inputs.sampling_params,
-    )
-    return {"task_id": task_id}
+# @router.post("/inference/{id}/tasks")
+# def apps_create_task(id: str, completions_inputs: COMPLETIONS_INPUTS):
+#     task_id = inferences_svc.completions_submit(
+#         id=id,
+#         prompts=completions_inputs.texts,
+#         prompts_params=completions_inputs.prompts_params,
+#         sampling_params=completions_inputs.sampling_params,
+#     )
+#     return {"task_id": task_id}
 
 
-@router.get("/inference/{id}/tasks/{task_id}")
-def apps_get_task(id: str, task_id: str):
-    task_data = inferences_svc.completions_get(id=id, task_id=task_id)
-    return task_data
+# @router.get("/inference/{id}/tasks/{task_id}")
+# def apps_get_task(id: str, task_id: str):
+#     task_data = inferences_svc.completions_get(id=id, task_id=task_id)
+#     return task_data
 
 
-@router.post("/inference/{id}/generate")
-def apps_generate_completions(id: str, completions_inputs: COMPLETIONS_INPUTS):
-    completions, task_data = inferences_svc.completions_pipeline(
-        id=id,
-        url=completions_inputs.inference_url,
-        texts=completions_inputs.texts,
-        prompts_params=completions_inputs.prompts_params,
-        sampling_params=completions_inputs.sampling_params,
-    )
-    return {"completions": completions, "task_data": task_data}
+# @router.post("/inference/{id}/generate")
+# def apps_generate_completions(id: str, completions_inputs: COMPLETIONS_INPUTS):
+#     completions, task_data = inferences_svc.completions_pipeline(
+#         id=id,
+#         url=completions_inputs.inference_url,
+#         texts=completions_inputs.texts,
+#         prompts_params=completions_inputs.prompts_params,
+#         sampling_params=completions_inputs.sampling_params,
+#     )
+#     return {"completions": completions, "task_data": task_data}
 
 
 # @router.post("/completions")

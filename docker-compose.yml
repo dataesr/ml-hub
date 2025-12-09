@@ -1,0 +1,7 @@
+services:
+  backend:
+    build: ./Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./api_app/backend/.env
