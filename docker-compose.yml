@@ -1,7 +1,9 @@
 services:
   backend:
-    build: ./Dockerfile
+    build:
+      context: .
+      dockerfile: ./ai-app/backend/dockerfile
     ports:
       - "8000:8000"
     env_file:
-      - ./api_app/backend/.env
+      - ./ai-app/backend/.env

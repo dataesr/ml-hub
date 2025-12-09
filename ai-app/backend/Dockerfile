@@ -20,11 +20,12 @@ RUN curl https://cli.gra.ai.cloud.ovh.net/ovhai-linux.zip -o ovhai-linux.zip && 
     rm -rf ovhai-linux.zip ovhai
 RUN mkdir -p ~/.config/ovhai && curl -o ~/.config/ovhai/config.json https://cli.gra.ai.cloud.ovh.net/config.json
 
-COPY ./ai-core ./ai-core
-RUN pip install --no-cache-dir setuptools && pip install ./ai-core
 
 COPY ./ai-app/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./ai-core ./ai-core
+RUN pip install ./ai-core
 
 COPY ./ai-app/backend .
 
