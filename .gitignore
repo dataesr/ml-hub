@@ -31,3 +31,6 @@ dist-ssr
 
 # pycaches
 __pycache__/
+
+# builds
+*.egg-info/
