@@ -18,7 +18,7 @@ export default function Home() {
             imageUrl="artwork/pictograms/digital/search.svg"
             classes={{ imgTag: "fr-ratio-1x1" }}
             linkProps={{
-              href: "/explore",
+              href: "/explore?t=models",
             }}
             size="small"
             title="Explore"

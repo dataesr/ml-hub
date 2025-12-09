@@ -53,7 +53,7 @@ export default function Dataset() {
           icon="external-link-line"
           iconPosition="right"
           variant="secondary"
-          onClick={() => window.open(`${HUGGING_FACE_URL}/${currentDataset.id}`, "_blank")}
+          onClick={() => window.open(`${HUGGING_FACE_URL}/datasets/${currentDataset.id}`, "_blank")}
         >
           Open on HuggingFace
         </Button>

@@ -26,7 +26,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
             <Button
               icon="external-link-line"
               variant="text"
-              onClick={() => window.open(`${HUGGING_FACE_URL}/${dataset.id}`, "_blank")}
+              onClick={() => window.open(`${HUGGING_FACE_URL}/datasets/${dataset.id}`, "_blank")}
             >
               Open
             </Button>
