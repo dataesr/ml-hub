@@ -6,7 +6,7 @@ router = APIRouter(tags=["datasets"])
 
 @router.get("/datasets")
 @router.get("/datasets/{owner}")
-def datasets_list(owner: str = datasets_svc.OWNER, limit: int = 100):
+def datasets_list(owner: str = "dataesr", limit: int = 100):
     datasets = datasets_svc.get_all(owner, limit)
     return datasets
 
