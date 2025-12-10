@@ -6,10 +6,8 @@ from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-CONTAINER_DATASETS = "llm-datasets"
 
-
-def load_from_storage(path: str, container: str = CONTAINER_DATASETS, as_pandas: bool = False) -> Dataset | DataFrame:
+def load_from_storage(path: str, container: str, as_pandas: bool = False) -> Dataset | DataFrame:
     file_path = ovhai_object_download(path, container)
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"Error while downloading {path}")
@@ -35,23 +33,23 @@ def load_from_hf(dataset_name: str, split: str = None, as_pandas: bool = False) 
     return dataset
 
 
-def load(dataset_name: str, split: str = None, as_pandas: bool = False) -> Dataset | DataFrame:
+def load(path_or_name: str, split: str = None, as_pandas: bool = False) -> Dataset | DataFrame:
     try:
-        logger.debug(f"Trying to load {dataset_name} from HuggingFace...")
-        dataset = load_dataset(dataset_name, split=split)
+        logger.debug(f"Trying to load {path_or_name} from HuggingFace...")
+        dataset = load_dataset(path_or_name, split=split)
     except Exception as error:
         logger.debug(f"Error while loading from HuggingFace: {error}")
-        logger.debug(f"Trying to load from object storage (${CONTAINER_DATASETS})...")
-        dataset = load_from_storage(dataset_name)
+        logger.debug(f"Trying to load from local disk...")
+        dataset = load_from_local(path_or_name)
 
     if dataset:
-        logger.debug(f"✅ Dataset {dataset_name} loaded!")
+        logger.debug(f"✅ Dataset {path_or_name} loaded!")
         logger.debug(f"Dataset schema: {dataset.features}")
         logger.debug(f"Dataset size: {len(dataset)}")
         logger.debug(f"Dataset sample: {dataset[0]}")
     else:
-        logger.error(f"Error while loading {dataset_name}")
-        raise Exception(f"Error while loading {dataset_name}")
+        logger.error(f"Error while loading {path_or_name}")
+        raise Exception(f"Error while loading {path_or_name}")
 
     if as_pandas:
         return dataset.to_pandas()
