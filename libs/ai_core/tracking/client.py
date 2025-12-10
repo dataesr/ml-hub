@@ -6,6 +6,16 @@ from ai_core.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def mlflow_get_client():
+    mlflow_uri = os.getenv("MLFLOW_TRACKING_URI")
+    if not mlflow_uri:
+        logger.warning(f"MLFLOW_TRACKING_URI not set, disable Mlflow monitoring.")
+        return
+
+    client = mlflow.MlflowClient(tracking_uri=mlflow_uri)
+    return client
+
+
 def mlflow_initialize():
     mlflow_uri = os.getenv("MLFLOW_TRACKING_URI")
     if not mlflow_uri:

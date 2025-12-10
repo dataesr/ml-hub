@@ -28,13 +28,15 @@ def _app_info(data: dict):
 
 
 def get_all(state: APP_STATE = None):
-    apps = app_list(state)
-    return [_app_info(app) for app in apps]
+    data = app_list(state)
+    apps = [_app_info(app) for app in apps]
+    return apps
 
 
 def get(id: str):
-    app = app_get(id)
-    return _app_info(app)
+    data = app_get(id)
+    app = _app_info(data)
+    return app
 
 def stop(id: str):
     app_stop(id)

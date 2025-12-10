@@ -184,23 +184,26 @@ def _job_info(data: dict):
 
 
 def get_all(state: JOB_STATE = None):
-    jobs = job_list(state)
-    return [_job_info(job) for job in jobs]
+    data = job_list(state)
+    jobs = [_job_info(job) for job in jobs]
+    return jobs
 
 
 def get(id: str):
-    job = job_get(id)
-    return _job_info(job)
+    data = job_get(id)
+    job = _job_info(data)
+    return job
 
 
 def run_train(job_inputs: TRAIN_INPUTS):
-    job = job_start(_get_infere_cmd(job_inputs))
-    return _job_info(job)
+    data = job_start(_get_train_cmd(job_inputs))
+    job = _job_info(data)
+    return job
 
 
 def run_infere(job_inputs: INFERE_INPUTS):
-    job = job_start(_get_infere_cmd(job_inputs))
-    return _job_info(job)
+    data = job_start(_get_infere_cmd(job_inputs))
+    return _job_info(data)
 
 
 def stop(id: str):

@@ -1,11 +1,9 @@
-import os
-from mlflow import MlflowClient
-from mlflow.entities import RunStatus
+from ai_core.tracking.client import mlflow_get_client
 from app.logger import get_logger
 
 logger = get_logger(__name__)
 
-client = MlflowClient(tracking_uri=os.getenv("MLFLOW_TRACKING_URI"))
+client = mlflow_get_client()
 logger.debug(f"client_tracking_uri = {client.tracking_uri}")
 
 
@@ -39,7 +37,7 @@ def get(id: str):
     return project
 
 
-def list_runs(id: str, state: RunStatus = None):
+def list_runs(id: str, state: str = None):
     runs = client.search_runs(experiment_ids=[id])
     runs = [
         {
