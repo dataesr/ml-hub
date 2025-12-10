@@ -1,6 +1,6 @@
 import os
 from ai_core.cloud.client import ovhai_run_cmd, DATA_STORE
-from ai_core.logger import get_logger
+from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

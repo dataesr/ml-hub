@@ -1,7 +1,7 @@
 import time
 from ai_core.cloud.client import ovhai_run_cmd
-from ai_core.utils import env_exist
-from ai_core.logger import get_logger
+from ai_core.utils.misc import env_exist
+from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

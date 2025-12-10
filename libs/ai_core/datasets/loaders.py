@@ -2,7 +2,7 @@ import os
 from datasets import Dataset, load_dataset
 from pandas import DataFrame
 from ai_core.cloud.storage import ovhai_object_download
-from ai_core.logger import get_logger
+from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

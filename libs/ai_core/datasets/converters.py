@@ -7,7 +7,7 @@ from ai_core.schemas.constants import (
     OUTPUT_COLUMN,
     DEFAULT_TEXT_FORMAT,
 )
-from ai_core.logger import get_logger
+from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
