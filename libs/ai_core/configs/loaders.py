@@ -22,7 +22,7 @@ def load_yaml_config(cfg_name: str, cfg_type: str) -> Dict[str, Any]:
         remote_path += ".yaml"
 
     try:
-        file_path = ovhai_object_download(remote_path, CONFIGS_CONTAINER, output="tmp/")
+        file_path = ovhai_object_download(remote_path, CONFIGS_CONTAINER, output="/tmp/")
     except Exception as error:
         raise Exception(f"Error while downloading config {remote_path} from {CONFIGS_CONTAINER} (details={error})")
 

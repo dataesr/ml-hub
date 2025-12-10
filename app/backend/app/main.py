@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from ai_core.cloud.client import ovhai_initialize
 from ai_core.tracking.client import mlflow_initialize
+from app.configs.views import router as configs_router
 from app.datasets.views import router as datasets_router
 from app.models.views import router as models_router
 from app.jobs.views import router as jobs_router
@@ -51,6 +52,7 @@ async def http_exception_handler(request, exc: HTTPException):
 
 # Backend api routes at /api
 api_router = APIRouter(prefix="/api")
+api_router.include_router(configs_router)
 api_router.include_router(datasets_router)
 api_router.include_router(models_router)
 api_router.include_router(jobs_router)

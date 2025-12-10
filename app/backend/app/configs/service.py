@@ -13,5 +13,9 @@ def get(cfg_name: str, cfg_type: str):
     return cfg
 
 
-def add(data: dict, cfg_name: str, cfg_type: str):
-    write_yaml_config(data, cfg_name, cfg_type)
+def add(data: dict):
+    cfg_name = data.pop("name")
+    cfg_type = data.pop("type")
+    cfg = data.pop("data")
+    write_yaml_config(cfg, cfg_name, cfg_type)
+    return cfg_name
