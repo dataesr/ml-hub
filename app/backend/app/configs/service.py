@@ -1,6 +1,6 @@
-from ai_core.configs.loaders import load_yaml_config
-from ai_core.configs.writers import write_yaml_config
-from ai_core.configs.utils import list_configs
+from ai_core.configs.load import load_yaml_config
+from ai_core.configs.write import write_yaml_config
+from ai_core.configs.list import list_configs
 
 
 def list_all(cfg_type: str = None):
