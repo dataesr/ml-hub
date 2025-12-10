@@ -1,8 +1,9 @@
 import time
-from typing import Literal
 from ai_core.cloud.client import ovhai_run_cmd
+from ai_core.cloud.build import JobCommand
 from ai_core.utils.misc import env_exist
 from ai_core.utils.logger import get_logger
+from ai_core.schemas.constants import JOB_STATE, APP_STATE
 
 logger = get_logger(__name__)
 
@@ -26,36 +27,10 @@ logger = get_logger(__name__)
 #         "labels": data["spec"]["labels"],
 #     }
 #     return infos
-JOB_STATE = Literal[
-    "QUEUED",
-    "PENDING",
-    "INITIALIZING",
-    "FINALIZING",
-    "RUNNING",
-    "TIMEOUT",
-    "FAILED",
-    "ERROR",
-    "DONE",
-    "INTERRUPTED",
-    "INTERRUPTING",
-    "SYNC_FAILED",
-]
-
-APP_STATE = Literal[
-    "QUEUED",
-    "PENDING",
-    "INITIALIZING",
-    "SCALING",
-    "RUNNING",
-    "STOPPING",
-    "STOPPED",
-    "FAILED",
-    "ERROR",
-]
 
 
 ### --- compute jobs ---
-def job_list(state: JOB_STATE = None):  # TODO: use schema
+def job_list(state: JOB_STATE | None = None):  # TODO: use schema
     filter = f"-s {state}" if state else "-a"
     cmd = f"ovhai job list -o json {filter}"
     data = ovhai_run_cmd(cmd, capture_json=True)
@@ -73,13 +48,13 @@ def job_stop(id: str):
     ovhai_run_cmd(cmd)
 
 
-def job_start(cmd: str):
-    data = ovhai_run_cmd(cmd, capture_json=True)
+def job_run(cmd: JobCommand):
+    data = ovhai_run_cmd(cmd.to_cli_string(), capture_json=True)
     return data
 
 
 ## --- compute apps ---
-def app_list(state: APP_STATE = None):  # TODO: use schema
+def app_list(state: APP_STATE | None = None):  # TODO: use schema
     filter = f"-s {state}" if state else ""
     cmd = f"ovhai app list -o json {filter}"
     data = ovhai_run_cmd(cmd, capture_json=True)

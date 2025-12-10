@@ -1,8 +1,8 @@
 import os
 import yaml
 from typing import Dict, Any
-from ai_core.cloud.containers import CONFIGS_CONTAINER
 from ai_core.cloud.storage import ovhai_object_download
+from ai_core.schemas.constants import CONFIGS_CONTAINER
 
 
 def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
