@@ -2,8 +2,8 @@ from ai_core.cloud.containers import CONFIGS_CONTAINER
 from ai_core.cloud.storage import ovhai_object_list
 
 
-def list_configs(cfg_folder: str = None):
-    objects = ovhai_object_list(CONFIGS_CONTAINER, prefix=cfg_folder)
+def list_configs(cfg_type: str = None):
+    objects = ovhai_object_list(CONFIGS_CONTAINER, prefix=cfg_type)
     configs = []
     for obj in objects:
         key: str = obj.get("key", "")

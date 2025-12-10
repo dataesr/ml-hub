@@ -4,8 +4,8 @@ from ai_core.cloud.containers import CONFIGS_CONTAINER
 from ai_core.cloud.storage import ovhai_object_upload
 
 
-def write_yaml_config(cfg: dict, cfg_name: str, cfg_folder: str):
-    path = os.path.join(cfg_folder, cfg_name)
+def write_yaml_config(cfg: dict, cfg_name: str, cfg_type: str):
+    path = os.path.join(cfg_type, cfg_name)
     if not path.endswith(".yaml"):
         path += ".yaml"
 

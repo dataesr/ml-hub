@@ -53,7 +53,7 @@ def construct_prompts(
     - custom_instruction (str): custom system prompt
     - custom_text_format (str): custom text format
     - use_conversational_format (bool): Use conversational or text format
-    Returns the training dataset with a conversations column
+    Returns the a dataset with the prompt column (either conversational or text)
     """
     prompts_field = CONVERSATIONS_COLUMN if use_conversational_format else TEXT_COLUMN
 

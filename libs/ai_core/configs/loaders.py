@@ -16,8 +16,8 @@ def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any
     return result
 
 
-def load_yaml_config(cfg_name: str, cfg_folder: str) -> Dict[str, Any]:
-    remote_path = os.path.join(cfg_folder, cfg_name)
+def load_yaml_config(cfg_name: str, cfg_type: str) -> Dict[str, Any]:
+    remote_path = os.path.join(cfg_type, cfg_name)
     if not remote_path.endswith(".yaml"):
         remote_path += ".yaml"
 
