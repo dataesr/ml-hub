@@ -14,7 +14,6 @@ class PipelineArgs(BaseModel):
 registry_args = PipelineRegistryLocal(
     pipeline="example-local",
     args=PipelineArgs,
-    infrastructure={"test": "test"},
     description="Example of a local pipeline",
     tags=["example", "local"],
 )

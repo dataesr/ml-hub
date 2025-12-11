@@ -33,17 +33,25 @@ class PipelineRegistryCloud(PipelineRegistryBase):
 class PipelineRegistryLocal(PipelineRegistryBase):
     """Schema for local pipelines."""
 
-    # infrastructure: TaskInput
+    infrastructure: Type[BaseModel] | None = None
     environment: str = "local"
 
 
 def _register_pipeline(register_args: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Type], Type]:
     """Register pipeline."""
     args = register_args.args
-    infra = register_args.infrastructure
+    infra = getattr(register_args, "infrastructure", None)
+
+    # Build the composed schema bases, validating infra if provided
+    bases: List[Type[BaseModel]] = [args]
+    if infra:
+        if isinstance(infra, type) and issubclass(infra, BaseModel):
+            bases.append(infra)
+        else:
+            raise TypeError("Pipeline infrastructure must be a Pydantic BaseModel subclass.")
     schema = create_model(
         register_args.pipeline.title().replace("-", ""),
-        __base__=(args, infra),
+        __base__=tuple[type[BaseModel], ...](bases),
     )
 
     def decorator(cls):
@@ -88,7 +96,7 @@ def _scan_and_register_pipelines():
 
 def list_pipelines_names() -> List[str]:
     """List all registered pipelines names."""
-    logger.debug("alive")
+    logger.debug("caca")
     if not PIPELINE_REGISTRY:
         _scan_and_register_pipelines()
     return list(PIPELINE_REGISTRY.keys())

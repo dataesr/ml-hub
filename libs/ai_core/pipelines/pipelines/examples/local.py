@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from ai_core.pipelines.registry import register_pipeline_local, PipelineRegistryLocal
-from ai_core.pipelines.interface import PipelineRunnerBase
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -20,11 +19,14 @@ registry_args = PipelineRegistryLocal(
 
 
 @register_pipeline_local(registry_args)
-class PipelineRunner(PipelineRunnerBase):
+class PipelineRunner(BaseModel):
 
-    def run(self, config: BaseModel):
-        logger.info(f"Starting pipeline {config.pipeline}...")
-        logger.debug(f"Args = {config.args}")
-        logger.debug(f"Infra = {config.infra}")
+    def __init__(self, config):
+        self.config = config
+
+    def run(self):
+        logger.info(f"Starting pipeline {self.config.pipeline}...")
+        logger.debug(f"Args = {self.config.args}")
+        logger.debug(f"Infra = {self.config.infra}")
 
         # Execution logic ...
