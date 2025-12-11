@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from libs.ai_core.registry import register_cloud_pipeline, PipelineRegistryCloud
+from pipelines.registry import register_pipeline_cloud, PipelineRegistryCloud
 
 
 class PipelineArgs(BaseModel):
@@ -16,7 +16,7 @@ registry_args = PipelineRegistryCloud(
 )
 
 
-@register_cloud_pipeline(registry_args)
+@register_pipeline_cloud(registry_args)
 class PipelineRunner:
 
     def run(self, config: BaseModel):

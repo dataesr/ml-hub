@@ -31,7 +31,7 @@ class PipelineRegistryLocal(PipelineRegistryBase):
     """Schema for local pipelines."""
 
     # infrastructure: TaskInput
-    environment: str = "standalone"
+    environment: str = "local"
 
 
 def _register_pipeline(register_args: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Type], Type]:
