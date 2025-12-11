@@ -1,22 +1,107 @@
-# jobs/registry.py
-from enum import Enum
+import pkgutil
+import importlib
+from typing import Dict, Any, List, Type, Callable
+from pydantic import BaseModel, create_model, Field
+from ai_core.schemas.jobs import JobInput
+
+# Stores pipelines job_class, input_schema, metadata
+PIPELINE_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
 
-class PipelineType(str, Enum):
-    FINETUNE_CAUSAL = "finetune_causal"
-    EVAL_ENTITY = "eval_entity_extraction"
-    INFERENCE_API = "inference_api"
+class PipelineRegistryBase(BaseModel):
+    """Base schema for all pipeline registry arguments."""
+
+    # Pipeline args
+    pipeline: str
+    args: Type[BaseModel]
+
+    # Optional fields
+    description: str = ""
+    tags: List[str] = Field(default_factory=list)
 
 
-METADATA = {
-    PipelineType.FINETUNE_CAUSAL: {
-        "script": "jobs/training/finetune_causal.py",
-        "description": "Finetunes a Llama-style model",
-        "docker_target": "cuda_unsloth",
-    },
-    # ...
-}
+class PipelineRegistryCloud(PipelineRegistryBase):
+    """Schema for pipelines running on the remote cloud server."""
+
+    infrastructure: JobInput
+    environment: str = "cloud"
 
 
-def get_pipeline_names():
-    return [e.value for e in PipelineType]
+class PipelineRegistryLocal(PipelineRegistryBase):
+    """Schema for local pipelines."""
+
+    # infrastructure: TaskInput
+    environment: str = "standalone"
+
+
+def _register_pipeline(register_args: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Type], Type]:
+    """Register pipeline."""
+    args = register_args.args
+    infra = register_args.infrastructure
+    schema = create_model(
+        register_args.pipeline.title().replace("-", ""),
+        __base__=(args, infra),
+    )
+
+    def decorator(cls):
+        registry_data = register_args.model_dump(by_alias=True)
+        registry_data["schema"] = schema
+        registry_data["class"] = cls
+
+        PIPELINE_REGISTRY[register_args.pipeline] = registry_data
+        return cls
+
+    return decorator
+
+
+def register_pipeline_cloud(register_args: PipelineRegistryCloud) -> Callable[[Type], Type]:
+    """Decorator for pipelines that run on remote cloud infrastructure."""
+    return _register_pipeline(register_args)
+
+
+def register_pipeline_local(register_args: PipelineRegistryLocal) -> Callable[[Type], Type]:
+    """Decorator for pipelines that run locally."""
+    return _register_pipeline(register_args)
+
+
+def _scan_and_register_pipelines():
+    """
+    Scan folder 'pipelines' and populate pipelines register
+    """
+    try:
+        pipeline_packages = importlib.import_module("pipelines")
+    except Exception as error:
+        raise ImportError(f"Error while scanning pipelines (details={error})")
+
+    # Scan pipelines
+    for _, module_name, _ in pkgutil.walk_packages(pipeline_packages.__path__, pipeline_packages.__name__ + "."):
+        try:
+            # Trigger pipeline register decorator
+            importlib.import_module(module_name)
+        except Exception as e:
+            print(f"Warning: Could not import pipeline module {module_name}: {e}")
+
+
+def list_pipelines_names() -> List[str]:
+    """List all registered pipelines names."""
+    if not PIPELINE_REGISTRY:
+        _scan_and_register_pipelines()
+    return list(PIPELINE_REGISTRY.keys())
+
+
+def get_pipeline(name: str):
+    """Get a registered pipeline."""
+    if not PIPELINE_REGISTRY:
+        _scan_and_register_pipelines()
+
+    pipeline = PIPELINE_REGISTRY.get(name)
+    if not pipeline:
+        raise KeyError(f"Pipeline '{name}' not found in registry.")
+
+    return pipeline
+
+
+def get_pipeline_schema(name: str) -> Type[BaseModel]:
+    """Get a registered pipeline schema."""
+    pipeline = get_pipeline(name)
+    return pipeline["schema"]

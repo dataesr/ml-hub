@@ -14,7 +14,7 @@ from app.inference.schemas import (
 )
 from app.types import DICT_PARAMS
 from app.logger import get_logger
-from ai_core.cloud.compute import app_list, app_get, app_stop
+from ai_core.cloud.service import app_list, app_get, app_stop
 
 logger = get_logger(__name__)
 

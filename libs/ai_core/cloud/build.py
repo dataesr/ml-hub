@@ -2,7 +2,7 @@ import shlex
 from pydantic import BaseModel, Field
 from typing import List, Any
 from ai_core.schemas.types import ENV
-from ai_core.schemas.job import FinetuneInput, InfereInput
+from ai_core.schemas.jobs import FinetuneInput, InfereInput
 
 class JobCommand(BaseModel):
     # Options

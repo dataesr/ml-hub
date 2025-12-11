@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 #     return infos
 
 
-### --- compute jobs ---
+### --- ovhai jobs ---
 def job_list(state: JOB_STATE | None = None):  # TODO: use schema
     filter = f"-s {state}" if state else "-a"
     cmd = f"ovhai job list -o json {filter}"
@@ -53,7 +53,7 @@ def job_run(cmd: JobCommand):
     return data
 
 
-## --- compute apps ---
+## --- ovhai apps ---
 def app_list(state: APP_STATE | None = None):  # TODO: use schema
     filter = f"-s {state}" if state else ""
     cmd = f"ovhai app list -o json {filter}"
