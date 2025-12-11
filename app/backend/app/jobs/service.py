@@ -4,7 +4,7 @@ from app.jobs.schemas import JOB_STATE, TRAIN_INPUTS, INFERE_INPUTS
 
 # from app.datasets.service import create_config, add_config
 from app.logger import get_logger
-from ai_core.cloud.compute import job_list, job_get, job_stop, job_start
+from ai_core.cloud.service import job_list, job_get, job_stop, job_run
 
 logger = get_logger(__name__)
 
@@ -196,13 +196,13 @@ def get(id: str):
 
 
 def run_train(job_inputs: TRAIN_INPUTS):
-    data = job_start(_get_train_cmd(job_inputs))
+    data = job_run(_get_train_cmd(job_inputs))
     job = _job_info(data)
     return job
 
 
 def run_infere(job_inputs: INFERE_INPUTS):
-    data = job_start(_get_infere_cmd(job_inputs))
+    data = job_run(_get_infere_cmd(job_inputs))
     return _job_info(data)
 
 

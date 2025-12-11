@@ -2,7 +2,7 @@ import shlex
 from pydantic import BaseModel, Field
 from typing import List, Any
 from ai_core.schemas.types import ENV
-from ai_core.schemas.jobs import FinetuneInput, InfereInput
+# from ai_core.schemas.jobs import FinetuneInput, InfereInput
 
 class JobCommand(BaseModel):
     # Options
@@ -60,18 +60,18 @@ class JobCommand(BaseModel):
         return shlex.join(args_list)
 
 
-def build_finetune_command(job_input: FinetuneInput) -> JobCommand:
-    job_command = JobCommand(
-        name = f"ft-{job_input.model_name.split("/")[1].split("-")[0]}",
-        image = "", #TODO: pipeline.get_image()
-        **job_input
-    )
-    return job_command
+# def build_finetune_command(job_input: FinetuneInput) -> JobCommand:
+#     job_command = JobCommand(
+#         name = f"ft-{job_input.model_name.split("/")[1].split("-")[0]}",
+#         image = "", #TODO: pipeline.get_image()
+#         **job_input
+#     )
+#     return job_command
 
-def build_infere_command(job_input: InfereInput) -> JobCommand:
-    job_command = JobCommand(
-        name = f"inf-{job_input.model_name.split("/")[1].split("-")[0]}",
-        image = "", #TODO: pipeline.get_image()
-        **job_input
-    )
-    return job_command
+# def build_infere_command(job_input: InfereInput) -> JobCommand:
+#     job_command = JobCommand(
+#         name = f"inf-{job_input.model_name.split("/")[1].split("-")[0]}",
+#         image = "", #TODO: pipeline.get_image()
+#         **job_input
+#     )
+#     return job_command
