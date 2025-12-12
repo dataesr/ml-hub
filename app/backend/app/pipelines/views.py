@@ -29,12 +29,14 @@ def pipelines_run(pipeline_name: str, raw_input_data: dict):
         raise HTTPException(status_code=404, detail=f"Pipeline '{pipeline_name}' not found.")
 
     try:
-        PipelineClass = pipeline["class"]
-        pipeline_config = PipelineClass(**raw_input_data)  # validate inputs
-        pipeline_instance = PipelineClass(config=pipeline_config)
+        PipelineSchema = pipeline["schema"]
+        pipeline_func = pipeline["func"]
+        pipeline_config = PipelineSchema(**raw_input_data)  # validate inputs
 
         # Run pipeline
-        results = pipeline_instance.run()
+        logger.info(f"Starting pipeline {pipeline_name} execution...")
+        logger.debug(f"Executing function {pipeline_func.__name__} with config: {pipeline_config}")
+        results = pipeline_func(pipeline_config)
         logger.info(f"Pipeline {pipeline.pipeline} completed with results: {results}")
 
         return {f"{pipeline_name}": "submitted"}

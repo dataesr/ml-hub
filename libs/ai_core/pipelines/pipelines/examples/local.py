@@ -19,14 +19,12 @@ registry_args = PipelineRegistryLocal(
 
 
 @register_pipeline_local(registry_args)
-class PipelineRunner(BaseModel):
+def example_local_pipeline(config: BaseModel):
+    logger.info(f"Starting pipeline {self.config.pipeline}...")
+    logger.debug(f"Args = {self.config.args}")
+    logger.debug(f"Infra = {self.config.infra}")
 
-    def __init__(self, config):
-        self.config = config
+    # Execution logic ...
 
-    def run(self):
-        logger.info(f"Starting pipeline {self.config.pipeline}...")
-        logger.debug(f"Args = {self.config.args}")
-        logger.debug(f"Infra = {self.config.infra}")
-
-        # Execution logic ...
+    logger.info(f"Pipeline {self.config.pipeline} completed.")
+    return {"status": "success"}

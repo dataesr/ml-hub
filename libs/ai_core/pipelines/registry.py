@@ -24,7 +24,7 @@ class PipelineRegistryBase(BaseModel):
 
 
 class PipelineRegistryCloud(PipelineRegistryBase):
-    """Schema for pipelines running on the remote cloud server."""
+    """Schema for pipelines running on remote cloud infrastructure."""
 
     infrastructure: JobInput
     environment: str = "cloud"
@@ -37,7 +37,7 @@ class PipelineRegistryLocal(PipelineRegistryBase):
     environment: str = "local"
 
 
-def _register_pipeline(register_args: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Type], Type]:
+def _register_pipeline(register_args: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Callable], Callable]:
     """Register pipeline."""
     args = register_args.args
     infra = getattr(register_args, "infrastructure", None)
@@ -54,23 +54,23 @@ def _register_pipeline(register_args: PipelineRegistryCloud | PipelineRegistryLo
         __base__=tuple[type[BaseModel], ...](bases),
     )
 
-    def decorator(cls):
+    def decorator(func: Callable):
         registry_data = register_args.model_dump(by_alias=True)
         registry_data["schema"] = schema
-        registry_data["class"] = cls
+        registry_data["func"] = func
 
         PIPELINE_REGISTRY[register_args.pipeline] = registry_data
-        return cls
+        return func
 
     return decorator
 
 
-def register_pipeline_cloud(register_args: PipelineRegistryCloud) -> Callable[[Type], Type]:
+def register_pipeline_cloud(register_args: PipelineRegistryCloud) -> Callable[[Callable], Callable]:
     """Decorator for pipelines that run on remote cloud infrastructure."""
     return _register_pipeline(register_args)
 
 
-def register_pipeline_local(register_args: PipelineRegistryLocal) -> Callable[[Type], Type]:
+def register_pipeline_local(register_args: PipelineRegistryLocal) -> Callable[[Callable], Callable]:
     """Decorator for pipelines that run locally."""
     return _register_pipeline(register_args)
 
@@ -96,7 +96,6 @@ def _scan_and_register_pipelines():
 
 def list_pipelines_names() -> List[str]:
     """List all registered pipelines names."""
-    logger.debug("caca")
     if not PIPELINE_REGISTRY:
         _scan_and_register_pipelines()
     return list(PIPELINE_REGISTRY.keys())
