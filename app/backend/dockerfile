@@ -20,13 +20,15 @@ RUN curl https://cli.gra.ai.cloud.ovh.net/ovhai-linux.zip -o ovhai-linux.zip && 
     rm -rf ovhai-linux.zip ovhai
 RUN mkdir -p ~/.config/ovhai && curl -o ~/.config/ovhai/config.json https://cli.gra.ai.cloud.ovh.net/config.json
 
-
+# Install dependencies
 COPY ./app/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Add libs
 COPY ./libs ./libs
 RUN pip install ./libs
 
+# Add code
 COPY ./app/backend .
 
 EXPOSE 8000

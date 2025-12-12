@@ -27,11 +27,11 @@ def example_cloud_pipeline(config: BaseModel):
     import trl
     import datasets
 
-    logger.info(f"Starting pipeline {self.config.pipeline}...")
-    logger.debug(f"Args = {self.config.args}")
-    logger.debug(f"Infra = {self.config.infra}")
+    logger.info(f"Starting pipeline {config.pipeline}...")
+    logger.debug(f"Args = {config.args}")
+    logger.debug(f"Infra = {config.infra}")
 
     # Execution logic ...
 
-    logger.info(f"Pipeline {self.config.pipeline} completed.")
+    logger.info(f"Pipeline {config.pipeline} completed.")
     return {"status": "success"}

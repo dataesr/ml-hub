@@ -1,14 +1,11 @@
 import pkgutil
 import importlib
-from typing import Dict, Any, List, Type, Callable
+from typing import Dict, Literal, List, Type, Callable
 from pydantic import BaseModel, create_model, Field
 from ai_core.schemas.jobs import JobInput
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
-
-# Stores pipelines job_class, input_schema, metadata
-PIPELINE_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
 
 class PipelineRegistryBase(BaseModel):
@@ -21,20 +18,25 @@ class PipelineRegistryBase(BaseModel):
     # Optional fields
     description: str = ""
     tags: List[str] = Field(default_factory=list)
+    environment: Literal["cloud", "local"]
+    infrastructure: Type[BaseModel] | None = None
 
 
 class PipelineRegistryCloud(PipelineRegistryBase):
     """Schema for pipelines running on remote cloud infrastructure."""
-
-    infrastructure: JobInput
-    environment: str = "cloud"
+    def __init__(self):
+        self.environment = "cloud"
+        self.infrastructure = JobInput
 
 
 class PipelineRegistryLocal(PipelineRegistryBase):
     """Schema for local pipelines."""
+    def __init__(self):
+        self.environment = "local"
 
-    infrastructure: Type[BaseModel] | None = None
-    environment: str = "local"
+
+# Stores pipelines job_class, input_schema, metadata
+PIPELINE_REGISTRY: Dict[str, PipelineRegistryCloud | PipelineRegistryLocal] = {}
 
 
 def _register_pipeline(register_args: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Callable], Callable]:
@@ -47,8 +49,10 @@ def _register_pipeline(register_args: PipelineRegistryCloud | PipelineRegistryLo
     if infra:
         if isinstance(infra, type) and issubclass(infra, BaseModel):
             bases.append(infra)
+        elif isinstance(infra, BaseModel):
+            bases.append(infra.__class__)
         else:
-            raise TypeError("Pipeline infrastructure must be a Pydantic BaseModel subclass.")
+            raise TypeError("Pipeline infrastructure must be a Pydantic BaseModel subclass or instance.")
     schema = create_model(
         register_args.pipeline.title().replace("-", ""),
         __base__=tuple[type[BaseModel], ...](bases),
@@ -101,7 +105,14 @@ def list_pipelines_names() -> List[str]:
     return list(PIPELINE_REGISTRY.keys())
 
 
-def get_pipeline(name: str):
+def list_pipelines() -> List[PipelineRegistryLocal | PipelineRegistryCloud]:
+    """List all registered pipelines."""
+    if not PIPELINE_REGISTRY:
+        _scan_and_register_pipelines()
+    return list(PIPELINE_REGISTRY.values())
+
+
+def get_pipeline(name: str) -> PipelineRegistryLocal | PipelineRegistryCloud:
     """Get a registered pipeline."""
     if not PIPELINE_REGISTRY:
         _scan_and_register_pipelines()
@@ -111,9 +122,3 @@ def get_pipeline(name: str):
         raise KeyError(f"Pipeline '{name}' not found in registry.")
 
     return pipeline
-
-
-def get_pipeline_schema(name: str) -> Type[BaseModel]:
-    """Get a registered pipeline schema."""
-    pipeline = get_pipeline(name)
-    return pipeline["schema"]

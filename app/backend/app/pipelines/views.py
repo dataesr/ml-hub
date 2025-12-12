@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
-from ai_core.pipelines.registry import list_pipelines_names, get_pipeline
+from ai_core.pipelines.registry import list_pipelines, get_pipeline
 from ai_core.utils.logger import get_logger
 
 
@@ -8,16 +8,17 @@ logger = get_logger(__name__)
 
 router = APIRouter(tags=["pipelines"])
 
+
 @router.get("/pipelines")
-def pipelines_list_names():
-    pipeline_names = list_pipelines_names()
-    return {"pipelines": pipeline_names}
+def pipelines_list():
+    pipelines = list_pipelines()
+    return [pipeline.model_dump() for pipeline in pipelines]
 
 
 @router.get("/pipelines/{pipeline_name}")
 def pipelines_get(pipeline_name: str):
     pipeline = get_pipeline(pipeline_name)
-    return pipeline
+    return pipeline.model_dump()
 
 
 @router.post("/pipelines/{pipeline_name}/run")
