@@ -21,6 +21,12 @@ registry_args = PipelineRegistryCloud(
 
 @register_pipeline_cloud(registry_args)
 def example_cloud_pipeline(config: BaseModel):
+    # Imports should be inside the function to avoid dependencies
+    # Make sure selected packages are included in the cloud image
+    import transformers
+    import trl
+    import datasets
+
     logger.info(f"Starting pipeline {self.config.pipeline}...")
     logger.debug(f"Args = {self.config.args}")
     logger.debug(f"Infra = {self.config.infra}")

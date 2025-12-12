@@ -20,6 +20,11 @@ registry_args = PipelineRegistryLocal(
 
 @register_pipeline_local(registry_args)
 def example_local_pipeline(config: BaseModel):
+    # Imports should be inside the function to avoid dependencies
+    # Make sure selected packages are installed in the local environment
+    import numpy as np
+    import pandas as pd
+
     logger.info(f"Starting pipeline {self.config.pipeline}...")
     logger.debug(f"Args = {self.config.args}")
     logger.debug(f"Infra = {self.config.infra}")
