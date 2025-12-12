@@ -10,7 +10,7 @@ class PipelineArgs(BaseModel):
     epochs: int = 3
 
 
-registry_args = PipelineRegistryCloud(
+pipeline = PipelineRegistryCloud(
     pipeline="example-cloud",
     args=PipelineArgs,
     infrastructure={"image": "ghcr.io/myorg/example-cloud:latest"},
@@ -19,19 +19,18 @@ registry_args = PipelineRegistryCloud(
 )
 
 
-@register_pipeline_cloud(registry_args)
-def example_cloud_pipeline(config: BaseModel):
+@register_pipeline_cloud(pipeline)
+def example_cloud_pipeline(args: PipelineArgs):
     # Imports should be inside the function to avoid dependencies
     # Make sure selected packages are included in the cloud image
     import transformers
     import trl
     import datasets
 
-    logger.info(f"Starting pipeline {config.pipeline}...")
-    logger.debug(f"Args = {config.args}")
-    logger.debug(f"Infra = {config.infra}")
+    logger.info(f"Starting pipeline example-cloud...")
+    logger.debug(f"Args = {args}")
 
     # Execution logic ...
 
-    logger.info(f"Pipeline {config.pipeline} completed.")
+    logger.info(f"Pipeline completed.")
     return {"status": "success"}

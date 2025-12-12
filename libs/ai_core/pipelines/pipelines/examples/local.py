@@ -6,11 +6,11 @@ logger = get_logger(__name__)
 
 
 class PipelineArgs(BaseModel):
-    param_1: str
-    param_2: int
+    param_1: str = "example"
+    param_2: int = 1
 
 
-registry_args = PipelineRegistryLocal(
+pipeline = PipelineRegistryLocal(
     pipeline="example-local",
     args=PipelineArgs,
     description="Example of a local pipeline",
@@ -18,18 +18,17 @@ registry_args = PipelineRegistryLocal(
 )
 
 
-@register_pipeline_local(registry_args)
-def example_local_pipeline(config: BaseModel):
+@register_pipeline_local(pipeline)
+def example_local_pipeline(args: PipelineArgs):
     # Imports should be inside the function to avoid dependencies
     # Make sure selected packages are installed in the local environment
     import numpy as np
     import pandas as pd
 
-    logger.info(f"Starting pipeline {config.pipeline}...")
-    logger.debug(f"Args = {config.args}")
-    logger.debug(f"Infra = {config.infra}")
+    logger.info(f"Starting pipeline example-local...")
+    logger.debug(f"Args = {args}")
 
     # Execution logic ...
 
-    logger.info(f"Pipeline {config.pipeline} completed.")
+    logger.info(f"Pipeline completed.")
     return {"status": "success"}
