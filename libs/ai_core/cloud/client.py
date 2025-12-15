@@ -12,7 +12,7 @@ def ovhai_initialize():
     result.check_returncode()
 
     # add s3 datastore
-    cmd = f'ovhai datastore update s3 {DATA_STORE} {os.getenv("OVHAI_OS_ENDPOINT")} {os.getenv("OVHAI_OS_REGION").lower()} {os.getenv("OVHAI_OS_ACCESS_KEY")} --secret-key-from-env OVHAI_OS_SECRET_KEY --store-credentials-locally'
+    cmd = f'ovhai datastore update s3 {DATA_STORE} {os.getenv("OVHAI_OS_ENDPOINT")} {os.getenv("OVHAI_OS_REGION", "").lower()} {os.getenv("OVHAI_OS_ACCESS_KEY")} --secret-key-from-env OVHAI_OS_SECRET_KEY --store-credentials-locally'
     result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
     result.check_returncode()
 

@@ -7,7 +7,7 @@ from ai_core.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-def get_args():
+def get_pipeline_args():
     base_parser = argparse.ArgumentParser(add_help=False)
     base_parser.add_argument("--pipeline", type=str, required=True)
     known_args, _ = base_parser.parse_known_args()
@@ -48,8 +48,8 @@ def get_args():
 
 
 def run_pipeline():
-    name, func, args = get_args()
-    logger.info(f"--- Running {name} ---")
+    name, func, args = get_pipeline_args()
+    logger.info(f"--- Start pipeline {name} ---")
     func(args)
     logger.info(f"--- Pipeline completed ---")
     return

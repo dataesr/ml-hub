@@ -17,15 +17,11 @@ def extract_infra_fields(infra: BaseModel) -> Dict[str, Tuple[Any, Any]]:
 
 def extract_args_fields(args: Type[BaseModel]) -> Dict[str, Tuple[Any, Any]]:
     fields = {}
-    
+
     for field_name, field_info in args.model_fields.items():
         fields[field_name] = (field_info.annotation, field_info)
-    
+
     return fields
-
-
-def create_schema_name(pipeline_name: str) -> str:
-    return pipeline_name.title().replace("-", "").replace("_", "")
 
 
 def build_pipeline_schema(
@@ -34,12 +30,12 @@ def build_pipeline_schema(
     infra: Optional[BaseModel] = None
 ) -> Type[BaseModel]:
     schema_fields = {}
-    
+
     if infra:
         schema_fields.update(extract_infra_fields(infra))
-    
+
     if args:
         schema_fields.update(extract_args_fields(args))
-    
-    schema_name = create_schema_name(name)
+
+    schema_name = name.title().replace("-", "").replace("_", "")
     return create_model(schema_name, **schema_fields)

@@ -26,14 +26,14 @@ def load_from_local(path: str, as_pandas: bool = False) -> Dataset | DataFrame:
         return dataset.to_pandas()
 
 
-def load_from_hf(dataset_name: str, split: str = None, as_pandas: bool = False) -> Dataset | DataFrame:
+def load_from_hf(dataset_name: str, split: str | None = None, as_pandas: bool = False) -> Dataset | DataFrame:
     dataset = load_dataset(dataset_name, split=split)
     if as_pandas:
         return dataset.to_pandas()
     return dataset
 
 
-def load(path_or_name: str, split: str = None, as_pandas: bool = False) -> Dataset | DataFrame:
+def load(path_or_name: str, split: str | None = None, as_pandas: bool = False) -> Dataset | DataFrame:
     try:
         logger.debug(f"Trying to load {path_or_name} from HuggingFace...")
         dataset = load_dataset(path_or_name, split=split)

@@ -1,5 +1,7 @@
 from datasets import Dataset
+from ai_core.utils.logger import get_logger
 
+logger = get_logger(__name__)
 
 def get_commit_hash(dataset: Dataset) -> str | None:
     """
@@ -22,3 +24,19 @@ def get_commit_hash(dataset: Dataset) -> str | None:
         checksum_file = checksums_list[0].split("@")[1]
         commit_hash = checksum_file.split("/")[0]
     return commit_hash
+
+
+def should_use_conversational_format(dataset_format_arg: str = None, dataset_chat_template=None):
+    if dataset_format_arg == "conversational":
+        logger.debug("Format set to 'conversational'")
+        return True
+    elif dataset_format_arg == "text":
+        logger.debug("Format set to 'text'")
+        return False
+    else:
+        if dataset_chat_template is not None:
+            logger.debug("Format automatically set to 'conversational'")
+            return True
+        else:
+            logger.debug("Format automatically set to 'text'")
+            return False

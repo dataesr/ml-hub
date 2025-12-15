@@ -26,6 +26,11 @@ def mlflow_initialize():
     logger.info("Mlflow tracking initialized")
 
 
+def mlflow_is_enabled():
+    mlflow_uri = os.getenv("MLFLOW_TRACKING_URI")
+    return mlflow_uri is not None
+
+
 def mlflow_evaluate(
     data: Any,
     scorers: list,

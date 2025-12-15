@@ -1,11 +1,6 @@
 import shlex
-from pydantic import BaseModel, Field
-from typing import List, Any
-from ai_core.utils.types import ENV
-from ai_core.cloud.schemas import CloudJobCommand, CloudJobInputs, CloudJobInfrastructure
-
-# from ai_core.schemas.jobs import FinetuneInput, InfereInput
-
+from typing import List
+from ai_core.cloud.schemas import CloudJobCommandArg, CloudJobInputs, CloudJobInfrastructure
 
 def build_cli_args(inputs: CloudJobInputs) -> list[str]:
     """Converts the job object into a safe list of command line arguments."""
@@ -31,9 +26,12 @@ def build_cli_args(inputs: CloudJobInputs) -> list[str]:
 
     args.append(inputs.image)
 
-    if inputs.commands:
-        args.append("--")
-        for command in inputs.commands:
+    args.append("--")
+
+    args.extend(inputs.command)
+
+    if inputs.command_args:
+        for command in inputs.command_args:
             arg = [f"--{command.name}"]
             if command.value:
                 arg.append(f"{shlex.quote(command.value)}")
@@ -48,7 +46,7 @@ def build_cli_string(inputs: CloudJobInputs) -> str:
     return shlex.join(args_list)
 
 
-def build_command_args(config_dict: dict) -> List[CloudJobCommand]:
+def build_command_args(config_dict: dict) -> List[CloudJobCommandArg]:
     """Convert a Pydantic model to a list of CommandArg objects.
 
     Args:
@@ -61,13 +59,13 @@ def build_command_args(config_dict: dict) -> List[CloudJobCommand]:
     for key, value in config_dict.items():
         arg_name = key.replace("_", "-")
         arg_value = str(value)
-        args_list.append(CloudJobCommand(name=arg_name, value=arg_value))
+        args_list.append(CloudJobCommandArg(name=arg_name, value=arg_value))
     return args_list
 
 
 def build_job(inputs: dict) -> CloudJobInputs:
     infra_dict = {k: v for k, v in inputs.items() if k in CloudJobInfrastructure.model_fields}
     args_dict  = {k: v for k, v in inputs.items() if k not in infra_dict.keys()}
-    job_dict = {**infra_dict, "commands": build_command_args(args_dict)}
+    job_dict = {**infra_dict, "command_args": build_command_args(args_dict)}
     job_inputs = CloudJobInputs(**job_dict)
     return job_inputs

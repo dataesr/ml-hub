@@ -4,7 +4,7 @@ from ai_core.utils.constants import COMPUTE_GPU
 from ai_core.utils.types import ENV
 
 
-class CloudJobCommand(BaseModel):
+class CloudJobCommandArg(BaseModel):
     name: str
     value: Optional[str] = None
 
@@ -12,6 +12,7 @@ class CloudJobCommand(BaseModel):
 class CloudJobInfrastructure(BaseModel):
     # Image
     image: str
+    command: List[str] = Field(default_factory=list)
 
     # Options
     name: Optional[str] = None
@@ -26,4 +27,4 @@ class CloudJobInfrastructure(BaseModel):
 class CloudJobInputs(CloudJobInfrastructure):
 
     # Image command arguments
-    commands: List[CloudJobCommand] = Field(default_factory=list)
+    command_args: List[CloudJobCommandArg] = Field(default_factory=list)
