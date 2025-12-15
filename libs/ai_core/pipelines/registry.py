@@ -22,6 +22,15 @@ class PipelineRegistryBase(BaseModel):
     environment: Literal["cloud", "local"]
     infrastructure: Type[BaseModel] | None = None
 
+    def run(self, arguments: dict):
+        if self.environment == "local":
+            self.func(arguments)
+        elif self.environment == "cloud":
+            # TODO
+            pass
+        else:
+            raise ValueError(f"Pipeline environment should be 'local' or 'cloud'.")
+
 
 class PipelineRegistryCloud(PipelineRegistryBase):
     """Schema for pipelines running on remote cloud infrastructure."""

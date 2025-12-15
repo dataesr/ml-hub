@@ -60,6 +60,16 @@ class JobCommand(BaseModel):
         return shlex.join(args_list)
 
 
+def build_args_list(config: BaseModel):
+    args_list = []
+    config_dict = config.model_dump(exclude_none=True)
+    for key, value in config_dict.items():
+        arg_name = key.replace("_", "-")
+        arg_value = str(value)
+        args_list.append({"name": arg_name, "value": arg_value})
+    return args_list
+
+
 # def build_finetune_command(job_input: FinetuneInput) -> JobCommand:
 #     job_command = JobCommand(
 #         name = f"ft-{job_input.model_name.split("/")[1].split("-")[0]}",
