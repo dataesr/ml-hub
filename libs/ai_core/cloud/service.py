@@ -1,9 +1,10 @@
 import time
 from ai_core.cloud.client import ovhai_run_cmd
-from ai_core.cloud.build import JobCommand
+from ai_core.cloud.schemas import CloudJobInputs
+from ai_core.cloud.build import build_cli_args, build_cli_string
 from ai_core.utils.misc import env_exist
 from ai_core.utils.logger import get_logger
-from ai_core.schemas.constants import JOB_STATE, APP_STATE
+from ai_core.utils.constants import JOB_STATE, APP_STATE
 
 logger = get_logger(__name__)
 
@@ -48,8 +49,10 @@ def job_stop(id: str):
     ovhai_run_cmd(cmd)
 
 
-def job_run(cmd: JobCommand):
-    data = ovhai_run_cmd(cmd.to_cli_string(), capture_json=True)
+def job_run(inputs: CloudJobInputs):
+    cli = build_cli_string(inputs)
+    cmd = f"{cli} -o json"
+    data = ovhai_run_cmd(cmd, capture_json=True)
     return data
 
 

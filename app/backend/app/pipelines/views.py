@@ -24,7 +24,11 @@ def pipelines_list():
 @router.get("/pipelines/{pipeline_name}")
 def pipelines_get(pipeline_name: str):
     pipeline = get_pipeline(pipeline_name)
-    return {**pipeline.model_dump(exclude={"func", "schema", "args"}), "args": pipeline.args.model_json_schema()}
+    return {
+        **pipeline.model_dump(exclude={"func", "schema", "args"}),
+        "args": pipeline.args.model_json_schema(),
+        "schema": pipeline.schema.model_json_schema().get("properties"),
+    }
 
 
 @router.post("/pipelines/{pipeline_name}/run")
@@ -44,7 +48,7 @@ def pipelines_run(pipeline_name: str, raw_input_data: dict):
         results = pipeline.run(pipeline_config)
         logger.info(f"Pipeline {pipeline.pipeline} completed with results: {results}")
 
-        return {f"{pipeline_name}": "done"}
+        return {f"{pipeline_name}": "run"}
 
-    except ValidationError as e:
-        raise HTTPException(status_code=422, detail=e.errors())
+    except ValidationError as error:
+        raise HTTPException(status_code=422, detail=error.errors())

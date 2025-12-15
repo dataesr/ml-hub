@@ -13,7 +13,7 @@ class PipelineArgs(BaseModel):
 pipeline = PipelineRegistryCloud(
     pipeline="example-cloud",
     args=PipelineArgs,
-    infrastructure={"image": "ghcr.io/myorg/example-cloud:latest"},
+    infrastructure={"image": "ghcr.io/myorg/example-cloud:latest", "gpu": 2},
     description="Example of a cloud pipeline",
     tags=["example", "cloud"],
 )

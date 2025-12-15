@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from ai_core.pipelines.registry import register_pipeline_cloud, PipelineRegistryCloud
+from ai_core.cloud.schemas import CloudJobInfrastructure
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -13,7 +14,7 @@ class PipelineArgs(BaseModel):
 pipeline = PipelineRegistryCloud(
     pipeline="example-cloud",
     args=PipelineArgs,
-    infrastructure={"image": "ghcr.io/myorg/example-cloud:latest"},
+    infrastructure=CloudJobInfrastructure(image="ghcr.io/myorg/example-cloud:latest"),
     description="Example of a cloud pipeline",
     tags=["example", "cloud"],
 )

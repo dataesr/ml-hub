@@ -1,5 +1,5 @@
 import os
-from ai_core.schemas.types import ENV
+from ai_core.utils.types import ENV
 
 SECRET_ENVS: list[ENV] = [
     {"name": "HF_TOKEN", "value": os.getenv("HF_TOKEN")},

@@ -2,7 +2,7 @@ import os
 from ai_core.cloud.storage import ovhai_object_upload
 from ai_core.utils.files import file_write_yaml
 from ai_core.utils.logger import get_logger
-from ai_core.schemas.constants import CONFIGS_CONTAINER
+from ai_core.utils.constants import CONFIGS_CONTAINER
 
 logger = get_logger(__name__)
 
