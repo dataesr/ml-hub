@@ -1,14 +1,18 @@
 import shlex
 from typing import List
-from ai_core.cloud.schemas import CloudJobCommandArg, CloudJobInputs, CloudJobInfrastructure
+from ai_core.cloud.schemas import CloudJobArgument, CloudJobInputs, CloudJobInfrastructure
 from ai_core.tracking.schemas import TrackingConfig
 from ai_core.utils.types import ENV
 from ai_core.utils.secrets import SECRET_ENV_HF
+from ai_core.utils.logger import get_logger
 
+logger = get_logger(__name__)
 
 def build_cli_args(inputs: CloudJobInputs) -> list[str]:
     """Converts the job object into a safe list of command line arguments."""
     args = ["ovhai", "job", "run"]
+
+    args.extend(["-o", "json"])  # output json
 
     if inputs.name:
         args.extend(["--name", inputs.name])
@@ -50,7 +54,7 @@ def build_cli_string(inputs: CloudJobInputs) -> str:
     return shlex.join(args_list)
 
 
-def build_command_args(config_dict: dict) -> List[CloudJobCommandArg]:
+def build_command_args(config_dict: dict) -> List[CloudJobArgument]:
     """Convert a Pydantic model to a list of CommandArg objects.
 
     Args:
@@ -59,25 +63,9 @@ def build_command_args(config_dict: dict) -> List[CloudJobCommandArg]:
     Returns:
         List of CommandArg objects with name/value pairs
     """
-    args_list = []
+    cmd_args: List[CloudJobArgument] = []
     for key, value in config_dict.items():
         arg_name = key.replace("_", "-")
         arg_value = str(value)
-        args_list.append(CloudJobCommandArg(name=arg_name, value=arg_value))
-    return args_list
-
-
-def build_job_envs(envs: List[ENV], tracking_config: TrackingConfig = None) -> List[ENV]:
-    envs.extend(SECRET_ENV_HF)
-    if tracking_config:
-        envs.extend(tracking_config.get_envs())
-    return envs
-
-
-def build_job(inputs: dict) -> CloudJobInputs:
-    infra_dict = {k: v for k, v in inputs.items() if k in CloudJobInfrastructure.model_fields}
-    args_dict  = {k: v for k, v in inputs.items() if k not in infra_dict.keys()}
-    job_dict = {**infra_dict, "command_args": build_command_args(args_dict)}
-    job_dict["envs"] = build_job_envs(job_dict["envs"], job_dict.get("tracking_config"))
-    job_inputs = CloudJobInputs(**job_dict)
-    return job_inputs
+        cmd_args.append({"name": arg_name, "value": arg_value})
+    return cmd_args

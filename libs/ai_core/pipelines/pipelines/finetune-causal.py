@@ -32,7 +32,6 @@ class PipelineArgs(BaseModel):
 
     # Config
     prompts_config: Optional[str] = None
-    tracking_config: Optional[TrackingConfig] = None
 
     # Lora args
     lora_r: int = 16
@@ -57,6 +56,8 @@ class PipelineArgs(BaseModel):
 
 pipeline = PipelineRegistryCloud(
     pipeline="finetune-causal",
+    description="Finetune a causal model",
+    tags=["finetuning", "causallm", "transformers", "lora", "bitandbytes"],
     args=PipelineArgs,
     infrastructure=CloudJobInfrastructure(
         image="ghcr.io/ml-hub/cuda-base:latest",
@@ -67,8 +68,7 @@ pipeline = PipelineRegistryCloud(
             CloudJobVolume(container=JOBS_CONTAINER, mount="jobs", permission="RWD"),
         ],
     ),
-    description="Finetune a causal model",
-    tags=["finetuning", "causallm", "transformers", "lora", "bitandbytes"],
+    tracking=TrackingConfig(),  # default tracking config
 )
 
 

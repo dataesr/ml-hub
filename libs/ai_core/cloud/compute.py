@@ -30,8 +30,8 @@ def job_stop(id: str):
 
 def job_run(inputs: CloudJobInputs):
     cli = build_cli_string(inputs)
-    cmd = f"{cli} -o json"
-    data = ovhai_run_cmd(cmd, capture_json=True)
+    logger.debug(f"Job CLI: {cli}")
+    data = ovhai_run_cmd(cli, capture_json=True)
     return data
 
 

@@ -2,4 +2,4 @@
 
 Python 3.9+
 
-ovhai CLI: Required for the ai_core.cloud.service module. Follow the official OVH documentation for installation.
+ovhai CLI: Required for the ai_core.cloud.compute module. Follow the official OVH documentation for installation.

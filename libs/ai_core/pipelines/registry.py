@@ -2,8 +2,8 @@ import pkgutil
 import importlib
 from typing import Dict, Literal, List, Type, Callable, Optional
 from pydantic import BaseModel, Field
-
 from ai_core.cloud.schemas import CloudJobInfrastructure
+from ai_core.tracking.schemas import TrackingConfig
 from ai_core.pipelines.schema_builder import build_pipeline_schema
 from ai_core.pipelines.execution import run_local, run_cloud
 from ai_core.utils.logger import get_logger
@@ -15,19 +15,20 @@ PIPELINE_REGISTRY: Dict[str, "PipelineRegistryLocal | PipelineRegistryCloud"] = 
 
 class PipelineRegistryBase(BaseModel):
     pipeline: str
-    args: Optional[Type[BaseModel]] = None
     description: str = ""
     tags: List[str] = Field(default_factory=list)
+    args: Optional[Type[BaseModel]] = None
+    inputs: Optional[Type[BaseModel]] = None
+    func: Optional[Callable] = None
     environment: Literal["cloud", "local"]
     infrastructure: Optional[BaseModel] = None
-    func: Optional[Callable] = None
-    schema: Optional[Type[BaseModel]] = None
+    tracking: Optional[TrackingConfig] = None
 
     def run(self, config: BaseModel):
         if self.environment == "local":
             return run_local(self.func, config)
         elif self.environment == "cloud":
-            return run_cloud(config, self.infrastructure)
+            return run_cloud(config, self.infrastructure, self.tracking)
         else:
             raise ValueError(f"Pipeline environment should be 'local' or 'cloud'.")
 
@@ -42,15 +43,15 @@ class PipelineRegistryLocal(PipelineRegistryBase):
 
 
 def create_pipeline_decorator(pipeline: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Callable], Callable]:
-    schema = build_pipeline_schema(pipeline.pipeline, pipeline.args, pipeline.infrastructure)
-    
+    Schema = build_pipeline_schema(pipeline.pipeline, pipeline.args, pipeline.infrastructure, pipeline.tracking)
+
     def decorator(func: Callable) -> Callable:
-        pipeline.schema = schema
+        pipeline.inputs = Schema
         pipeline.func = func
         PIPELINE_REGISTRY[pipeline.pipeline] = pipeline
         logger.debug(f"Registered pipeline: {pipeline.pipeline} (environment={pipeline.environment})")
         return func
-    
+
     return decorator
 
 
@@ -69,7 +70,6 @@ def load_pipeline_modules():
         raise ImportError(f"Error while scanning pipelines (details={error})")
 
     for _, module_name, _ in pkgutil.walk_packages(pipeline_packages.__path__, pipeline_packages.__name__ + "."):
-        logger.debug(f"{module_name =}")
         try:
             importlib.import_module(module_name)
         except Exception as error:

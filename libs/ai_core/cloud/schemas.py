@@ -14,12 +14,6 @@ class CloudJobVolume(BaseModel):
     def get_link(self):
         return f"{self.container}@{self.region}/:/workspace/{self.mount}:{self.permission}"
 
-
-class CloudJobCommandArg(BaseModel):
-    name: str
-    value: Optional[str] = None
-
-
 class CloudJobInfrastructure(BaseModel):
     # Image
     image: str
@@ -35,10 +29,15 @@ class CloudJobInfrastructure(BaseModel):
     labels: List[ENV] = Field(default_factory=list)
 
 
+class CloudJobArgument(BaseModel):
+    name: str
+    value: Optional[str] = None
+
+
 class CloudJobInputs(CloudJobInfrastructure):
 
     # Image command arguments
-    command_args: List[CloudJobCommandArg] = Field(default_factory=list)
+    command_args: List[CloudJobArgument] = Field(default_factory=list)
 
     # Tracking
     tracking_config: Optional[TrackingConfig] = None
