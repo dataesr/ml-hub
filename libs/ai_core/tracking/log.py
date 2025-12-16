@@ -6,6 +6,7 @@ from mlflow.data.huggingface_dataset import from_huggingface
 from mlflow.data.meta_dataset import MetaDataset
 from mlflow.data.filesystem_dataset_source import FileSystemDatasetSource
 from datasets import Dataset
+from ai_core.cloud.constants import DATASETS_CONTAINER
 from ai_core.tracking.client import mlflow_is_enabled
 from ai_core.utils.logger import get_logger
 
@@ -41,7 +42,7 @@ def mlflow_run_name(model_name: str, run_type: RUN_TYPES = None):
 
 
 def mlflow_log_dataset(dataset_name: str, dataset: Dataset, dataset_split: str = None, **metadata):
-    from shared.dataset import get_commit_hash, get_file
+    from ai_core.datasets.utils import get_commit_hash
 
     if not mlflow_is_enabled():
         return
@@ -55,7 +56,7 @@ def mlflow_log_dataset(dataset_name: str, dataset: Dataset, dataset_split: str =
         mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
         logger.debug(f"Logged dataset {dataset_name} from {dataset_source.path}")
     else:
-        dataset_source = FileSystemDatasetSource(uri=f"s3://{get_file(dataset_name)}")
+        dataset_source = FileSystemDatasetSource(uri=f"s3://{os.path.join(DATASETS_CONTAINER, dataset_name)}")
         mlflow_dataset = MetaDataset(source=dataset_source, name=name)
         mlflow.log_input(dataset, context=dataset_split, tags=metadata)
         logger.debug(f"Logged dataset {dataset_name} from {dataset_source.uri}")

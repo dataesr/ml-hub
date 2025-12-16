@@ -4,7 +4,7 @@ from app.jobs.schemas import JOB_STATE, TRAIN_INPUTS, INFERE_INPUTS
 
 # from app.datasets.service import create_config, add_config
 from app.logger import get_logger
-from ai_core.cloud.service import job_list, job_get, job_stop, job_run
+from ai_core.cloud.compute import job_list, job_get, job_stop, job_run
 
 logger = get_logger(__name__)
 

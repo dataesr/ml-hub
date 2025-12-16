@@ -1,6 +1,7 @@
 import shlex
 from typing import List
 from ai_core.cloud.schemas import CloudJobCommandArg, CloudJobInputs, CloudJobInfrastructure
+from ai_core.utils.settings import SECRET_ENVS
 
 def build_cli_args(inputs: CloudJobInputs) -> list[str]:
     """Converts the job object into a safe list of command line arguments."""
@@ -15,11 +16,12 @@ def build_cli_args(inputs: CloudJobInputs) -> list[str]:
     if inputs.cpu:
         args.extend(["--cpu", str(inputs.cpu)])
 
+    inputs.envs.extend(SECRET_ENVS)
     for env in inputs.envs:
         args.extend(["--env", f"{env.name}={shlex.quote(env.value)}"])
 
     for volume in inputs.volumes:
-        args.extend(["--volume", shlex.quote(volume)])
+        args.extend(["--volume", shlex.quote(volume.get_link())])
 
     for label in inputs.labels:
         args.extend(["--label", f"{label.name}={shlex.quote(label.value)}"])

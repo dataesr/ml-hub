@@ -1,18 +1,13 @@
 from typing import Literal
 
-# --- Storage containers ---
+# --- containers ---
+CONTAINERS_REGION = "1azgra"
 CONFIGS_CONTAINER = "llm-configs"
 DATASETS_CONTAINER = "llm-datasets"
 JOBS_CONTAINER = "llm-jobs"
 
-# --- Dataset and column standards ---
-TEXT_COLUMN = "text"
-CONVERSATIONS_COLUMN = "messages"  # read by sft trainer
-INSTRUCTION_COLUMN = "instruction"
-INPUT_COLUMN = "input"
-OUTPUT_COLUMN = "completion"
-
-DEFAULT_TEXT_FORMAT = "### Instruction:\n{instruction}\n\n### Input:\n{input}\n\n### Response:\n{response}"
+# --- volumes ---
+VOLUMES_PERMISSIONS = Literal["RO", "RW", "RWD"]  # read-only / read-write / read-write-delete
 
 # --- Compute  ---
 COMPUTE_GPU = "l4-1-gpu"

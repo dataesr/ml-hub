@@ -5,7 +5,8 @@ from ai_core.pipelines.registry import register_pipeline_cloud, PipelineRegistry
 from ai_core.datasets.load import load
 from ai_core.datasets.convert import construct_prompts
 from ai_core.datasets.utils import should_use_conversational_format
-from ai_core.cloud.schemas import CloudJobInfrastructure
+from ai_core.cloud.schemas import CloudJobInfrastructure, CloudJobVolume
+from ai_core.cloud.constants import CONFIGS_CONTAINER, DATASETS_CONTAINER, JOBS_CONTAINER
 from ai_core.configs.load import load_prompt_config
 from ai_core.tracking.client import mlflow_is_enabled
 from ai_core.tracking.log import (
@@ -15,6 +16,7 @@ from ai_core.tracking.log import (
     mlflow_log_tags,
     mlflow_log_params,
 )
+from ai_core.tracking.schemas import TrackingConfig
 from ai_core.models.write import merge_and_write
 from ai_core.models.push import push_model_to_hf
 from ai_core.utils.files import folder_create
@@ -26,10 +28,11 @@ logger = get_logger(__name__)
 class PipelineArgs(BaseModel):
     model_name: str
     dataset_name: str
-    dataset_split: Optional[str]
+    dataset_split: str = "train"
 
     # Config
     prompts_config: Optional[str]
+    tracking_config: Optional[TrackingConfig]
 
     # Lora args
     lora_r: int = 16
@@ -57,7 +60,12 @@ pipeline = PipelineRegistryCloud(
     args=PipelineArgs,
     infrastructure=CloudJobInfrastructure(
         image="ghcr.io/ml-hub/cuda-base:latest",
-        volumes=["llm-jobs@1azgra/:/workspace/jobs:RWD", "llm-datasets@1azgra/:/workspace/datasets:RO"],
+        name="finetune-causallm",
+        volumes=[
+            CloudJobVolume(container=CONFIGS_CONTAINER, mount="configs"),
+            CloudJobVolume(container=DATASETS_CONTAINER, mount="datasets"),
+            CloudJobVolume(container=JOBS_CONTAINER, mount="jobs", permission="RWD"),
+        ],
     ),
     description="Finetune a causal model",
     tags=["finetuning", "transformers", "lora", "bitandbytes"],
@@ -70,7 +78,7 @@ def finetune_causal(args: PipelineArgs):
     # Make sure selected packages are included in the cloud image
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-    from peft import LoraConfig, AutoPeftModelForCausalLM, TaskType, prepare_model_for_kbit_training
+    from peft import LoraConfig, TaskType, prepare_model_for_kbit_training
     from trl import SFTConfig, SFTTrainer
 
     logger.info(f"Starting pipeline finetune-causal...")

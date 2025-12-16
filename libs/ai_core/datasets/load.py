@@ -2,6 +2,7 @@ import os
 from datasets import Dataset, load_dataset
 from pandas import DataFrame
 from ai_core.cloud.storage import ovhai_object_download
+from ai_core.utils.constants import DATASETS_CONTAINER
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -40,7 +41,8 @@ def load(path_or_name: str, split: str | None = None, as_pandas: bool = False) -
     except Exception as error:
         logger.debug(f"Error while loading from HuggingFace: {error}")
         logger.debug(f"Trying to load from local disk...")
-        dataset = load_from_local(path_or_name)
+        local_path = os.path.join(DATASETS_CONTAINER, path_or_name)
+        dataset = load_from_local(local_path)
 
     if dataset:
         logger.debug(f"✅ Dataset {path_or_name} loaded!")

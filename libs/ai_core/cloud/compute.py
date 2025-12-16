@@ -1,33 +1,12 @@
 import time
 from ai_core.cloud.client import ovhai_run_cmd
 from ai_core.cloud.schemas import CloudJobInputs
-from ai_core.cloud.build import build_cli_args, build_cli_string
+from ai_core.cloud.build import build_cli_string
 from ai_core.utils.misc import env_exist
 from ai_core.utils.logger import get_logger
 from ai_core.utils.constants import JOB_STATE, APP_STATE
 
 logger = get_logger(__name__)
-
-# def _job_get_infos(data: dict):
-#     infos = {
-#         "id": data["id"],
-#         "name": data["spec"]["name"],
-#         "task": data["spec"]["image"].split("/")[-1].split(":")[0].removeprefix("llm-"),
-#         "state": data["status"]["state"],
-#         "created_at": data.get("createdAt"),
-#         "updated_at": data.get("updatedAt"),
-#         "queued_at": data["status"].get("queuedAt"),
-#         "started_at": data["status"].get("startedAt"),
-#         "stopped_at": data["status"].get("stoppedAt"),
-#         "finalized_at": data["status"].get("finalizedAt"),
-#         "duration": data["status"].get("duration"),
-#         "url": data["status"].get("url"),
-#         "external_url": f'{os.getenv("OVHAI_URL", "")}/training/{data["id"]}',
-#         "image": data["spec"]["image"],
-#         "resources": data["spec"]["resources"],
-#         "labels": data["spec"]["labels"],
-#     }
-#     return infos
 
 
 ### --- ovhai jobs ---

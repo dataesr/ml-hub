@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 from pydantic import BaseModel
 
-from ai_core.cloud.service import job_run
+from ai_core.cloud.compute import job_run
 from ai_core.cloud.build import build_job
 from ai_core.utils.logger import get_logger
 
