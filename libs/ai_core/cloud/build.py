@@ -1,7 +1,10 @@
 import shlex
 from typing import List
 from ai_core.cloud.schemas import CloudJobCommandArg, CloudJobInputs, CloudJobInfrastructure
-from ai_core.utils.settings import SECRET_ENVS
+from ai_core.tracking.schemas import TrackingConfig
+from ai_core.utils.types import ENV
+from ai_core.utils.secrets import SECRET_ENV_HF
+
 
 def build_cli_args(inputs: CloudJobInputs) -> list[str]:
     """Converts the job object into a safe list of command line arguments."""
@@ -16,7 +19,6 @@ def build_cli_args(inputs: CloudJobInputs) -> list[str]:
     if inputs.cpu:
         args.extend(["--cpu", str(inputs.cpu)])
 
-    inputs.envs.extend(SECRET_ENVS)
     for env in inputs.envs:
         args.extend(["--env", f"{env.name}={shlex.quote(env.value)}"])
 
@@ -65,9 +67,17 @@ def build_command_args(config_dict: dict) -> List[CloudJobCommandArg]:
     return args_list
 
 
+def build_job_envs(envs: List[ENV], tracking_config: TrackingConfig = None) -> List[ENV]:
+    envs.extend(SECRET_ENV_HF)
+    if tracking_config:
+        envs.extend(tracking_config.get_envs())
+    return envs
+
+
 def build_job(inputs: dict) -> CloudJobInputs:
     infra_dict = {k: v for k, v in inputs.items() if k in CloudJobInfrastructure.model_fields}
     args_dict  = {k: v for k, v in inputs.items() if k not in infra_dict.keys()}
     job_dict = {**infra_dict, "command_args": build_command_args(args_dict)}
+    job_dict["envs"] = build_job_envs(job_dict["envs"], job_dict.get("tracking_config"))
     job_inputs = CloudJobInputs(**job_dict)
     return job_inputs

@@ -31,8 +31,8 @@ class PipelineArgs(BaseModel):
     dataset_split: str = "train"
 
     # Config
-    prompts_config: Optional[str]
-    tracking_config: Optional[TrackingConfig]
+    prompts_config: Optional[str] = None
+    tracking_config: Optional[TrackingConfig] = None
 
     # Lora args
     lora_r: int = 16
@@ -68,7 +68,7 @@ pipeline = PipelineRegistryCloud(
         ],
     ),
     description="Finetune a causal model",
-    tags=["finetuning", "transformers", "lora", "bitandbytes"],
+    tags=["finetuning", "causallm", "transformers", "lora", "bitandbytes"],
 )
 
 

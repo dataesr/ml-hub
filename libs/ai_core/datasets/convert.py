@@ -1,5 +1,5 @@
 from datasets import Dataset
-from ai_core.utils.constants import (
+from ai_core.datasets.constants import (
     CONVERSATIONS_COLUMN,
     TEXT_COLUMN,
     INSTRUCTION_COLUMN,
