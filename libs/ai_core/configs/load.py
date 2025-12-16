@@ -2,7 +2,7 @@ import os
 import yaml
 from typing import Dict, Any
 from ai_core.cloud.storage import ovhai_object_download
-from ai_core.utils.constants import CONFIGS_CONTAINER
+from ai_core.cloud.constants import CONFIGS_CONTAINER
 
 
 def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
@@ -16,18 +16,21 @@ def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any
     return result
 
 
-def load_yaml_config(cfg_name: str, cfg_type: str) -> Dict[str, Any]:
+def load_yaml_config(cfg_name: str, cfg_type: str, from_disk: bool = False) -> Dict[str, Any]:
     remote_path = os.path.join(cfg_type, cfg_name)
     if not remote_path.endswith(".yaml"):
         remote_path += ".yaml"
 
-    try:
-        file_path = ovhai_object_download(remote_path, CONFIGS_CONTAINER, output="/tmp/")
-    except Exception as error:
-        raise Exception(f"Error while downloading config {remote_path} from {CONFIGS_CONTAINER} (details={error})")
+    if from_disk:
+        file_path = os.path.join(CONFIGS_CONTAINER, remote_path)
+    else:
+        try:
+            file_path = ovhai_object_download(remote_path, CONFIGS_CONTAINER, output="/tmp/")
+        except Exception as error:
+            raise Exception(f"Error while downloading config {remote_path} from {CONFIGS_CONTAINER} (details={error})")
 
     if not os.path.isfile(file_path):
-        raise FileNotFoundError(f"Downloaded config {remote_path} not found on disk ({file_path=})")
+        raise FileNotFoundError(f"Config {remote_path} not found on disk ({file_path=})")
 
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -39,13 +42,13 @@ def load_yaml_config(cfg_name: str, cfg_type: str) -> Dict[str, Any]:
     return cfg
 
 
-def load_prompt_config(cfg_name: str):
-    cfg = load_yaml_config(cfg_name, "prompts")
+def load_prompt_config(cfg_name: str, from_disk: bool = False):
+    cfg = load_yaml_config(cfg_name, "prompts", from_disk=from_disk)
     return cfg
 
 
-def load_pipeline_config(cfg_name: str):
-    cfg = load_yaml_config(cfg_name, "pipeline")
+def load_pipeline_config(cfg_name: str, from_disk: bool = False):
+    cfg = load_yaml_config(cfg_name, "pipeline", from_disk=from_disk)
     return cfg
 
 

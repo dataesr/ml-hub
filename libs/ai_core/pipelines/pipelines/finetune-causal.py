@@ -82,7 +82,7 @@ def finetune_causal(args: PipelineArgs):
     from trl import SFTConfig, SFTTrainer
 
     logger.info(f"Starting pipeline finetune-causal...")
-    logger.debug(f"with args = {args.model_dump()}")
+    logger.debug(f"with args = {args.model_dump(exclude_defaults=True)}")
 
     # Start tracking
     mlflow_start(
@@ -98,7 +98,7 @@ def finetune_causal(args: PipelineArgs):
     finetuned_dir = os.path.join(output_dir, "finetuned")
 
     ### --- Load prompts config ---
-    prompts_cfg = load_prompt_config(args.prompts_config) if args.prompts_config else None
+    prompts_cfg = load_prompt_config(args.prompts_config, from_disk=True) if args.prompts_config else None
     if prompts_cfg:
         mlflow_log_tags({"prompts_config": args.prompts_config})
         mlflow_log_params(prompts_cfg)

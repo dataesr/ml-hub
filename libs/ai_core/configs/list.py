@@ -1,5 +1,5 @@
 from ai_core.cloud.storage import ovhai_object_list
-from ai_core.utils.constants import CONFIGS_CONTAINER
+from ai_core.cloud.constants import CONFIGS_CONTAINER
 
 
 def list_configs(cfg_type: str = None):

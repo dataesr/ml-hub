@@ -2,9 +2,9 @@ import time
 from ai_core.cloud.client import ovhai_run_cmd
 from ai_core.cloud.schemas import CloudJobInputs
 from ai_core.cloud.build import build_cli_string
+from ai_core.cloud.constants import JOB_STATE, APP_STATE
 from ai_core.utils.misc import env_exist
 from ai_core.utils.logger import get_logger
-from ai_core.utils.constants import JOB_STATE, APP_STATE
 
 logger = get_logger(__name__)
 
