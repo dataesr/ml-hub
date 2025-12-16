@@ -7,15 +7,16 @@ from ai_core.datasets.convert import construct_prompts
 from ai_core.datasets.utils import should_use_conversational_format
 from ai_core.cloud.schemas import CloudJobInfrastructure
 from ai_core.configs.load import load_prompt_config
+from ai_core.tracking.client import mlflow_is_enabled
 from ai_core.tracking.log import (
     mlflow_log_dataset,
-    mlflow_log_model,
     mlflow_start,
     mlflow_end,
     mlflow_log_tags,
     mlflow_log_params,
 )
-from ai_core.tracking.client import mlflow_is_enabled
+from ai_core.models.write import merge_and_write
+from ai_core.models.push import push_model_to_hf
 from ai_core.utils.files import folder_create
 from ai_core.utils.logger import get_logger
 
@@ -88,13 +89,13 @@ def finetune_causal(args: PipelineArgs):
     checkpoint_dir = os.path.join(output_dir, "checkpoints")
     finetuned_dir = os.path.join(output_dir, "finetuned")
 
-    ### --- Config ---
+    ### --- Load prompts config ---
     prompts_cfg = load_prompt_config(args.prompts_config) if args.prompts_config else None
     if prompts_cfg:
         mlflow_log_tags({"prompts_config": args.prompts_config})
         mlflow_log_params(prompts_cfg)
 
-    ### --- Load model ---
+    ### --- Load model and tokenizer ---
     logger.info(f"Start loading model {args.model_name}")
 
     # Load tokenizer
@@ -185,35 +186,11 @@ def finetune_causal(args: PipelineArgs):
     logger.info("✅ Model training completed")
 
     ### --- Save model ---
-    model.save_pretrained(output_dir)
-    tokenizer.save_pretrained(output_dir)
-    logger.info(f"✅ Adapters saved to {output_dir}")
+    merge_and_write(trainer, tokenizer, args.model_name, output_dir, finetuned_dir)
 
-    # Free VRAM
-    del trainer
-    torch.cuda.empty_cache()
+    ### --- Push model ---
+    push_model_to_hf(finetuned_dir)
 
-    try:
-        # Merge model
-        logger.debug("Merging: Loading PEFT model...")
-        peft_model = AutoPeftModelForCausalLM.from_pretrained(
-            output_dir,
-            device_map="auto",
-            dtype=torch.bfloat16,  # Must be 16-bit for merging
-            low_cpu_mem_usage=True,
-        )
-        model_merged = peft_model.merge_and_unload()
-
-        # Save merged model
-        model_merged.save_pretrained(finetuned_dir, safe_serialization=True)
-        tokenizer.save_pretrained(finetuned_dir)
-
-        logger.info(f"✅ Model merged and saved to {finetuned_dir}")
-        mlflow_log_model(args.model_name, model_merged, tokenizer)
-
-    except Exception as error:
-        logger.warning("Adapters are saved, but merge failed.")
-        logger.error(f"Failed to merge model: {error}")
-
+    ### --- Finalize ---
     mlflow_end()
     logger.info(f"Pipeline completed.")
