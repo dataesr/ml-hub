@@ -64,12 +64,12 @@ build-push-all:
 # =============================================================================
 build-app-staging:
 	@echo "Building app staging image"
-	docker build -t $(GHCR_IMAGE_NAME):staging .
+	docker build -f app/dockerfile -t $(GHCR_IMAGE_NAME):staging .
 	@echo "App image built"
 
 build-app-prod:
 	@echo "Building app prod image"
-	docker build -t $(GHCR_IMAGE_NAME):$(CURRENT_VERSION) -t $(GHCR_IMAGE_NAME):latest .
+	docker build -f app/dockerfile -t $(GHCR_IMAGE_NAME):$(CURRENT_VERSION) -t $(GHCR_IMAGE_NAME):latest .
 	@echo "App image built"
 
 push-app:
