@@ -1,5 +1,5 @@
 import json
-from app.logger import get_logger
+from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

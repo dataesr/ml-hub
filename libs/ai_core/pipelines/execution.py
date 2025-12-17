@@ -10,14 +10,14 @@ from ai_core.cloud.build import build_command_args
 logger = get_logger(__name__)
 
 
-def run_local(func: Callable, config: BaseModel):
+def run_local(func: Optional[Callable], config: BaseModel):
     if not func:
         raise ValueError("Local pipeline has no function to execute.")
     return func(config)
 
 
 def run_cloud(
-    config: BaseModel, infrastructure: Optional[CloudJobInfrastructure] = None, tracking: Optional[TrackingConfig] = None
+    config: BaseModel, infrastructure: Optional[CloudJobInfrastructure], tracking: Optional[TrackingConfig]
 ) -> dict:
     config_dict = config.model_dump(exclude_defaults=True)
 
@@ -32,7 +32,7 @@ def run_cloud(
     track_dict.update({k: config_dict.pop(k) for k in list(config_dict.keys()) if k in TrackingConfig.model_fields})
 
     inputs_envs = infra_dict.get("envs", [])
-    track_config = TrackingConfig(**track_dict)
+    track_config = TrackingConfig.model_validate(track_dict)
     inputs_envs.extend(track_config.get_envs())
 
     inputs_dict = {
@@ -41,7 +41,7 @@ def run_cloud(
         "command_args": build_command_args(config_dict),
     }
 
-    job_config = CloudJobInputs(**inputs_dict)
+    job_config = CloudJobInputs.model_validate(inputs_dict)
     data = job_run(job_config)  # start job
     logger.info(f'Cloud job submitted: {data.get("id")}')
     return data

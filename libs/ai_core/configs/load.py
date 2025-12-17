@@ -36,7 +36,7 @@ def load_yaml_config(cfg_name: str, cfg_type: str, from_disk: bool = False) -> D
         with open(file_path, "r", encoding="utf-8") as file:
             cfg = yaml.safe_load(file)
     except Exception as error:
-        raise yaml.YAMLError(f"Error while parsing {file_path}")
+        raise yaml.YAMLError(f"Error while parsing {file_path}: {error}")
 
     os.remove(file_path)
     return cfg
@@ -54,9 +54,9 @@ def load_pipeline_config(cfg_name: str, from_disk: bool = False):
 
 def load_config(
     *,
-    prompt: str = None,
-    pipeline: str = None,
-    overrides: Dict[str, Any] = None,
+    prompt: str | None = None,
+    pipeline: str | None = None,
+    overrides: Dict[str, Any] | None = None,
 ) -> Dict:
     """Load config from remote storage
 

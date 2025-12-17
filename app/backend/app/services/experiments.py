@@ -37,7 +37,7 @@ def get(id: str):
     return project
 
 
-def list_runs(id: str, state: str = None):
+def list_runs(id: str, state: str | None = None):
     runs = client.search_runs(experiment_ids=[id])
     runs = [
         {

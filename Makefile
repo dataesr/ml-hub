@@ -94,3 +94,12 @@ release:
 	git commit -am '[release] version $(VERSION)'
 	git tag v$(VERSION)
 	@echo "If everything is OK, you can push with tags i.e. git push origin main --tags"
+
+# =============================================================================
+# Development
+# =============================================================================
+dev:
+	@./scripts/bootstrap.sh
+
+typecheck:
+	@source .venv/bin/activate && ty check

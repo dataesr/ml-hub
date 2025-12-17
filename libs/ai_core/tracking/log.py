@@ -116,7 +116,9 @@ def mlflow_active_model(model_name: str = None, model_id: str = None):
     logger.debug(f"Active model {model_id or model_name} has been set for tracking.")
 
 
-def mlflow_start(model_name: str, run_type: RUN_TYPES = None, tags: dict = None):
+def mlflow_start(
+    model_name: str, run_type: RUN_TYPES | None = None, tags: dict | None = None, experiment_id: str | None = None
+):
     if not mlflow_is_enabled():
         return
 
@@ -127,7 +129,7 @@ def mlflow_start(model_name: str, run_type: RUN_TYPES = None, tags: dict = None)
             tags = {"run_type": run_type}
 
     # Look for env MLFLOW_EXPERIMENT_NAME else 'Default'
-    mlflow.start_run(run_name=mlflow_run_name(model_name, run_type=run_type), tags=tags)
+    mlflow.start_run(run_name=mlflow_run_name(model_name, run_type=run_type), tags=tags, experiment_id=experiment_id)
 
 
 def mlflow_end():

@@ -2,7 +2,7 @@ from ai_core.cloud.storage import ovhai_object_list
 from ai_core.cloud.constants import CONFIGS_CONTAINER
 
 
-def list_configs(cfg_type: str = None):
+def list_configs(cfg_type: str | None = None):
     objects = ovhai_object_list(CONFIGS_CONTAINER, prefix=cfg_type)
     configs = []
     for obj in objects:

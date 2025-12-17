@@ -30,7 +30,7 @@ class PipelineRegistryBase(BaseModel):
         elif self.environment == "cloud":
             return run_cloud(config, self.infrastructure, self.tracking)
         else:
-            raise ValueError(f"Pipeline environment should be 'local' or 'cloud'.")
+            raise ValueError("Pipeline environment should be 'local' or 'cloud'.")
 
 
 class PipelineRegistryCloud(PipelineRegistryBase):

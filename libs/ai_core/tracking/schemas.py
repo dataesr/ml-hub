@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict
 from ai_core.utils.types import ENV
 from ai_core.utils.secrets import SECRET_ENV_MLFLOW
 
@@ -7,7 +7,7 @@ class TrackingConfig(BaseModel):
     project_name: Optional[str] = "Default"
     run_name: Optional[str] = None
     run_name_tag: Optional[str] = None
-    run_tags: List[str] = Field(default_factory=list)
+    run_tags: List[Dict[str, str]] = Field(default_factory=list)
     set_active_model: Optional[str] = None
     enable_tracking: bool = True
     enable_log_model: bool = True

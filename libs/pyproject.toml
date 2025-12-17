@@ -33,7 +33,9 @@ dependencies = [
 Homepage = "https://github.com/dataesr/ml-hub"
 Documentation = "https://github.com/dataesr/ml-hub"
 
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["ai_core*"]
+
+[tool.setuptools.package-data]
+ai_core = ["py.typed"]

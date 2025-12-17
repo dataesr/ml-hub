@@ -1,6 +1,6 @@
 import os
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, no_type_check
 from ai_core.pipelines.registry import register_pipeline_cloud, PipelineRegistryCloud
 from ai_core.datasets.load import load
 from ai_core.datasets.convert import construct_prompts
@@ -72,6 +72,7 @@ pipeline = PipelineRegistryCloud(
 )
 
 
+@no_type_check
 @register_pipeline_cloud(pipeline)
 def finetune_causal(args: PipelineArgs):
     # GPU imports should be inside the function to avoid dependencies
@@ -81,7 +82,7 @@ def finetune_causal(args: PipelineArgs):
     from peft import LoraConfig, TaskType, prepare_model_for_kbit_training
     from trl import SFTConfig, SFTTrainer
 
-    logger.info(f"Starting pipeline finetune-causal...")
+    logger.info("Starting pipeline finetune-causal...")
     logger.debug(f"with args = {args.model_dump(exclude_defaults=True)}")
 
     # Start tracking
@@ -136,12 +137,12 @@ def finetune_causal(args: PipelineArgs):
 
     logger.debug(f"Model embeddings size: {model.get_input_embeddings().weight.size(0)}")
     logger.debug(f"Tokenizer template: {tokenizer.chat_template}")
-    logger.info(f"✅ Model and tokenizer loaded")
+    logger.info("✅ Model and tokenizer loaded")
 
     ### --- Load dataset ---
     dataset = load(args.dataset_name, split=args.dataset_split)
     mlflow_log_dataset(args.dataset_name, dataset, dataset_split=args.dataset_split)
-    logger.info(f"✅ Dataset loaded")
+    logger.info("✅ Dataset loaded")
 
     ### --- Format prompts ---
     dataset = construct_prompts(
@@ -201,4 +202,4 @@ def finetune_causal(args: PipelineArgs):
 
     ### --- Finalize ---
     mlflow_end()
-    logger.info(f"Pipeline completed.")
+    logger.info("Pipeline completed.")

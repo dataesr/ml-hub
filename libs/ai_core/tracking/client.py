@@ -31,18 +31,6 @@ def mlflow_is_enabled():
     return mlflow_uri is not None
 
 
-def mlflow_evaluate(
-    data: Any,
-    scorers: list,
-    model_id: str = None,
-    run_name: str = None,
-    run_tags: dict = None,
-    experiment_name: str = None,
-):
-    if experiment_name:
-        mlflow.set_experiment(experiment_name=experiment_name)
-    tags = {"run_type": "evaluation"}
-    if run_tags:
-        tags.update(tags)
-    with mlflow.start_run(run_name=run_name, tags=tags):
-        mlflow.genai.evaluate(data=data, scorers=scorers, model_id=model_id)
+def mlflow_set_experiment(experiment_id: str | None = None, experiment_name: str | None = None):
+    if mlflow_is_enabled():
+        mlflow.set_experiment(experiment_id=experiment_id, experiment_name=experiment_name)

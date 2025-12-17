@@ -1,9 +1,8 @@
 from typing import Dict, Any
-from app.evaluate.helpers import formatters
 from mlflow.entities import Feedback
 from mlflow.genai import scorer
-
-from app.logger import get_logger
+from ai_core.utils import formatters
+from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -88,3 +87,11 @@ def is_tsv(outputs: str):
         value = True
     return Feedback(name="is_tsv", value=value, rationale="the response is valid tsv")
     # return value
+
+
+SCORERS_MAPPING = {
+    "is_tsv": is_tsv,
+    "is_json": is_json,
+    "correct_grant_ids": scorer_correct_grant_ids,
+    "correct_entities": scorer_correct_entities,
+}

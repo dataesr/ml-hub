@@ -1,16 +1,18 @@
-import os
+from fastapi import APIRouter
 from huggingface_hub import dataset_info, list_datasets
-from app.logger import get_logger
 
-logger = get_logger(__name__)
+router = APIRouter(tags=["datasets"])
 
 
-def get_all(owner: str, limit: int = 100):
+@router.get("/datasets")
+@router.get("/datasets/{owner}")
+def datasets_list(owner: str = "dataesr", limit: int = 100):
     datasets = list_datasets(author=owner, limit=limit)
     datasets = [dataset.__dict__ for dataset in datasets]
     return datasets
 
 
-def get(owner: str, name: str):
+@router.get("/datasets/{owner}/{name}")
+def datasets_get(owner: str, name: str):
     dataset = dataset_info(repo_id=f"{owner}/{name}")
     return dataset.__dict__

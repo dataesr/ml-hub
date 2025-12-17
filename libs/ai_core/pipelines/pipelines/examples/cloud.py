@@ -1,3 +1,4 @@
+from typing import no_type_check
 from pydantic import BaseModel
 from ai_core.pipelines.registry import register_pipeline_cloud, PipelineRegistryCloud
 from ai_core.utils.logger import get_logger
@@ -19,18 +20,19 @@ pipeline = PipelineRegistryCloud(
 )
 
 
+@no_type_check
 @register_pipeline_cloud(pipeline)
 def example_cloud_pipeline(args: PipelineArgs):
     # Imports should be inside the function to avoid dependencies
     # Make sure selected packages are included in the cloud image
-    import transformers
-    import trl
-    import datasets
+    # import transformers
+    # import trl
+    # import datasets
 
-    logger.info(f"Starting pipeline example-cloud...")
-    logger.debug(f"Args = {args}")
+    logger.info("Starting pipeline example-cloud...")
+    logger.debug(f"args = {args.model_dump(exclude_defaults=True)}")
 
     # Execution logic ...
 
-    logger.info(f"Pipeline completed.")
+    logger.info("Pipeline completed.")
     return {"status": "success"}

@@ -5,6 +5,7 @@ CONTAINERS_REGION = "1azgra"
 CONFIGS_CONTAINER = "llm-configs"
 DATASETS_CONTAINER = "llm-datasets"
 JOBS_CONTAINER = "llm-jobs"
+COMPLETIONS_CONTAINER = "llm-completions"
 
 # --- volumes ---
 VOLUMES_PERMISSIONS = Literal["RO", "RW", "RWD"]  # read-only / read-write / read-write-delete

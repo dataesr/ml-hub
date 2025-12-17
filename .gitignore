@@ -34,3 +34,6 @@ __pycache__/
 
 # builds
 *.egg-info/
+
+# virtual environment
+.venv

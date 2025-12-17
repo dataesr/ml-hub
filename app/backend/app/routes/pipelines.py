@@ -14,19 +14,20 @@ def pipelines_list():
     return [
         {
             **pipeline.model_dump(exclude={"func", "inputs", "args"}),
-            "args": pipeline.args.model_json_schema().get("properties"),
-            "inputs": pipeline.inputs.model_json_schema().get("properties"),
+            "args": pipeline.args.model_json_schema().get("properties") if pipeline.args else None,
+            "inputs": pipeline.inputs.model_json_schema().get("properties") if pipeline.inputs else None,
         }
         for pipeline in pipelines
     ]
+
 
 @router.get("/pipelines/{pipeline_name}")
 def pipelines_get(pipeline_name: str):
     pipeline = get_pipeline(pipeline_name)
     return {
         **pipeline.model_dump(exclude={"func", "inputs", "args"}),
-        "args": pipeline.args.model_json_schema(),
-        "inputs": pipeline.inputs.model_json_schema().get("properties"),
+        "args": pipeline.args.model_json_schema().get("properties") if pipeline.args else None,
+        "inputs": pipeline.inputs.model_json_schema().get("properties") if pipeline.inputs else None,
     }
 
 
@@ -40,16 +41,19 @@ def pipelines_run(pipeline_name: str, raw_input_data: dict):
 
     try:
         InputsSchema = pipeline.inputs
+        if not InputsSchema:
+            raise HTTPException(status_code=400, detail=f"Pipeline '{pipeline_name}' has no inputs.")
         logger.debug(f"Inputs schema: {InputsSchema.model_json_schema()}")
-        logger.debug(f"Inputs data: {raw_input_data}")
-        config = InputsSchema(**raw_input_data)  # validate inputs
-        logger.debug(f"Inputs config: {config}")
-        # Run pipeline
-        logger.info(f"Starting pipeline {pipeline_name} execution...")
-        results = pipeline.run(config)
-        logger.info(f"Pipeline {pipeline.pipeline} completed with results: {results}")
 
-        return {f"{pipeline_name}": "run"}
+        # Get pipeline instance
+        config = InputsSchema.model_validate(**raw_input_data)
+
+        # Run pipeline
+        logger.info(f"Starting pipeline '{pipeline_name}' execution...")
+        results = pipeline.run(config)
+        logger.info(f"Pipeline '{pipeline_name}' completed with results: {results}")
+
+        return {f"{pipeline_name}": "ok"}
 
     except ValidationError as error:
         raise HTTPException(status_code=422, detail=error.errors())

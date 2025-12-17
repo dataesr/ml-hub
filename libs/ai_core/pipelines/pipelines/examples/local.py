@@ -25,10 +25,10 @@ def example_local_pipeline(args: PipelineArgs):
     import numpy as np
     import pandas as pd
 
-    logger.info(f"Starting pipeline example-local...")
-    logger.debug(f"Args = {args}")
+    logger.info("Starting pipeline example-local...")
+    logger.debug("Args = {args}")
 
     # Execution logic ...
 
-    logger.info(f"Pipeline completed.")
+    logger.info("Pipeline completed.")
     return {"status": "success"}

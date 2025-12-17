@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-import app.experiments.service as exp_svc
+import app.services.experiments as exp_svc
 
 router = APIRouter(tags=["experiments"])
 
@@ -17,7 +17,7 @@ def experiments_projects_get(id: str):
 
 
 @router.get("/experiments/{id}/runs")
-def experiments_runs_list(id: str, state: str = None):
+def experiments_runs_list(id: str, state: str | None = None):
     runs = exp_svc.list_runs(id, state)
     return runs
 
