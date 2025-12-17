@@ -5,14 +5,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from ai_core.cloud.client import ovhai_initialize
 from ai_core.tracking.client import mlflow_initialize
-from app.configs.views import router as configs_router
-from app.datasets.views import router as datasets_router
-from app.models.views import router as models_router
-from app.jobs.views import router as jobs_router
-from app.inference.views import router as inference_router
-from app.experiments.views import router as experiments_router
-from app.evaluate.views import router as evaluate_router
-from app.pipelines.views import router as pipeline_router
+from app.routes.configs import router as configs_router
+from app.routes.datasets import router as datasets_router
+from app.routes.models import router as models_router
+from app.routes.cloud import router as cloud_router
+from app.routes.experiments import router as experiments_router
+from app.routes.pipelines import router as pipelines_router
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -56,11 +54,9 @@ api_router = APIRouter(prefix="/api")
 api_router.include_router(configs_router)
 api_router.include_router(datasets_router)
 api_router.include_router(models_router)
-api_router.include_router(jobs_router)
-api_router.include_router(inference_router)
+api_router.include_router(cloud_router)
+api_router.include_router(pipelines_router)
 api_router.include_router(experiments_router)
-api_router.include_router(evaluate_router)
-api_router.include_router(pipeline_router)
 app.include_router(api_router)
 
 

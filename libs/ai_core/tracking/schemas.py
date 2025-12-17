@@ -7,7 +7,7 @@ class TrackingConfig(BaseModel):
     project_name: Optional[str] = "Default"
     run_name: Optional[str] = None
     run_name_tag: Optional[str] = None
-    run_tags: List[Dict[str, str]] = Field(default_factory=list)
+    run_tags: Dict[str, str] = Field(default_factory=dict)
     set_active_model: Optional[str] = None
     enable_tracking: bool = True
     enable_log_model: bool = True

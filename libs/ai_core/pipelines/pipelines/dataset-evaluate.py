@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 from pydantic import BaseModel, Field
 from ai_core.pipelines.registry import register_pipeline_local, PipelineRegistryLocal
 from ai_core.datasets.load import load_from_storage
@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 class PipelineArgs(BaseModel):
     dataset_name: str
     model_name: str = "unnamed"
-    container: Optional[str] = COMPLETIONS_CONTAINER
+    container: str = COMPLETIONS_CONTAINER
     scorers: List[str] = Field(default_factory=list)
 
 
@@ -32,13 +32,12 @@ pipeline = PipelineRegistryLocal(
 def dataset_evaluate(args: PipelineArgs, **kwargs):
     # Imports should be inside the function to avoid dependencies
     # Make sure selected packages are installed in the local environment
-    import pandas as pd
     import mlflow
 
     logger.info("Starting pipeline dataset-evaluate...")
     logger.debug("Args = {args}")
 
-    dataset: pd.DataFrame = load_from_storage(
+    dataset = load_from_storage(
         args.dataset_name,
         container=args.container,
         as_pandas=True,

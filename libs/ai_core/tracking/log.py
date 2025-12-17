@@ -1,5 +1,5 @@
 import os
-from typing import Literal
+from typing import Literal, Dict
 import mlflow
 from mlflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
 from mlflow.data.huggingface_dataset import from_huggingface
@@ -41,7 +41,7 @@ def mlflow_run_name(model_name: str, run_type: RUN_TYPES | None = None):
     return run_name
 
 
-def mlflow_log_dataset(dataset_name: str, dataset: Dataset, dataset_split: str = None, **metadata):
+def mlflow_log_dataset(dataset_name: str, dataset: Dataset, dataset_split: str | None = None, **metadata):
     from ai_core.datasets.utils import get_commit_hash
 
     if not mlflow_is_enabled():
@@ -56,9 +56,9 @@ def mlflow_log_dataset(dataset_name: str, dataset: Dataset, dataset_split: str =
         mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
         logger.debug(f"Logged dataset {dataset_name} from {dataset_source.path}")
     else:
-        dataset_source = FileSystemDatasetSource(uri=f"s3://{os.path.join(DATASETS_CONTAINER, dataset_name)}")
+        dataset_source = FileSystemDatasetSource.from_dict({"uri": f"s3://{os.path.join(DATASETS_CONTAINER, dataset_name)}"})
         mlflow_dataset = MetaDataset(source=dataset_source, name=name)
-        mlflow.log_input(dataset, context=dataset_split, tags=metadata)
+        mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
         logger.debug(f"Logged dataset {dataset_name} from {dataset_source.uri}")
 
 
@@ -80,7 +80,7 @@ def mlflow_log_tags(tags: dict):
     mlflow.set_tags(tags)
 
 
-def mlflow_log_artifact(local_path: str, artifact_path: str = None):
+def mlflow_log_artifact(local_path: str, artifact_path: str | None = None):
     if not mlflow_is_enabled():
         return
 
@@ -102,7 +102,7 @@ def mlflow_log_model(model_name: str, model, tokenizer):
     mlflow.set_tags({"model_version": model_info.registered_model_version, "model_id": model_info.model_id})
 
 
-def mlflow_active_model(model_name: str = None, model_id: str = None):
+def mlflow_active_model(model_name: str | None = None, model_id: str | None = None):
     if not mlflow_is_enabled():
         return
 
@@ -112,12 +112,12 @@ def mlflow_active_model(model_name: str = None, model_id: str = None):
         logger.warning("No model_id and model_name found, traces won't be linked to a model!")
         return
 
-    mlflow.set_active_model(model_id=model_id, model_name=model_name)
+    mlflow.set_active_model(model_id=model_id, name=model_name)
     logger.debug(f"Active model {model_id or model_name} has been set for tracking.")
 
 
 def mlflow_start(
-    model_name: str, run_type: RUN_TYPES | None = None, tags: dict | None = None, experiment_id: str | None = None
+    model_name: str, run_type: RUN_TYPES | None = None, tags: Dict[str, str] | None = None, experiment_id: str | None = None
 ):
     if not mlflow_is_enabled():
         return

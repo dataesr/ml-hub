@@ -12,7 +12,7 @@ from ai_core.cloud.compute import (
     app_update_env,
 )
 
-router = APIRouter(tags=["inference"])
+router = APIRouter(prefix="/cloud", tags=["cloud", "jobs", "apps"])
 
 
 ## Utils
