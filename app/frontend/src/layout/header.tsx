@@ -45,19 +45,18 @@ export default function Header() {
         <Link href="/" current={pathname === "/"}>
           Home
         </Link>
+        <Link href="/run" current={pathname.split("/").includes("run")}>
+          Run
+        </Link>
+        <Link href="/analyze" current={pathname.split("/").includes("analyze")}>
+          Analyze
+        </Link>
         <NavItem title="Explore" current={pathname.split("/").includes("explore")}>
           <Link href="/explore?t=models">Models</Link>
           <Link href="/explore?t=datasets">Datasets</Link>
-          <Link href="/explore?t=experiments">Experiments</Link>
         </NavItem>
-        <Link href="/jobs" current={pathname.split("/").includes("jobs")}>
-          Jobs
-        </Link>
-        <Link href="/evaluate" current={pathname.split("/").includes("evaluate")}>
-          Evaluate
-        </Link>
-        <Link href="/inference" current={pathname.split("/").includes("inference")}>
-          Inference
+        <Link href="/configure" current={pathname.split("/").includes("configure")}>
+          Configure
         </Link>
         <SwitchTheme isOpen={isThemeModalOpen} onClose={closeThemeModal} />
       </Nav>
