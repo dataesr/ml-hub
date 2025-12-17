@@ -102,4 +102,4 @@ dev:
 	@./scripts/bootstrap.sh
 
 typecheck:
-	@source .venv/bin/activate && ty check
+	@source .venv/Scripts/activate && ty check

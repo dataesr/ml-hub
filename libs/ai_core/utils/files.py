@@ -33,7 +33,7 @@ def folder_reset(path: str, delete: bool = False):
         os.makedirs(path)
 
 
-def folder_create(path: str, override: bool = False):
+def folder_create(dir_path: str, override: bool = False):
     """
     Create a directory with smart handling of existing paths.
 
@@ -64,7 +64,7 @@ def folder_create(path: str, override: bool = False):
 
         # Folder not empty - override
         if override:
-            reset_folder(dir_path)
+            folder_reset(dir_path)
             return dir_path
 
         # Folder not empty - create with different name
@@ -77,5 +77,5 @@ def folder_create(path: str, override: bool = False):
             counter += 1
 
     # force creation by default
-    reset_folder(dir_path)
+    folder_reset(dir_path)
     return dir_path

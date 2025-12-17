@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 class PipelineArgs(BaseModel):
     dataset_name: str
-    model_name: Optional[str] = "unnamed"
+    model_name: str = "unnamed"
     container: Optional[str] = COMPLETIONS_CONTAINER
     scorers: List[str] = Field(default_factory=list)
 

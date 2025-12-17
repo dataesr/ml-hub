@@ -3,3 +3,4 @@ extra-paths = ["./libs"]
 
 [tool.ty.rules]
 invalid-argument-type = "warn"
+possibly-missing-attribute = "warn"

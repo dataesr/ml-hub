@@ -30,7 +30,7 @@ def _sanitize_name(name: str, replace_dots: bool = False) -> str:
     return clean_name.lower()
 
 
-def mlflow_run_name(model_name: str, run_type: RUN_TYPES = None):
+def mlflow_run_name(model_name: str, run_type: RUN_TYPES | None = None):
     run_name = _sanitize_name(model_name)
     custom_name = os.getenv("MLFLOW_RUN_NAME")
     run_tag = os.getenv("MLFLOW_RUN_NAME_TAG") or RUN_TYPES_TAGS.get(run_type or "")
@@ -109,7 +109,7 @@ def mlflow_active_model(model_name: str = None, model_id: str = None):
     model_id = model_id or os.getenv("MLFLOW_ACTIVE_MODEL_ID")
     model_name = model_name or os.getenv("MLFLOW_MODEL_NAME")
     if not model_id or not model_name:
-        logger.warning(f"No model_id and model_name found, traces won't be linked to a model!")
+        logger.warning("No model_id and model_name found, traces won't be linked to a model!")
         return
 
     mlflow.set_active_model(model_id=model_id, model_name=model_name)

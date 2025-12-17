@@ -67,7 +67,7 @@ def scorer_correct_grant_ids(outputs: str, expectations: Dict[str, Any]):
         name="score_correct_grant_ids",
         value=score_grant_ids,
         rationale="Correct grant_ids over expected grant_ids",
-        metadata={"outputs_len": len(outputs), "expectations_len": len(expectations)},
+        metadata={"outputs_len": str(len(outputs)), "expectations_len": str(len(expectations))},
     )
 
 

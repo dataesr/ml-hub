@@ -21,7 +21,7 @@ def clean_completion(text: str):
     return clean
 
 
-def tsv_to_data(text: str) -> list[dict]:
+def tsv_to_data(text: str):
     lines = text.strip().split("\n")
 
     if not lines:
