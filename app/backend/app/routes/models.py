@@ -7,7 +7,7 @@ router = APIRouter(tags=["models"])
 @router.get("/models")
 @router.get("/models/{owner}")
 def models_list(owner: str = "dataesr", limit: int = 100):
-    models = list_models(author=owner, limit=limit)
+    models = list_models(author=owner, limit=limit, fetch_config=True)
     models = [model.__dict__ for model in models]
     return models
 

@@ -1,8 +1,9 @@
 export type Pipeline = {
-  id: string
-  name: string
+  pipeline: string
   description?: string
+  tags?: Array<string>
+  environment?: string
   inputs?: Record<string, any>
   args?: Record<string, any>
-  // Add other fields as needed based on the Pydantic model dump
+  infrastructure?: Record<string, any>
 }
