@@ -5,6 +5,8 @@ import ErrorCallOut from "../../components/error-call-out"
 import LoadingSpinner from "../../components/loading-spinner"
 import Drawer from "../../components/drawer"
 import { useState } from "react"
+import { Pipeline } from "../../api/pipelines/types"
+import PipelineForm from "./components/pipelines-form"
 
 function PipelinesHeader() {
   return (
@@ -23,20 +25,21 @@ function PipelinesHeader() {
 }
 
 export default function Pipelines() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null)
   const { data, isFetching, error } = useListPipelines()
+
 
   return (
     <Container fluid>
       <PipelinesHeader />
       <Container className="fr-my-2w">
         <SearchBar className="fr-mb-2w" style={{ maxWidth: "500px" }} onSearch={() => null} placeholder="Search pipelines..." />
-        <Drawer anchor="right" isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
-          <Text>CONTENT...</Text>
-        </Drawer>
+        {selectedPipeline && <Drawer anchor="right" isOpen={!!selectedPipeline} onClose={() => setSelectedPipeline(null)}>
+          <PipelineForm pipeline={selectedPipeline} />
+        </Drawer>}
         {error && <ErrorCallOut error={error} />}
         {isFetching && !data && <LoadingSpinner position="left" />}
-        {data && <PipelinesTable pipelines={data} />}
+        {data && <PipelinesTable pipelines={data} onSelect={setSelectedPipeline} />}
       </Container>
     </Container>
   )

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
+from jsonref import replace_refs
 from ai_core.pipelines.registry import list_pipelines, get_pipeline
 from app.logger import get_logger
 
@@ -14,8 +15,16 @@ def pipelines_list():
     return [
         {
             **pipeline.model_dump(exclude={"func", "inputs", "args"}),
-            "args": pipeline.args.model_json_schema().get("properties") if pipeline.args else None,
-            "inputs": pipeline.inputs.model_json_schema().get("properties") if pipeline.inputs else None,
+            "args": (
+                replace_refs(pipeline.args.model_json_schema(union_format="primitive_type_array")).get("properties")
+                if pipeline.args
+                else None
+            ),
+            "inputs": (
+                replace_refs(pipeline.inputs.model_json_schema(union_format="primitive_type_array")).get("properties")
+                if pipeline.inputs
+                else None
+            ),
         }
         for pipeline in pipelines
     ]
@@ -26,8 +35,16 @@ def pipelines_get(pipeline_name: str):
     pipeline = get_pipeline(pipeline_name)
     return {
         **pipeline.model_dump(exclude={"func", "inputs", "args"}),
-        "args": pipeline.args.model_json_schema().get("properties") if pipeline.args else None,
-        "inputs": pipeline.inputs.model_json_schema().get("properties") if pipeline.inputs else None,
+        "args": (
+            replace_refs(pipeline.args.model_json_schema(union_format="primitive_type_array")).get("properties")
+            if pipeline.args
+            else None
+        ),
+        "inputs": (
+            replace_refs(pipeline.inputs.model_json_schema(union_format="primitive_type_array")).get("properties")
+            if pipeline.inputs
+            else None
+        ),
     }
 
 

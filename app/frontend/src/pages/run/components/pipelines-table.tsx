@@ -12,7 +12,7 @@ const TABLE_CONFIG = [
   { header: "Actions", component: "actions" },
 ]
 
-const buildTableComponents = (pipeline: Pipeline) => {
+const buildTableComponents = (pipeline: Pipeline, onSelect: (pipeline: Pipeline) => void) => {
   const name = (
     <CopyToClipboard copyText={pipeline.pipeline}>
       <Text size="sm" bold>
@@ -37,7 +37,7 @@ const buildTableComponents = (pipeline: Pipeline) => {
   )
 
   const actions = (
-    <Button icon="play-line" size="sm" variant="text" onClick={() => null}>
+    <Button icon="play-line" size="sm" variant="text" onClick={() => onSelect(pipeline)}>
       Run
     </Button>
   )
@@ -51,10 +51,15 @@ const buildTableComponents = (pipeline: Pipeline) => {
   }
 }
 
-export default function PipelinesTable({ pipelines }: { pipelines: Pipeline[] }) {
+interface PipelinesTableProps {
+  pipelines: Pipeline[]
+  onSelect: (pipeline: Pipeline) => void
+}
+
+export default function PipelinesTable({ pipelines, onSelect }: PipelinesTableProps) {
   const headers = TABLE_CONFIG.map((col) => col.header)
   const data = pipelines
-    .map((pipeline) => buildTableComponents(pipeline))
+    .map((pipeline) => buildTableComponents(pipeline, onSelect))
     .map((comp) => TABLE_CONFIG.map((col) => comp[col.component]))
   return <Table className="fr-pt-0" headers={headers} data={data} />
 }
