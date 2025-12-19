@@ -37,8 +37,8 @@ const buildTableComponents = (pipeline: Pipeline) => {
   )
 
   const actions = (
-    <Button icon="external-link-line" size="sm" variant="text" onClick={() => null}>
-      TODO
+    <Button icon="play-line" size="sm" variant="text" onClick={() => null}>
+      Run
     </Button>
   )
 
