@@ -51,7 +51,6 @@ export default function Header() {
         <NavItem title="Explore" current={pathname.split("/").includes("explore")}>
           <Link href="/explore?t=models">Models</Link>
           <Link href="/explore?t=datasets">Datasets</Link>
-          <Link href="/explore?t=configs">Configs</Link>
         </NavItem>
         <Link href="https://mlflow.staging.dataesr.ovh" target="_blank" rel="noopener noreferrer">
           Track

@@ -13,7 +13,7 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
       <Container className="fr-mt-2w">
         <Row>
           <Col xs="10">
-            <Link href={`/datasets/${dataset.id}`}>
+            <Link href={`${HUGGING_FACE_URL}/datasets/${dataset.id}`} target="_blank" rel="noopener noreferrer">
               <strong>{dataset.id}</strong>
             </Link>
             <TagGroup className="fr-mt-2w">
@@ -24,11 +24,12 @@ export default function DatasetCard({ dataset }: DatasetCardProps) {
           </Col>
           <Col xs="2">
             <Button
-              icon="external-link-line"
+              icon="more-line"
               variant="text"
-              onClick={() => window.open(`${HUGGING_FACE_URL}/datasets/${dataset.id}`, "_blank")}
+              disabled
+              onClick={() => null}
             >
-              Open
+              Actions
             </Button>
           </Col>
         </Row>

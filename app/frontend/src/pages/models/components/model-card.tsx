@@ -13,7 +13,7 @@ export default function ModelCard({ model }: ModelCardProps) {
       <Container className="fr-mt-2w">
         <Row>
           <Col xs="10">
-            <Link href={`/models/${model.id}`}>
+            <Link href={`${HUGGING_FACE_URL}/${model.id}`} target="_blank" rel="noopener noreferrer">
               <strong>{model.id}</strong>
             </Link>
             <TagGroup className="fr-mt-2w">
@@ -32,11 +32,13 @@ export default function ModelCard({ model }: ModelCardProps) {
           </Col>
           <Col xs="2">
             <Button
-              icon="external-link-line"
+              icon="more-line"
               variant="text"
-              onClick={() => window.open(`${HUGGING_FACE_URL}/${model.id}`, "_blank")}
+              disabled
+
+              onClick={() => null}
             >
-              Open
+              Actions
             </Button>
           </Col>
         </Row>

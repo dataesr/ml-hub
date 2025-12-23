@@ -4,7 +4,7 @@ import Layout from "./layout";
 import Home from "./pages/home"
 import Explore from "./pages/explore"
 import Run from "./pages/run"
-import Analyze from "./pages/analyze"
+import Jobs from "./pages/jobs";
 
 export default function Router() {
   return (
@@ -12,9 +12,8 @@ export default function Router() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/run" element={<Run />} />
-        <Route path="/analyze" element={<Analyze />} />
         <Route path="/explore" element={<Explore />} />
-        <Route path="/configure" element={<Home />} />
+        <Route path="/jobs" element={<Jobs />} />
       </Route>
     </Routes>
   )

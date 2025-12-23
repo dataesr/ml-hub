@@ -48,22 +48,12 @@ export default function Explore() {
                   Datasets
                 </button>
               </li>
-              <li className="fr-nav__item">
-                <button
-                  aria-current={currentTab === "experiments"}
-                  onClick={() => handleTabChange("experiments")}
-                  className="fr-nav__link"
-                >
-                  Experiments
-                </button>
-              </li>
             </ul>
           </nav>
         </Container>
       </Container>
       {currentTab === "models" && <Models />}
       {currentTab === "datasets" && <Datasets />}
-      {currentTab === "experiments" && <Experiments />}
     </Container>
   )
 }
