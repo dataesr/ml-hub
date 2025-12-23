@@ -63,7 +63,8 @@ def pipelines_run(pipeline_name: str, raw_input_data: dict):
         logger.debug(f"Inputs schema: {InputsSchema.model_json_schema()}")
 
         # Get pipeline instance
-        config = InputsSchema.model_validate(**raw_input_data)
+        logger.debug(f"Validating input data: {raw_input_data}")
+        config = InputsSchema.model_validate(raw_input_data)
 
         # Run pipeline
         logger.info(f"Starting pipeline '{pipeline_name}' execution...")
