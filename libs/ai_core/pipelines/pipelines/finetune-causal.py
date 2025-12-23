@@ -60,7 +60,7 @@ pipeline = PipelineRegistryCloud(
     tags=["finetuning", "causallm", "transformers", "lora", "bitandbytes"],
     args=PipelineArgs,
     infrastructure=CloudJobInfrastructure(
-        image="ghcr.io/ml-hub/cuda-base:latest",
+        image="ghcr.io/dataesr/ml-hub/cuda-base:latest",
         name="finetune-causallm",
         volumes=[
             CloudJobVolume(container=CONFIGS_CONTAINER, mount="configs"),

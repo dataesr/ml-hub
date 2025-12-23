@@ -25,7 +25,7 @@ pipeline = PipelineRegistryCloud(
     tags=["dataset", "inference"],
     args=PipelineArgs,
     infrastructure=CloudJobInfrastructure(
-        image="ghcr.io/ml-hub/cuda-vllm:latest",
+        image="ghcr.io/dataesr/ml-hub/cuda-vllm:latest",
         name="dataset-inference",
         volumes=[
             CloudJobVolume(container=CONFIGS_CONTAINER, mount="configs"),
