@@ -6,4 +6,5 @@ export type Pipeline = {
   inputs?: Record<string, any>
   args?: Record<string, any>
   infrastructure?: Record<string, any>
+  tracking?: Record<string, any>
 }

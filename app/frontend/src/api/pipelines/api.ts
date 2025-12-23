@@ -5,7 +5,7 @@ const API_PIPELINES_URL = "/pipelines"
 
 export async function listPipelines(): Promise<Pipeline[]> {
   const pipelines = await api.get<Pipeline[]>(API_PIPELINES_URL)
-  return pipelines.map((p) => ({ ...p, id: p.name }))
+  return pipelines.map((p) => ({ ...p }))
 }
 
 export async function getPipeline(name: string): Promise<Pipeline> {

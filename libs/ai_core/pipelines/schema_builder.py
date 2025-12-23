@@ -36,7 +36,6 @@ def model_from_defaults(
 
 def build_pipeline_input_model(
     *,
-    name: str,
     args_model: Type[BaseModel],
     infrastructure_default: Optional[BaseModel] = None,
     tracking_default: Optional[TrackingConfig] = None,
@@ -48,16 +47,16 @@ def build_pipeline_input_model(
 
     if infrastructure_default:
         infra_model = model_from_defaults(
-            f"{name}Infrastructure",
+            "PipelineInfrastructure",
             infrastructure_default,
         )
         fields["infrastructure"] = (infra_model, infrastructure_default)
 
     if tracking_default:
         track_model = model_from_defaults(
-            f"{name}Tracking",
+            "PipelineTracking",
             tracking_default,
         )
         fields["tracking"] = (track_model, tracking_default)
 
-    return create_model(f"{name}Input", **fields)
+    return create_model("PipelineInputs", **fields)

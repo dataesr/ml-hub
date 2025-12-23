@@ -46,7 +46,6 @@ class PipelineRegistryLocal(PipelineRegistryBase):
 
 def create_pipeline_decorator(pipeline: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Callable], Callable]:
     Schema = build_pipeline_input_model(
-        name=pipeline.pipeline,
         args_model=pipeline.args,
         infrastructure_default=pipeline.infrastructure,
         tracking_default=pipeline.tracking,

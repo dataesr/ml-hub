@@ -16,12 +16,12 @@ def pipelines_list():
         {
             **pipeline.model_dump(exclude={"func", "inputs", "args"}),
             "args": (
-                replace_refs(pipeline.args.model_json_schema(union_format="primitive_type_array")).get("properties")
+                replace_refs(pipeline.args.model_json_schema(union_format="primitive_type_array"))
                 if pipeline.args
                 else None
             ),
             "inputs": (
-                replace_refs(pipeline.inputs.model_json_schema(union_format="primitive_type_array")).get("properties")
+                replace_refs(pipeline.inputs.model_json_schema(union_format="primitive_type_array"))
                 if pipeline.inputs
                 else None
             ),
@@ -36,12 +36,10 @@ def pipelines_get(pipeline_name: str):
     return {
         **pipeline.model_dump(exclude={"func", "inputs", "args"}),
         "args": (
-            replace_refs(pipeline.args.model_json_schema(union_format="primitive_type_array")).get("properties")
-            if pipeline.args
-            else None
+            replace_refs(pipeline.args.model_json_schema(union_format="primitive_type_array")) if pipeline.args else None
         ),
         "inputs": (
-            replace_refs(pipeline.inputs.model_json_schema(union_format="primitive_type_array")).get("properties")
+            replace_refs(pipeline.inputs.model_json_schema(union_format="primitive_type_array"))
             if pipeline.inputs
             else None
         ),
