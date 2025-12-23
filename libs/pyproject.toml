@@ -33,6 +33,9 @@ dependencies = [
 Homepage = "https://github.com/dataesr/ml-hub"
 Documentation = "https://github.com/dataesr/ml-hub"
 
+[project.scripts]
+ai-pipeline-run = "ai_core.pipelines.runner:run_pipeline"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["ai_core*"]

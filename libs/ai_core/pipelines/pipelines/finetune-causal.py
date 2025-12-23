@@ -62,6 +62,7 @@ pipeline = PipelineRegistryCloud(
     infrastructure=CloudJobInfrastructure(
         image="ghcr.io/dataesr/ml-hub/cuda-base:latest",
         name="finetune-causallm",
+        command=["uv", "run", "ai_core/pipelines/runner.py"],
         volumes=[
             CloudJobVolume(container=CONFIGS_CONTAINER, mount="configs"),
             CloudJobVolume(container=DATASETS_CONTAINER, mount="datasets"),
