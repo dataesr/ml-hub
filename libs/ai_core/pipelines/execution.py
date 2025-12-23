@@ -10,38 +10,57 @@ from ai_core.cloud.build import build_command_args
 logger = get_logger(__name__)
 
 
-def run_local(func: Optional[Callable], config: BaseModel):
+def run_local(config: BaseModel, func: Optional[Callable]):
+    """
+    Run a pipeline locally.
+
+    Expects config to have:
+      - config.args
+    """
     if not func:
         raise ValueError("Local pipeline has no function to execute.")
     return func(config)
 
 
 def run_cloud(
-    config: BaseModel, infrastructure: Optional[CloudJobInfrastructure], tracking: Optional[TrackingConfig]
+    config: BaseModel,
+    infrastructure: Optional[CloudJobInfrastructure],
+    tracking: Optional[TrackingConfig],
 ) -> dict:
-    config_dict = config.model_dump(exclude_defaults=True)
+    """
+    Run a pipeline in the cloud.
 
-    infra_dict = {}
-    if infrastructure:
-        infra_dict.update(**infrastructure.model_dump(exclude_defaults=True))
-    infra_dict.update({k: config_dict.pop(k) for k in list(config_dict.keys()) if k in CloudJobInfrastructure.model_fields})
+    Expects config to have:
+      - config.args
+      - config.infrastructure
+      - config.tracking
+    """
 
-    track_dict = {}
-    if tracking:
-        track_dict.update(**tracking.model_dump(exclude_unset=True))
-    track_dict.update({k: config_dict.pop(k) for k in list(config_dict.keys()) if k in TrackingConfig.model_fields})
+    # Prefer config-provided infra/tracking, fallback to registry defaults
+    infra = config.infrastructure or infrastructure
+    track = config.tracking or tracking
 
-    inputs_envs = infra_dict.get("envs", [])
-    track_config = TrackingConfig.model_validate(track_dict)
-    inputs_envs.extend(track_config.get_envs())
+    if not infra:
+        raise ValueError("Cloud pipeline requires infrastructure configuration.")
+
+    logger.info("Submitting cloud job")
+
+    infra_dict = infra.model_dump(exclude_defaults=True)
+
+    envs = list(infra_dict.get("envs", []))
+
+    if track:
+        envs.extend(track.get_envs())
 
     inputs_dict = {
         **infra_dict,
-        "envs": inputs_envs,
-        "command_args": build_command_args(config_dict),
+        "envs": envs,
+        "command_args": build_command_args(config.args.model_dump(exclude_defaults=True)),
     }
 
     job_config = CloudJobInputs.model_validate(inputs_dict)
-    data = job_run(job_config)  # start job
+
+    data = job_run(job_config)
     logger.info(f'Cloud job submitted: {data.get("id")}')
+
     return data

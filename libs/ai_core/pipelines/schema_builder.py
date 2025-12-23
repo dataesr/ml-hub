@@ -1,54 +1,63 @@
-from typing import Dict, Type, Optional, Any, Tuple
-from pydantic import BaseModel, create_model
+# ai_core/pipelines/input_schema.py
+from typing import Dict, Tuple, Any, Optional, Type
+from pydantic import BaseModel, Field, create_model
+from ai_core.tracking.schemas import TrackingConfig
 
 
-def extract_infra_fields(infra: BaseModel) -> Dict[str, Tuple[Any, Any]]:
-    infra_dict = infra.model_dump(exclude_unset=False)
-    fields = {}
-
-    for field_name, field_info in infra.__class__.model_fields.items():
-        if field_name in infra_dict and infra_dict[field_name] is not None:
-            fields[field_name] = (Optional[field_info.annotation], infra_dict[field_name])
-        else:
-            fields[field_name] = (field_info.annotation, field_info)
-
-    return fields
-
-
-def extract_track_fields(track: BaseModel) -> Dict[str, Tuple[Any, Any]]:
-    fields = {}
-
-    for field_name, field_info in track.__class__.model_fields.items():
-        fields[field_name] = (field_info.annotation, field_info)
-
-    return fields
-
-
-def extract_args_fields(args: Type[BaseModel]) -> Dict[str, Tuple[Any, Any]]:
-    fields = {}
-
-    for field_name, field_info in args.model_fields.items():
-        fields[field_name] = (field_info.annotation, field_info)
-
-    return fields
-
-
-def build_pipeline_schema(
+def model_from_defaults(
     name: str,
-    args: Optional[Type[BaseModel]] = None,
-    infra: Optional[BaseModel] = None,
-    track: Optional[BaseModel] = None,
+    model: BaseModel,
 ) -> Type[BaseModel]:
-    schema_fields = {}
+    """
+    Build a new BaseModel where:
+    - fields with default values become Optional
+    - defaults come from the provided instance
+    """
+    fields: Dict[str, Tuple[Any, Any]] = {}
 
-    if infra:
-        schema_fields.update(extract_infra_fields(infra))
+    values = model.model_dump(exclude_unset=False)
 
-    if args:
-        schema_fields.update(extract_args_fields(args))
+    for field_name, field_info in model.__class__.model_fields.items():
+        if values.get(field_name) is not None:
+            # default exists → optional field
+            fields[field_name] = (
+                Optional[field_info.annotation],
+                values[field_name],
+            )
+        else:
+            # no default → keep original requirement
+            fields[field_name] = (
+                field_info.annotation,
+                field_info,
+            )
 
-    if track:
-        schema_fields.update(extract_track_fields(track))
+    return create_model(name, **fields)
 
-    schema_name = name.title().replace("-", "").replace("_", "")
-    return create_model(schema_name, **schema_fields)
+
+def build_pipeline_input_model(
+    *,
+    name: str,
+    args_model: Type[BaseModel],
+    infrastructure_default: Optional[BaseModel] = None,
+    tracking_default: Optional[TrackingConfig] = None,
+) -> Type[BaseModel]:
+
+    fields = {
+        "args": (args_model, ...),
+    }
+
+    if infrastructure_default:
+        infra_model = model_from_defaults(
+            f"{name}Infrastructure",
+            infrastructure_default,
+        )
+        fields["infrastructure"] = (infra_model, infrastructure_default)
+
+    if tracking_default:
+        track_model = model_from_defaults(
+            f"{name}Tracking",
+            tracking_default,
+        )
+        fields["tracking"] = (track_model, tracking_default)
+
+    return create_model(f"{name}Input", **fields)

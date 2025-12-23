@@ -4,7 +4,7 @@ from typing import Dict, Literal, List, Type, Callable, Optional
 from pydantic import BaseModel, Field
 from ai_core.cloud.schemas import CloudJobInfrastructure
 from ai_core.tracking.schemas import TrackingConfig
-from ai_core.pipelines.schema_builder import build_pipeline_schema
+from ai_core.pipelines.schema_builder import build_pipeline_input_model
 from ai_core.pipelines.execution import run_local, run_cloud
 from ai_core.utils.logger import get_logger
 
@@ -17,18 +17,20 @@ class PipelineRegistryBase(BaseModel):
     pipeline: str
     description: str = ""
     tags: List[str] = Field(default_factory=list)
+
     args: Optional[Type[BaseModel]] = None
-    inputs: Optional[Type[BaseModel]] = None
-    func: Optional[Callable] = None
-    environment: Literal["cloud", "local"]
     infrastructure: Optional[BaseModel] = None
     tracking: Optional[TrackingConfig] = None
 
+    environment: Literal["cloud", "local"]
+    inputs: Optional[Type[BaseModel]] = None
+    func: Optional[Callable] = None
+
     def run(self, config: BaseModel):
         if self.environment == "local":
-            return run_local(self.func, config)
+            return run_local(config, self.func)
         elif self.environment == "cloud":
-            return run_cloud(config, self.infrastructure, self.tracking)
+            return run_cloud(config=config, infrastructure=self.infrastructure, tracking=self.tracking)
         else:
             raise ValueError("Pipeline environment should be 'local' or 'cloud'.")
 
@@ -43,7 +45,12 @@ class PipelineRegistryLocal(PipelineRegistryBase):
 
 
 def create_pipeline_decorator(pipeline: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Callable], Callable]:
-    Schema = build_pipeline_schema(pipeline.pipeline, pipeline.args, pipeline.infrastructure, pipeline.tracking)
+    Schema = build_pipeline_input_model(
+        name=pipeline.pipeline,
+        args_model=pipeline.args,
+        infrastructure_default=pipeline.infrastructure,
+        tracking_default=pipeline.tracking,
+    )
 
     def decorator(func: Callable) -> Callable:
         pipeline.inputs = Schema
