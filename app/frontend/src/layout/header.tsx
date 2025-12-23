@@ -48,15 +48,13 @@ export default function Header() {
         <Link href="/run" current={pathname.split("/").includes("run")}>
           Run
         </Link>
-        <Link href="/analyze" current={pathname.split("/").includes("analyze")}>
-          Analyze
-        </Link>
         <NavItem title="Explore" current={pathname.split("/").includes("explore")}>
           <Link href="/explore?t=models">Models</Link>
           <Link href="/explore?t=datasets">Datasets</Link>
+          <Link href="/explore?t=configs">Configs</Link>
         </NavItem>
-        <Link href="/configure" current={pathname.split("/").includes("configure")}>
-          Configure
+        <Link href="https://mlflow.staging.dataesr.ovh" target="_blank" rel="noopener noreferrer">
+          Track
         </Link>
         <SwitchTheme isOpen={isThemeModalOpen} onClose={closeThemeModal} />
       </Nav>
