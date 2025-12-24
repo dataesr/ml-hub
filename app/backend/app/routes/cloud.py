@@ -16,11 +16,11 @@ router = APIRouter(prefix="/cloud", tags=["cloud", "jobs", "apps"])
 
 
 ## Utils
-def _job_info(data: dict):
+def _build_job_info(data: dict):
     infos = {
         "id": data["id"],
         "name": data["spec"]["name"],
-        "task": data["spec"]["image"].split("/")[-1].split(":")[0].removeprefix("llm-"),
+        "task": data["spec"]["image"].split("/")[-1].split(":")[0],
         "state": data["status"]["state"],
         "created_at": data.get("createdAt"),
         "updated_at": data.get("updatedAt"),
@@ -38,7 +38,7 @@ def _job_info(data: dict):
     return infos
 
 
-def _app_info(data: dict):
+def _build_app_info(data: dict):
     data["external_url"] = f'{os.getenv("OVHAI_URL", "")}/deploy/{data["id"]}'
     return data
 
@@ -47,13 +47,14 @@ def _app_info(data: dict):
 @router.get("/jobs")
 def jobs_list(state: JOB_STATE | None = None):
     jobs = job_list(state)
+    jobs = [_build_job_info(job) for job in jobs]
     return jobs
 
 
 @router.get("/jobs/{id}")
 def jobs_get(id: str):
     job = job_get(id)
-    return job
+    return _build_job_info(job)
 
 
 @router.post("/jobs/{id}/stop")
@@ -66,14 +67,14 @@ def jobs_stop(id: str):
 @router.get("/apps")
 def apps_list(state: APP_STATE | None = None):
     data = app_list(state)
-    apps = [_app_info(app) for app in data]
+    apps = [_build_app_info(app) for app in data]
     return apps
 
 
 @router.get("/apps/{id}")
 def apps_get(id: str):
     app = app_get(id)
-    return _app_info(app)
+    return _build_app_info(app)
 
 
 @router.post("/apps/{id}/start")

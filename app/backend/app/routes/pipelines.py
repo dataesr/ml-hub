@@ -27,6 +27,7 @@ def pipelines_list():
             ),
         }
         for pipeline in pipelines
+        if pipeline.pipeline not in ["example-local", "example-cloud"]  # Hide example pipelines
     ]
 
 

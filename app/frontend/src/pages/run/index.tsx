@@ -1,4 +1,4 @@
-import { Breadcrumb, Container, Link, SearchBar, Text } from "@dataesr/dsfr-plus"
+import { Accordion, Breadcrumb, Container, Link, SearchBar, Text } from "@dataesr/dsfr-plus"
 import { useListPipelines } from "../../api/pipelines/hooks"
 import PipelinesTable from "./components/pipelines-table"
 import ErrorCallOut from "../../components/error-call-out"
@@ -7,6 +7,7 @@ import Drawer from "../../components/drawer"
 import { useState } from "react"
 import { Pipeline } from "../../api/pipelines/types"
 import PipelineForm from "./components/pipelines-form"
+import Jobs from "../jobs"
 
 function PipelinesHeader() {
   return (
@@ -40,6 +41,9 @@ export default function Pipelines() {
         {error && <ErrorCallOut error={error} />}
         {isFetching && !data && <LoadingSpinner position="left" />}
         {data && <PipelinesTable pipelines={data} onSelect={setSelectedPipeline} />}
+        <Accordion title="Cloud Jobs">
+          <Jobs />
+        </Accordion>
       </Container>
     </Container>
   )

@@ -35,30 +35,3 @@ export type Job = {
   }
   labels: Record<string, string>
 }
-
-export type JobInputs = {
-  name?: string
-  gpu?: number
-  experiments_params?: Record<string, any>
-}
-
-export type JobTrainInputs = JobInputs & {
-  model_name: string
-  dataset_name: string
-  pipeline?: string
-  dataset_config?: string
-  dataset_format?: "auto" | "conversational" | "text"
-  push_model_dir?: string
-  hf_push_repo?: string
-  prompts_params?: Record<string, any>
-  training_params?: Record<string, any>
-}
-
-export type JobInfereInputs = JobInputs & {
-  model_name: string
-  dataset_name: string
-  dataset_split?: string
-  dataset_config?: string
-  prompts_params?: Record<string, any>
-  sampling_params?: Record<string, any>
-}

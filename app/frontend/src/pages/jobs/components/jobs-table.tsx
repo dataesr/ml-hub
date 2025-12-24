@@ -7,7 +7,7 @@ import { Job } from "../../../api/jobs/types"
 
 const TABLE_CONFIG = [
   { header: "Name / ID", component: "name" },
-  { header: "Task", component: "task" },
+  { header: "Image", component: "image" },
   { header: "Status", component: "status" },
   { header: "Resources", component: "resources" },
   { header: "Started", component: "started_at" },
@@ -30,7 +30,7 @@ const buildTableComponents = (job: Job) => {
       </CopyToClipboard>
     </>
   )
-  const task = <Badge color={getTaskColor(job.task)}>{job.task}</Badge>
+  const image = <Badge color={getTaskColor(job.task)}>{job.task}</Badge>
   const status = <Tag color={getStateColor(job.state)}>{job.state}</Tag>
   const resources = job.resources?.gpu ? (
     <>
@@ -52,7 +52,7 @@ const buildTableComponents = (job: Job) => {
 
   return {
     name,
-    task,
+    image,
     status,
     resources,
     started_at,

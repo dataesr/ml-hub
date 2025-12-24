@@ -1,7 +1,7 @@
 import { api } from "../client"
-import { Job, JobInfereInputs, JobTrainInputs } from "./types"
+import { Job } from "./types"
 
-const API_JOBS_URL = "/jobs"
+const API_JOBS_URL = "/cloud/jobs"
 
 function buildJob(data: any): Job {
   return {
@@ -25,16 +25,6 @@ export async function listJobs(state: string): Promise<Job[]> {
   const state_url = state ? `?state=${state}` : ""
   const data = await api.get(`${API_JOBS_URL}${state_url}`)
   return Array.isArray(data) ? data.map(buildJob) : []
-}
-
-export async function createJobTrain(job: JobTrainInputs): Promise<Job> {
-  const data = await api.post(`${API_JOBS_URL}/train`, job)
-  return buildJob(data)
-}
-
-export async function createJobInfere(job: JobInfereInputs): Promise<Job> {
-  const data = await api.post(`${API_JOBS_URL}/infere`, job)
-  return buildJob(data)
 }
 
 export async function stopJob(id: string): Promise<any> {
