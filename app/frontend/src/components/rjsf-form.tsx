@@ -1,14 +1,12 @@
-import { WidgetProps } from '@rjsf/utils';
+import { getSubmitButtonOptions, SubmitButtonProps, WidgetProps } from '@rjsf/utils';
 import { FormProps } from '@rjsf/core';
 import { withTheme, ThemeProps } from '@rjsf/core';
-import { Checkbox, TextInput } from '@dataesr/dsfr-plus';
+import { Accordion, Button, Checkbox, TextInput } from '@dataesr/dsfr-plus';
 import { ChangeEvent, FocusEvent } from 'react';
-import { getInputProps, FieldTemplateProps, RJSFSchema, BaseInputTemplateProps } from '@rjsf/utils';
-import validator from '@rjsf/validator-ajv8';
-import CheckboxWidget from '@rjsf/core/lib/components/widgets/CheckboxWidget.js';
+import { getInputProps, FieldTemplateProps, ObjectFieldTemplateProps, BaseInputTemplateProps } from '@rjsf/utils';
 
 // Widgets
-const CustomTextWidget = (props: WidgetProps) => <TextInput onChange={(e) => props.onChange(e.target.value, null, props.id)} required={props.required} value={props.value} />;
+// const CustomTextWidget = (props: WidgetProps) => <TextInput onChange={(e) => props.onChange(e.target.value, null, props.id)} required={props.required} value={props.value} />;
 const CustomCheckboxWidget = (props: WidgetProps) => <Checkbox size="sm" required={props.required} checked={props.value} onChange={props.onChange} label={props.label} />;
 
 // Template 
@@ -74,13 +72,38 @@ function CustomFieldTemplate(props: FieldTemplateProps) {
       {description}
       {children}
       {help}
+      {errors}
     </div>
   );
 }
 
+function CustomObjectFieldTemplate(props: ObjectFieldTemplateProps) {
+  const { title, description, properties } = props;
+  return (
+    <div>
+      {description}
+      <Accordion title={title} onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+        {properties.map((element) => (
+          <div className='property-wrapper'>{element.content}</div>
+        ))}
+      </Accordion>
+    </div>
+  );
+}
+
+function CustomSubmitButton(props: SubmitButtonProps) {
+  const { uiSchema } = props;
+  const { norender, submitText } = getSubmitButtonOptions(uiSchema)
+  if (norender) return null
+
+  return (
+    <Button className="fr-mt-2w" variant="secondary">{submitText || "Submit"}</Button>
+  )
+}
+
 // Theme
 // const theme: ThemeProps = { widgets: { TextWidget: CustomTextWidget, CheckboxWidget: CustomCheckboxWidget } };
-const theme: ThemeProps = { templates: { FieldTemplate: CustomFieldTemplate, BaseInputTemplate: CustomInputTemplate }, widgets: { CheckboxWidget: CustomCheckboxWidget } };
+const theme: ThemeProps = { templates: { ButtonTemplates: { SubmitButton: CustomSubmitButton }, FieldTemplate: CustomFieldTemplate, BaseInputTemplate: CustomInputTemplate, ObjectFieldTemplate: CustomObjectFieldTemplate }, widgets: { CheckboxWidget: CustomCheckboxWidget } };
 const ThemedForm = withTheme(theme);
 
 export default function JsonSchemaForm(props: FormProps) {

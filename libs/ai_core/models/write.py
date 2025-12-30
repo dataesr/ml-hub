@@ -7,12 +7,7 @@ logger = get_logger(__name__)
 
 def merge_and_write(trainer: Any, tokenizer: Any, model_name: str, adapters_dir: str, merged_dir: str):
     import torch
-    from transformers import AutoTokenizer
     from peft import AutoPeftModelForCausalLM
-    from trl import SFTTrainer
-
-    # assert isinstance(trainer, SFTTrainer)
-    # assert isinstance(tokenizer, AutoTokenizer)
 
     logger.info(f"Start saving model finetuned {model_name}")
     logger.info(f"Start saving adapters to {adapters_dir}...")

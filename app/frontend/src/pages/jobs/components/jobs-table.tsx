@@ -1,6 +1,6 @@
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import CopyToClipboard from "../../../components/copy-to-clipboard"
-import { Badge, Button, Tag, Text } from "@dataesr/dsfr-plus"
+import { Badge, Button, ButtonGroup, Tag, Text } from "@dataesr/dsfr-plus"
 import { formatDate, formatDuration } from "../../../utils"
 import { getStateColor, getTaskColor } from "../helpers/colors"
 import { Job } from "../../../api/jobs/types"
@@ -45,9 +45,14 @@ const buildTableComponents = (job: Job) => {
   const duration = job.duration ? formatDuration(job.duration) : "-"
 
   const actions = (
-    <Button icon="external-link-line" size="sm" variant="text" onClick={() => window.open(job.external_url, "_blank")}>
-      Open
-    </Button>
+    <ButtonGroup size="sm" isInlineFrom="xs">
+      <Button size="sm" icon="external-link-line" variant="text" onClick={() => window.open(job.external_url, "_blank")}>
+        Open
+      </Button>
+      {/* <Button size="sm" icon="delete-line" variant="text" onClick={() => alert("coucou")}>
+        Delete
+      </Button> */}
+    </ButtonGroup>
   )
 
   return {
