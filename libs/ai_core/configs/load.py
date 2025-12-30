@@ -22,7 +22,7 @@ def load_yaml_config(cfg_name: str, cfg_type: str, from_disk: bool = False) -> D
         remote_path += ".yaml"
 
     if from_disk:
-        file_path = os.path.join(CONFIGS_CONTAINER, remote_path)
+        file_path = os.path.join("configs", remote_path)
     else:
         try:
             file_path = ovhai_object_download(remote_path, CONFIGS_CONTAINER, output="/tmp/")
@@ -38,7 +38,8 @@ def load_yaml_config(cfg_name: str, cfg_type: str, from_disk: bool = False) -> D
     except Exception as error:
         raise yaml.YAMLError(f"Error while parsing {file_path}: {error}")
 
-    os.remove(file_path)
+    if not from_disk:
+        os.remove(file_path)
     return cfg
 
 

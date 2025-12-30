@@ -27,21 +27,22 @@ class PipelineRegistryBase(BaseModel):
     func: Optional[Callable] = None
 
     def run(self, config: BaseModel):
-        if self.environment == "local":
-            return run_local(config, self.func)
-        elif self.environment == "cloud":
-            return run_cloud(config=config, infrastructure=self.infrastructure, tracking=self.tracking)
-        else:
-            raise ValueError("Pipeline environment should be 'local' or 'cloud'.")
+        raise NotImplementedError("Subclasses must implement the run method.")
 
 
 class PipelineRegistryCloud(PipelineRegistryBase):
     environment: Literal["cloud"] = "cloud"
     infrastructure: CloudJobInfrastructure
 
+    def run(self, config: BaseModel):
+        return run_cloud(pipeline=self.pipeline, config=config, infrastructure=self.infrastructure, tracking=self.tracking)
+
 
 class PipelineRegistryLocal(PipelineRegistryBase):
     environment: Literal["local"] = "local"
+
+    def run(self, config: BaseModel):
+        return run_local(pipeline=self.pipeline, config=config, func=self.func)
 
 
 def create_pipeline_decorator(pipeline: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Callable], Callable]:

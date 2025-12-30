@@ -1,4 +1,4 @@
-import { Breadcrumb, Container, Link, Text } from "@dataesr/dsfr-plus"
+import { Button, Container } from "@dataesr/dsfr-plus"
 import JobsTable from "./components/jobs-table"
 import ErrorCallOut from "../../components/error-call-out"
 import LoadingSpinner from "../../components/loading-spinner"
@@ -13,7 +13,12 @@ export default function Jobs() {
     <Container fluid>
         {error && <ErrorCallOut error={error} />}
         {isFetching && !jobs && <LoadingSpinner position="left" />}
-        {jobs && <JobsTable jobs={jobs} />}
+      {jobs && (
+        <Container fluid>
+          <Button className="fr-mb-2w" size="sm" variant="secondary" icon="refresh-line" onClick={() => refetch()}>Refresh</Button>
+          <JobsTable jobs={jobs} />
+        </Container>
+      )}
     </Container>
   )
 }

@@ -67,5 +67,5 @@ def build_command_args(config_dict: dict) -> List[CloudJobArgument]:
     for key, value in config_dict.items():
         arg_name = key.replace("_", "-")
         arg_value = str(value)
-        cmd_args.append({"name": arg_name, "value": arg_value})
+        cmd_args.append(CloudJobArgument(name=arg_name, value=arg_value))
     return cmd_args

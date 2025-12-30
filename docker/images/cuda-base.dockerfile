@@ -43,8 +43,8 @@ RUN uv pip install \
   trl==0.23.0
 
 # Add pyproject.toml and ai_core package
-COPY ./libs/pyproject.toml .
-COPY ./libs/ai_core ./ai_core
+COPY --chown=42420:42420 ./libs/pyproject.toml .
+COPY --chown=42420:42420 ./libs/ai_core ./ai_core
 
 # Install package
 RUN uv pip install .

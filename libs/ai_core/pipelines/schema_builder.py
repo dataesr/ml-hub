@@ -31,15 +31,17 @@ def model_from_defaults(
                 field_info,
             )
 
-    return create_model(name, **fields)
+    return create_model(name, __base__=model.__class__, **fields)
 
 
 def build_pipeline_input_model(
     *,
-    args_model: Type[BaseModel],
+    args_model: Optional[Type[BaseModel]] = None,
     infrastructure_default: Optional[BaseModel] = None,
     tracking_default: Optional[TrackingConfig] = None,
 ) -> Type[BaseModel]:
+    if args_model is None:
+        args_model = BaseModel
 
     fields = {
         "args": (args_model, ...),

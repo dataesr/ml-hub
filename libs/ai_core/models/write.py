@@ -11,8 +11,8 @@ def merge_and_write(trainer: Any, tokenizer: Any, model_name: str, adapters_dir:
     from peft import AutoPeftModelForCausalLM
     from trl import SFTTrainer
 
-    assert isinstance(trainer, SFTTrainer)
-    assert isinstance(tokenizer, AutoTokenizer)
+    # assert isinstance(trainer, SFTTrainer)
+    # assert isinstance(tokenizer, AutoTokenizer)
 
     logger.info(f"Start saving model finetuned {model_name}")
     logger.info(f"Start saving adapters to {adapters_dir}...")

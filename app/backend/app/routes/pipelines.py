@@ -55,22 +55,24 @@ def pipelines_run(pipeline_name: str, raw_input_data: dict):
     except KeyError:
         raise HTTPException(status_code=404, detail=f"Pipeline '{pipeline_name}' not found.")
 
-    try:
-        InputsSchema = pipeline.inputs
-        if not InputsSchema:
-            raise HTTPException(status_code=400, detail=f"Pipeline '{pipeline_name}' has no inputs.")
-        logger.debug(f"Inputs schema: {InputsSchema.model_json_schema()}")
+    InputsSchema = pipeline.inputs
+    if not InputsSchema:
+        raise HTTPException(status_code=400, detail=f"Pipeline '{pipeline_name}' has no inputs.")
+    logger.debug(f"Inputs schema: {InputsSchema.model_json_schema()}")
 
-        # Get pipeline instance
+    # Get pipeline instance
+    try:
         logger.debug(f"Validating input data: {raw_input_data}")
         config = InputsSchema.model_validate(raw_input_data)
+    except ValidationError as error:
+        raise HTTPException(status_code=422, detail=error.errors())
 
-        # Run pipeline
+    # Run pipeline
+    try:
         logger.info(f"Starting pipeline '{pipeline_name}' execution...")
         results = pipeline.run(config)
         logger.info(f"Pipeline '{pipeline_name}' completed with results: {results}")
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
-        return {f"{pipeline_name}": "ok"}
-
-    except ValidationError as error:
-        raise HTTPException(status_code=422, detail=error.errors())
+    return {f"{pipeline_name}": "ok"}
