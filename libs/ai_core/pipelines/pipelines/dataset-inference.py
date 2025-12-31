@@ -95,7 +95,7 @@ def dataset_inference(args: PipelineArgs):
         "max_tokens": 2048,
         "skip_special_tokens": True,
         # "truncate_prompt_tokens": truncate_length,
-        **args.sampling_params,
+        **(args.sampling_params or {}),
     }
     mlflow_log_params(full_params)
 
