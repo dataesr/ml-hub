@@ -42,14 +42,14 @@ RUN uv pip install \
   transformers==4.56.2 \
   trl==0.23.0
 
-# Add pyproject.toml
-COPY ./libs/pyproject.toml .
+# Add pyproject.toml and ai_core package
+COPY --chown=42420:42420 ./libs/pyproject.toml .
+COPY --chown=42420:42420 ./libs/ai_core ./ai_core
+
+# Install package
 RUN uv pip install .
-
-# Clean cache
 RUN uv cache clean
+RUN rm -rf /workspace/ai_core
 
-# Add libs
-COPY ./libs/ai_core .
-
-# CMD ["uv", "run", "runner.py"]
+# Default command
+CMD ["ai-pipeline-run"]

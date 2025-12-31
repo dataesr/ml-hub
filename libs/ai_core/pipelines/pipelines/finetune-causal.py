@@ -1,6 +1,6 @@
 import os
 from pydantic import BaseModel
-from typing import Optional, no_type_check
+from typing import Optional
 from ai_core.pipelines.registry import register_pipeline_cloud, PipelineRegistryCloud
 from ai_core.datasets.load import load
 from ai_core.datasets.convert import construct_prompts
@@ -72,8 +72,6 @@ pipeline = PipelineRegistryCloud(
     tracking=TrackingConfig(),  # default tracking config
 )
 
-
-@no_type_check
 @register_pipeline_cloud(pipeline)
 def finetune_causal(args: PipelineArgs):
     # GPU imports should be inside the function to avoid dependencies
@@ -86,7 +84,7 @@ def finetune_causal(args: PipelineArgs):
     logger.info("Starting pipeline finetune-causal...")
     logger.debug(f"with args = {args.model_dump(exclude_defaults=True)}")
 
-    # Start tracking
+    ### --- Start tracking ---
     mlflow_start(
         args.model_name,
         run_type="training",

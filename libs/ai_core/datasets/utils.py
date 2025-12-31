@@ -1,3 +1,4 @@
+import os
 from datasets import Dataset
 from ai_core.utils.logger import get_logger
 
@@ -26,7 +27,16 @@ def get_commit_hash(dataset: Dataset) -> str | None:
     return commit_hash
 
 
-def should_use_conversational_format(dataset_format_arg: str = None, dataset_chat_template=None):
+def get_prompts(data: Dataset) -> list[str]:
+    input_col = os.getenv("INPUT_COLUMN", "input")
+    if input_col not in data.column_names:
+        raise ValueError(f"Column {input_col} not found on data! Set env var 'INPUT_COLUMN' to select the column name.")
+
+    prompts = data[input_col]
+    return prompts
+
+
+def should_use_conversational_format(dataset_format_arg: str | None = None, dataset_chat_template=None):
     if dataset_format_arg == "conversational":
         logger.debug("Format set to 'conversational'")
         return True

@@ -16,13 +16,15 @@ def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any
     return result
 
 
-def load_yaml_config(cfg_name: str, cfg_type: str, from_disk: bool = False) -> Dict[str, Any]:
+def load_yaml_config(
+    cfg_name: str, cfg_type: str, from_disk: bool = False, disk_folder_path: str | None = None
+) -> Dict[str, Any]:
     remote_path = os.path.join(cfg_type, cfg_name)
     if not remote_path.endswith(".yaml"):
         remote_path += ".yaml"
 
     if from_disk:
-        file_path = os.path.join("configs", remote_path)
+        file_path = os.path.join(disk_folder_path or "configs", remote_path)  # default to ./configs
     else:
         try:
             file_path = ovhai_object_download(remote_path, CONFIGS_CONTAINER, output="/tmp/")
@@ -43,13 +45,13 @@ def load_yaml_config(cfg_name: str, cfg_type: str, from_disk: bool = False) -> D
     return cfg
 
 
-def load_prompt_config(cfg_name: str, from_disk: bool = False):
-    cfg = load_yaml_config(cfg_name, "prompts", from_disk=from_disk)
+def load_prompt_config(cfg_name: str, from_disk: bool = False, disk_folder_path: str | None = None):
+    cfg = load_yaml_config(cfg_name, "prompts", from_disk=from_disk, disk_folder_path=disk_folder_path)
     return cfg
 
 
-def load_pipeline_config(cfg_name: str, from_disk: bool = False):
-    cfg = load_yaml_config(cfg_name, "pipeline", from_disk=from_disk)
+def load_pipeline_config(cfg_name: str, from_disk: bool = False, disk_folder_path: str | None = None):
+    cfg = load_yaml_config(cfg_name, "pipeline", from_disk=from_disk, disk_folder_path=disk_folder_path)
     return cfg
 
 

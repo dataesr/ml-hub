@@ -12,7 +12,7 @@ from ai_core.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-def construct_one_conversation(user: str, system: str = None, assistant: str = None):
+def construct_one_conversation(user: str, system: str | None = None, assistant: str | None = None):
     """
     Construct a conversation from system, user and assistant messages
 
@@ -41,8 +41,8 @@ def construct_one_conversation(user: str, system: str = None, assistant: str = N
 
 def construct_prompts(
     dataset: Dataset,
-    custom_instruction: str = None,
-    custom_text_format: str = None,
+    custom_instruction: str | None = None,
+    custom_text_format: str | None = None,
     use_conversational_format: bool = False,
 ) -> Dataset:
     """
