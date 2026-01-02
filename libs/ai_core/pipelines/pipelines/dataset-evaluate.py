@@ -35,13 +35,15 @@ def dataset_evaluate(args: PipelineArgs, **kwargs):
     import mlflow
 
     logger.info("Starting pipeline dataset-evaluate...")
-    logger.debug("Args = {args}")
+    logger.debug(f"with args = {args}")
+
+    if args.scorers is None or len(args.scorers) == 0:
+        raise ValueError("No scorers provided, aborting...")
 
     dataset = load_from_storage(
         args.dataset_name,
         container=args.container,
-        as_pandas=True,
-    )
+    ).to_pandas()
     dataset = dataset.rename(columns={"input": "inputs", "completion": "expectations", "inference": "outputs"})
     dataset["inputs"] = dataset["inputs"].apply(lambda x: {"query": x if isinstance(x, str) else ""})
     dataset["expectations"] = dataset["expectations"].apply(lambda x: {"expected_response": x if isinstance(x, str) else ""})
