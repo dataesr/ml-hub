@@ -55,6 +55,7 @@ Docker images used for running pipelines on OVH AI cloud:
 ### Pipelines
 
 Create your ML pipelines in the `libs/ai_core/pipelines/pipelines/` folder using the pipeline registry decorator. Each pipeline defines its input schema, configuration, and execution logic. Once registered, pipelines become available through the API and can be executed either **locally** or on **OVH AI cloud infrastructure**. The execution mode is determined by the pipeline configuration.
+See `examples/pipelines.ipynb` for how to use pipelines API.
 
 ### Experiment Tracking
 
