@@ -7,7 +7,6 @@ class TrackingConfig(BaseModel):
     project_name: Optional[str] = "Default"
     run_name: Optional[str] = None
     run_name_tag: Optional[str] = None
-    run_tags: Dict[str, str] = Field(default_factory=dict)
     set_active_model: Optional[str] = None
     enable_tracking: bool = True
     enable_log_model: bool = True
@@ -21,7 +20,6 @@ class TrackingConfig(BaseModel):
             "MLFLOW_PROJECT_NAME": self.project_name,
             "MLFLOW_RUN_NAME": self.run_name,
             "MLFLOW_RUN_NAME_TAG": self.run_name_tag,
-            "MLFLOW_RUN_TAGS": ",".join(self.run_tags),
             "MLFLOW_SET_ACTIVE_MODEL": self.set_active_model,
             "MLFLOW_ENABLE_LOG_MODEL": str(self.enable_log_model),
             "MLFLOW_ENABLE_LOG_DATASET": str(self.enable_log_dataset),

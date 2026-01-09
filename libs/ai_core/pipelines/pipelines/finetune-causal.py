@@ -39,7 +39,7 @@ class PipelineArgs(BaseModel):
     lora_dropout: float = 0.05
 
     # Training args
-    max_seq_length: int = 2048
+    max_seq_length: int = 8192
     epochs: int = 3
     max_steps: int = -1
     batch_size: int = 1

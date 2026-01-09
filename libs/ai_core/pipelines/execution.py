@@ -20,7 +20,11 @@ def run_local(pipeline: str, config: BaseModel, func: Optional[Callable]):
     """
     if not func:
         raise ValueError(f"Local pipeline {pipeline} has no function to execute.")
-    return func(config)
+    try:
+        return func(config.args, tracking=config.tracking)
+    except Exception as error:
+        logger.error(f"Failed to run local pipeline {pipeline}: {error}")
+        raise error
 
 
 def run_cloud(

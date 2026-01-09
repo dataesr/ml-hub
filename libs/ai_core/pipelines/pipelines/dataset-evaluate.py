@@ -29,13 +29,14 @@ pipeline = PipelineRegistryLocal(
 
 
 @register_pipeline_local(pipeline)
-def dataset_evaluate(args: PipelineArgs, **kwargs):
+def dataset_evaluate(args: PipelineArgs, tracking: TrackingConfig, **kwargs):
     # Imports should be inside the function to avoid dependencies
     # Make sure selected packages are installed in the local environment
     import mlflow
 
     logger.info("Starting pipeline dataset-evaluate...")
     logger.debug(f"with args = {args}")
+    logger.debug(f"with tracking = {tracking}")
 
     if args.scorers is None or len(args.scorers) == 0:
         raise ValueError("No scorers provided, aborting...")
@@ -44,15 +45,14 @@ def dataset_evaluate(args: PipelineArgs, **kwargs):
         args.dataset_name,
         container=args.container,
     ).to_pandas()
+    logger.info(f"✅ Dataset loaded: {len(dataset)} rows")
     dataset = dataset.rename(columns={"input": "inputs", "completion": "expectations", "inference": "outputs"})
     dataset["inputs"] = dataset["inputs"].apply(lambda x: {"query": x if isinstance(x, str) else ""})
     dataset["expectations"] = dataset["expectations"].apply(lambda x: {"expected_response": x if isinstance(x, str) else ""})
-
-    tracking_dict = kwargs.get("tracking", {})
-    tracking = TrackingConfig.model_validate(tracking_dict)
+    logger.info(f"✅ Dataset renamed: {len(dataset)} rows")
 
     mlflow_set_experiment(experiment_name=tracking.project_name)
-    mlflow_start(args.model_name, "evaluation", tracking.run_tags)
+    mlflow_start(args.model_name, "evaluation")
     mlflow.genai.evaluate(
         dataset,
         scorers=[SCORERS_MAPPING[scorer] for scorer in args.scorers if scorer in SCORERS_MAPPING.keys()],
