@@ -1,9 +1,9 @@
 ### Frontend
 FROM node:20-alpine AS frontend-build
 WORKDIR /frontend
-COPY frontend/package*.json ./
+COPY ./app/frontend/package*.json ./
 RUN npm ci
-COPY frontend/ .
+COPY ./app/frontend/ .
 RUN npm run build --omit:dev
 
 ### Backend
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# OVH cli
+# OVHAI CLI
 RUN curl https://cli.gra.ai.cloud.ovh.net/ovhai-linux.zip -o ovhai-linux.zip && \
     unzip ovhai-linux.zip && \
     mkdir -p /bin && \
@@ -29,9 +29,16 @@ RUN curl https://cli.gra.ai.cloud.ovh.net/ovhai-linux.zip -o ovhai-linux.zip && 
     rm -rf ovhai-linux.zip ovhai
 RUN mkdir -p ~/.config/ovhai && curl -o ~/.config/ovhai/config.json https://cli.gra.ai.cloud.ovh.net/config.json
 
-COPY backend/requirements.txt ./requirements.txt
-RUN pip install -r requirements.txt
-COPY backend/ .
+# Install dependencies
+COPY ./app/backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Add libs
+COPY ./libs ./libs
+RUN pip install ./libs
+
+# Add code
+COPY ./app/backend .
 
 # Copy built frontend into /app/static
 COPY --from=frontend-build /frontend/dist /app/static
