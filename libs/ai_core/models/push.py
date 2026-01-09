@@ -52,7 +52,7 @@ def push_model_to_hf(model_dir: str, raise_error: bool = False) -> str:
 
     if not repo_id:
         if raise_error:
-            raise ValueError(f"Env var 'HF_PUSH_REPO' not defined, can't push model to huggingface")
+            raise ValueError("Env var 'HF_PUSH_REPO' not defined, can't push model to huggingface")
         logger.warning("Env var 'HF_PUSH_REPO' not defined, can't push model to huggingface")
         return None
 

@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from pydantic import BaseModel
+from typing import Optional, List
 from ai_core.utils.types import ENV
 from ai_core.utils.secrets import SECRET_ENV_MLFLOW
 
