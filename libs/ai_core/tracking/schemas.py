@@ -17,10 +17,10 @@ class TrackingConfig(BaseModel):
             return []
 
         base_envs = {
-            "MLFLOW_PROJECT_NAME": self.project_name,
+            "MLFLOW_EXPERIMENT_NAME": self.project_name,
             "MLFLOW_RUN_NAME": self.run_name,
             "MLFLOW_RUN_NAME_TAG": self.run_name_tag,
-            "MLFLOW_SET_ACTIVE_MODEL": self.set_active_model,
+            "MLFLOW_ACTIVE_MODEL_ID": self.set_active_model,
             "MLFLOW_ENABLE_LOG_MODEL": str(self.enable_log_model),
             "MLFLOW_ENABLE_LOG_DATASET": str(self.enable_log_dataset),
         }
