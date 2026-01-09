@@ -89,8 +89,8 @@ build-push-app-prod:
 # Release
 # =============================================================================
 release:
-	echo 'VERSION = "$(VERSION)"' > backend/app/version.py
-	cd frontend && npm version $(VERSION)
+	echo 'VERSION = "$(VERSION)"' > app/backend/app/version.py
+	cd app/frontend && npm version $(VERSION)
 	git commit -am '[release] version $(VERSION)'
 	git tag v$(VERSION)
 	@echo "If everything is OK, you can push with tags i.e. git push origin main --tags"
