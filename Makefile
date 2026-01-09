@@ -1,7 +1,7 @@
 # =============================================================================
 # Configuration
 # =============================================================================
-CURRENT_VERSION=$(shell cat backend/app/version.py | cut -d \" -f 2)
+CURRENT_VERSION=$(shell cat app/backend/app/version.py | cut -d \" -f 2)
 DOCKER_IMAGE_NAME=dataesr/ml-hub
 GHCR_IMAGE_NAME=ghcr.io/$(DOCKER_IMAGE_NAME)
 
