@@ -12,6 +12,23 @@ export default function Home() {
           <Card
             background
             shadow
+            desc="Run AI pipelines."
+            enlargeLink
+            imageAlt="system"
+            imageUrl="artwork/pictograms/system/system.svg"
+            classes={{ imgTag: "fr-ratio-1x1" }}
+            linkProps={{
+              href: "/run",
+            }}
+            size="small"
+            title="Run"
+            titleAs="h3"
+          />
+        </Col>
+        <Col xs={12} sm={6} lg={6} xl={3}>
+          <Card
+            background
+            shadow
             desc="Explore DataESR models, datasets and more."
             enlargeLink
             imageAlt="digital-search"
@@ -25,41 +42,27 @@ export default function Home() {
             titleAs="h3"
           />
         </Col>
+
         <Col xs={12} sm={6} lg={6} xl={3}>
           <Card
             background
             shadow
-            desc="Launch training and other jobs."
-            enlargeLink
-            imageAlt="system"
-            imageUrl="artwork/pictograms/system/system.svg"
-            classes={{ imgTag: "fr-ratio-1x1" }}
-            linkProps={{
-              href: "/jobs",
-            }}
-            size="small"
-            title="Jobs"
-            titleAs="h3"
-          />
-        </Col>
-        <Col xs={12} sm={6} lg={6} xl={3}>
-          <Card
-            background
-            shadow
-            desc="Evaluate and compare models."
+            desc="Track and compare your runs."
             enlargeLink
             imageAlt="digital-data-visualization"
             imageUrl="artwork/pictograms/digital/data-visualization.svg"
             classes={{ imgTag: "fr-ratio-1x1" }}
             linkProps={{
-              href: "/evaluate",
+              href: "https://mlflow.staging.dataesr.ovh",
+              target: "_blank",
+              rel: "noopener noreferrer",
             }}
             size="small"
-            title="Evaluate"
+            title="Track"
             titleAs="h3"
           />
         </Col>
-        <Col xs={12} sm={6} lg={6} xl={3}>
+        {/* <Col xs={12} sm={6} lg={6} xl={3}>
           <Card
             background
             shadow
@@ -75,7 +78,7 @@ export default function Home() {
             title="Inference"
             titleAs="h3"
           />
-        </Col>
+        </Col> */}
       </Row>
     </Container>
   )

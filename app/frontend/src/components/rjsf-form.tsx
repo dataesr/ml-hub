@@ -1,7 +1,7 @@
-import { getSubmitButtonOptions, SubmitButtonProps, WidgetProps } from '@rjsf/utils';
+import { ArrayFieldItemTemplateProps, ArrayFieldTemplateProps, getSubmitButtonOptions, SubmitButtonProps, WidgetProps } from '@rjsf/utils';
 import { FormProps } from '@rjsf/core';
 import { withTheme, ThemeProps } from '@rjsf/core';
-import { Accordion, Button, Checkbox, TextInput } from '@dataesr/dsfr-plus';
+import { Accordion, Badge, BadgeGroup, Button, Checkbox, TextInput } from '@dataesr/dsfr-plus';
 import { ChangeEvent, FocusEvent } from 'react';
 import { getInputProps, FieldTemplateProps, ObjectFieldTemplateProps, BaseInputTemplateProps } from '@rjsf/utils';
 
@@ -91,6 +91,19 @@ function CustomObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   );
 }
 
+function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
+  const { title, items, canAdd, onAddClick, rawErrors } = props;
+  return (
+    <div>
+      {title}
+      <br />
+      {items.map((element) => element)}
+      {canAdd && <Button className="fr-mt-1w" size="sm" variant="secondary" onClick={onAddClick}>Add</Button>}
+      {rawErrors?.length > 0 && <p>{rawErrors?.join(', ')}</p>}
+    </div>
+  )
+}
+
 function CustomSubmitButton(props: SubmitButtonProps) {
   const { uiSchema } = props;
   const { norender, submitText } = getSubmitButtonOptions(uiSchema)
@@ -103,7 +116,7 @@ function CustomSubmitButton(props: SubmitButtonProps) {
 
 // Theme
 // const theme: ThemeProps = { widgets: { TextWidget: CustomTextWidget, CheckboxWidget: CustomCheckboxWidget } };
-const theme: ThemeProps = { templates: { ButtonTemplates: { SubmitButton: CustomSubmitButton }, FieldTemplate: CustomFieldTemplate, BaseInputTemplate: CustomInputTemplate, ObjectFieldTemplate: CustomObjectFieldTemplate }, widgets: { CheckboxWidget: CustomCheckboxWidget } };
+const theme: ThemeProps = { templates: { ButtonTemplates: { SubmitButton: CustomSubmitButton }, FieldTemplate: CustomFieldTemplate, BaseInputTemplate: CustomInputTemplate, ObjectFieldTemplate: CustomObjectFieldTemplate, ArrayFieldTemplate: CustomArrayFieldTemplate }, widgets: { CheckboxWidget: CustomCheckboxWidget } };
 const ThemedForm = withTheme(theme);
 
 export default function JsonSchemaForm(props: FormProps) {

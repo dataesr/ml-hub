@@ -34,7 +34,7 @@ export default function Pipelines() {
     <Container fluid>
       <PipelinesHeader />
       <Container className="fr-my-2w">
-        <SearchBar className="fr-mb-2w" style={{ maxWidth: "500px" }} onSearch={() => null} placeholder="Search pipelines..." />
+        {/* <SearchBar className="fr-mb-2w" style={{ maxWidth: "500px" }} onSearch={() => null} placeholder="Search pipelines..." /> */}
         {selectedPipeline && <Drawer anchor="right" isOpen={!!selectedPipeline} onClose={() => setSelectedPipeline(null)}>
           <PipelineForm pipeline={selectedPipeline} />
         </Drawer>}
