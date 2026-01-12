@@ -46,6 +46,8 @@ def merge_and_write(trainer: Any, tokenizer: Any, model_name: str, adapters_dir:
 
 
 def unsloth_merge_and_write(trainer, tokenizer, model_name: str, merged_dir: str):
+    import torch
+
     logger.info(f"Start saving finetuned model {model_name}")
 
     # Get model from trainer
