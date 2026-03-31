@@ -1,4 +1,3 @@
-from matplotlib.pylab import dtype
 import os
 from pydantic import BaseModel
 from typing import Optional
@@ -6,13 +5,13 @@ from ai_core.pipelines.registry import register_pipeline_cloud, PipelineRegistry
 from ai_core.datasets.load import load
 from ai_core.datasets.convert import construct_prompts
 from ai_core.datasets.utils import should_use_conversational_format
+from ai_core.models.write import unsloth_merge_and_write
 from ai_core.cloud.schemas import CloudJobInfrastructure, CloudJobVolume
 from ai_core.cloud.constants import CONFIGS_CONTAINER, DATASETS_CONTAINER, JOBS_CONTAINER
 from ai_core.configs.load import load_prompt_config
 from ai_core.tracking.client import mlflow_is_enabled
 from ai_core.tracking.log import (
     mlflow_log_dataset,
-    mlflow_log_model,
     mlflow_start,
     mlflow_end,
     mlflow_log_tags,
@@ -227,10 +226,7 @@ def finetune_causal_unsloth(args: PipelineArgs):
     logger.info("✅ Model training completed")
 
     ### --- Save model ---
-    model = trainer.model.module if hasattr(trainer.model, "module") else trainer.model
-    mlflow_log_model(args.model_name, model, tokenizer)
-    model.save_pretrained_merged(save_directory=finetuned_dir, tokenizer=tokenizer, save_method="merged_16bit")
-    logger.info(f"✅ Model merged and saved to {finetuned_dir}")
+    unsloth_merge_and_write(trainer, tokenizer, args.model_name, finetuned_dir)
 
     ### --- Push model ---
     push_model_to_hf(finetuned_dir)
