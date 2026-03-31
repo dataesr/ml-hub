@@ -12,6 +12,26 @@ from ai_core.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def construct_one_prompt(
+    input: str, instruction: str | None = None, response: str | None = None, text_format: str | None = None
+):
+    """
+    Construct a prompt from system, user and assistant messages
+
+    Args:
+    - input (str): user input
+    - instruction (str, optional): system instructions. Defaults to None.
+    - assistant (str, optional): assistant completion for training. Defaults to None.
+    - text_format (str, optional): custom text format. Defaults to None.
+
+    Returns a prompt string
+    """
+    if text_format is None:
+        text_format = DEFAULT_TEXT_FORMAT
+
+    return text_format.format(instruction=instruction or "", input=input, response=response or "")
+
+
 def construct_one_conversation(user: str, system: str | None = None, assistant: str | None = None):
     """
     Construct a conversation from system, user and assistant messages
@@ -69,7 +89,7 @@ def construct_prompts(
             }
         else:
             # Non-conversational (Alpaca-style prompt-response text)
-            instruction = custom_instruction or "You are an helpful assistant."
+            instruction = custom_instruction if custom_instruction is not None else "You are an helpful assistant."
             text_format = custom_text_format or DEFAULT_TEXT_FORMAT
             text = text_format.format(instruction=instruction, input=example[INPUT_COLUMN], response=example[OUTPUT_COLUMN])
             return {prompts_field: text}

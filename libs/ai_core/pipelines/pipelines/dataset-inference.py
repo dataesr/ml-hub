@@ -9,6 +9,7 @@ from ai_core.cloud.constants import CONFIGS_CONTAINER, DATASETS_CONTAINER, COMPL
 from ai_core.configs.load import load_prompt_config
 from ai_core.datasets.load import load
 from ai_core.datasets.utils import get_prompts
+from ai_core.datasets.convert import construct_one_prompt
 from ai_core.utils.misc import timestamp
 from ai_core.tracking.client import mlflow
 from ai_core.tracking.log import (
@@ -86,6 +87,10 @@ def dataset_inference(args: PipelineArgs):
 
     # Get prompts from dataset
     prompts = get_prompts(dataset)
+    prompts = [
+        construct_one_prompt(prompt, instruction=prompts_cfg.instruction, text_format=prompts_cfg.text_format)
+        for prompt in prompts
+    ]
 
     if args.sampling_params:
         logger.debug(f"Custom sampling params: {args.sampling_params}")
@@ -108,10 +113,11 @@ def dataset_inference(args: PipelineArgs):
     vllm_engine = LLM(
         model=args.model_name,
         quantization="bitsandbytes",
+        load_format="bitsandbytes",
         dtype="bfloat16",  # V100 doesnt support bfloat16
         tensor_parallel_size=1,  # torch.cuda.device_count()
         trust_remote_code=True,
-        # enforce_eager=True,
+        enforce_eager=True,
         disable_custom_all_reduce=True,
         disable_log_stats=False,
         max_model_len=12288,  # TODO: compute expected max len
