@@ -88,7 +88,7 @@ def dataset_inference(args: PipelineArgs):
     # Get prompts from dataset
     prompts = get_prompts(dataset)
     prompts = [
-        construct_one_prompt(prompt, instruction=prompts_cfg.instruction, text_format=prompts_cfg.text_format)
+        construct_one_prompt(prompt, instruction=prompts_cfg.get("instruction"), text_format=prompts_cfg.get("text_format"))
         for prompt in prompts
     ]
 
