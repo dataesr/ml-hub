@@ -8,8 +8,8 @@ from ai_core.cloud.schemas import CloudJobInfrastructure, CloudJobVolume
 from ai_core.cloud.constants import CONFIGS_CONTAINER, DATASETS_CONTAINER, COMPLETIONS_CONTAINER
 from ai_core.configs.load import load_prompt_config
 from ai_core.datasets.load import load
-from ai_core.datasets.utils import get_prompts
-from ai_core.datasets.convert import construct_one_prompt
+from ai_core.datasets.utils import get_prompts, should_use_conversational_format
+from ai_core.datasets.convert import construct_one_prompt, construct_one_conversation
 from ai_core.utils.misc import timestamp
 from ai_core.tracking.client import mlflow
 from ai_core.tracking.log import (
@@ -60,7 +60,6 @@ def dataset_inference(args: PipelineArgs):
     # Make sure selected packages are included in the cloud image
     from vllm import LLM, SamplingParams
     from vllm.version import __version__ as VLLM_VERSION
-    from vllm.transformers_utils.tokenizer import get_tokenizer
 
     logger.info("Starting pipeline dataset-inference...")
     logger.debug(f"with args = {args.model_dump(exclude_defaults=True)}")
@@ -85,13 +84,6 @@ def dataset_inference(args: PipelineArgs):
     mlflow_log_dataset(args.dataset_name, dataset, dataset_split=args.dataset_split)
     logger.info("✅ Dataset loaded")
 
-    # Get prompts from dataset
-    prompts = get_prompts(dataset)
-    prompts = [
-        construct_one_prompt(prompt, instruction=prompts_cfg.get("instruction"), text_format=prompts_cfg.get("text_format"))
-        for prompt in prompts
-    ]
-
     if args.sampling_params:
         logger.debug(f"Custom sampling params: {args.sampling_params}")
     full_params = {
@@ -103,11 +95,6 @@ def dataset_inference(args: PipelineArgs):
         **(args.sampling_params or {}),
     }
     mlflow_log_params(full_params)
-
-    ### --- Load tokenizer ---
-    tokenizer = get_tokenizer(args.model_name, trust_remote_code=True)
-    tokenizer.padding_side = "right"
-    logger.info(f"✅ {args.model_name} tokenizer loaded")
 
     ### --- Load vllm engine ---
     vllm_engine = LLM(
@@ -123,6 +110,30 @@ def dataset_inference(args: PipelineArgs):
         max_model_len=12288,  # TODO: compute expected max len
     )
     logger.info(f"✅ vLLM engine {VLLM_VERSION} loaded")
+
+    ### --- Load tokenizer ---
+    tokenizer = vllm_engine.get_tokenizer()
+    logger.info(f"✅ {args.model_name} tokenizer loaded")
+
+    ### --- Get prompts from dataset ---
+    prompts = get_prompts(dataset)
+    use_conversation = should_use_conversational_format(prompts_cfg.get("format"), tokenizer.chat_template)
+    prompts = [
+        (
+            tokenizer.apply_chat_template(
+                construct_one_conversation(prompt, system=prompts_cfg.get("instruction")),
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+            if use_conversation
+            else construct_one_prompt(
+                prompt, instruction=prompts_cfg.get("instruction"), text_format=prompts_cfg.get("text_format")
+            )
+        )
+        for prompt in prompts
+    ]
+    logger.info(f"✅ {len(prompts)} prompts formatted")
+    logger.debug(f"Example: {prompts[0]}")
 
     ### --- Generate completions ---
     @mlflow.trace(name="vllm_generate", span_type="llm")
