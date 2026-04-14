@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
-from jsonref import replace_refs
 from ai_core.pipelines.registry import list_pipelines, get_pipeline
+from ai_core.pipelines.executor import run_pipeline
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -14,36 +14,36 @@ def pipelines_list():
     pipelines = list_pipelines()
     return [
         {
-            **pipeline.model_dump(exclude={"func", "inputs", "args"}),
-            "args": (
-                replace_refs(pipeline.args.model_json_schema(union_format="primitive_type_array"))
-                if pipeline.args
-                else None
-            ),
-            "inputs": (
-                replace_refs(pipeline.inputs.model_json_schema(union_format="primitive_type_array"))
-                if pipeline.inputs
-                else None
-            ),
+            "pipeline": cfg.pipeline,
+            "description": cfg.description,
+            "tags": cfg.tags,
+            "environment": cfg.environment,
+            "entrypoint": cfg.entrypoint,
+            "args": cfg.get_args(),
+            "inputs": cfg.get_schema(),
+            "cloud": cfg.cloud.model_dump() if cfg.cloud else None,
+            "tracking": cfg.tracking.model_dump() if cfg.tracking else None,
         }
-        for pipeline in pipelines
-        if pipeline.pipeline not in ["example-local", "example-cloud"]  # Hide example pipelines
+        for cfg in pipelines
     ]
 
 
 @router.get("/pipelines/{pipeline_name}")
 def pipelines_get(pipeline_name: str):
-    pipeline = get_pipeline(pipeline_name)
+    try:
+        cfg = get_pipeline(pipeline_name)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Pipeline '{pipeline_name}' not found.")
+
     return {
-        **pipeline.model_dump(exclude={"func", "inputs", "args"}),
-        "args": (
-            replace_refs(pipeline.args.model_json_schema(union_format="primitive_type_array")) if pipeline.args else None
-        ),
-        "inputs": (
-            replace_refs(pipeline.inputs.model_json_schema(union_format="primitive_type_array"))
-            if pipeline.inputs
-            else None
-        ),
+        "pipeline": cfg.pipeline,
+        "description": cfg.description,
+        "tags": cfg.tags,
+        "environment": cfg.environment,
+        "entrypoint": cfg.entrypoint,
+        "inputs": cfg.get_schema(),
+        "cloud": cfg.cloud.model_dump() if cfg.cloud else None,
+        "tracking": cfg.tracking.model_dump() if cfg.tracking else None,
     }
 
 
@@ -51,27 +51,21 @@ def pipelines_get(pipeline_name: str):
 def pipelines_run(pipeline_name: str, raw_input_data: dict):
 
     try:
-        pipeline = get_pipeline(pipeline_name)
+        cfg = get_pipeline(pipeline_name)
     except KeyError:
         raise HTTPException(status_code=404, detail=f"Pipeline '{pipeline_name}' not found.")
 
-    InputsSchema = pipeline.inputs
-    if not InputsSchema:
-        raise HTTPException(status_code=400, detail=f"Pipeline '{pipeline_name}' has no inputs.")
-    logger.debug(f"Inputs schema: {InputsSchema.model_json_schema()}")
+    # Extract args from input data (allow flat or nested format)
+    args_dict = raw_input_data.get("args", raw_input_data)
+    logger.debug(f"Pipeline args: {args_dict}")
 
-    # Get pipeline instance
-    try:
-        logger.debug(f"Validating input data: {raw_input_data}")
-        config = InputsSchema.model_validate(raw_input_data)
-    except ValidationError as error:
-        raise HTTPException(status_code=422, detail=error.errors())
-
-    # Run pipeline
+    # Run pipeline (validates args internally)
     try:
         logger.info(f"Starting pipeline '{pipeline_name}' execution...")
-        results = pipeline.run(config)
+        results = run_pipeline(cfg, args_dict)
         logger.info(f"Pipeline '{pipeline_name}' completed with results: {results}")
+    except ValidationError as error:
+        raise HTTPException(status_code=422, detail=error.errors())
     except Exception as error:
         raise HTTPException(status_code=500, detail=str(error))
 

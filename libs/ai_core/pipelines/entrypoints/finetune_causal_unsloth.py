@@ -1,13 +1,15 @@
+"""
+Entrypoint: finetune-causal-unsloth
+Finetune a causal LM using Unsloth for optimized 4-bit training.
+"""
+
 import os
+from typing import no_type_check
 from pydantic import BaseModel
-from typing import Optional
-from ai_core.pipelines.registry import register_pipeline_cloud, PipelineRegistryCloud
 from ai_core.datasets.load import load
 from ai_core.datasets.convert import construct_prompts
 from ai_core.datasets.utils import should_use_conversational_format
 from ai_core.models.write import unsloth_merge_and_write
-from ai_core.cloud.schemas import CloudJobInfrastructure, CloudJobVolume
-from ai_core.cloud.constants import CONFIGS_CONTAINER, DATASETS_CONTAINER, JOBS_CONTAINER
 from ai_core.configs.load import load_prompt_config
 from ai_core.tracking.client import mlflow_is_enabled
 from ai_core.tracking.log import (
@@ -17,61 +19,11 @@ from ai_core.tracking.log import (
     mlflow_log_tags,
     mlflow_log_params,
 )
-from ai_core.tracking.schemas import TrackingConfig
 from ai_core.models.push import push_model_to_hf
 from ai_core.utils.files import folder_create
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
-
-
-class PipelineArgs(BaseModel):
-    model_name: str
-    dataset_name: str
-    dataset_split: str = "train"
-
-    # Config
-    prompts_config: Optional[str] = None
-
-    # Lora args
-    lora_r: int = 16
-    lora_alpha: int = 32
-    lora_dropout: float = 0.05
-
-    # Training args
-    max_seq_length: int = 8192
-    epochs: int = 3
-    max_steps: int = -1
-    batch_size: int = 2
-    grad_acc_steps: int = 4
-    optim: str = "adamw_8bit"
-    learning_rate: float = 2e-5
-    lr_scheduler_type: str = "linear"
-    weight_decay: float = 0.001
-    max_grad_norm: float = 0.3
-    warmup_ratio: float = 0.03
-    warmup_steps: int = 5
-    save_steps: int = 500
-    logging_steps: int = 50
-
-
-pipeline = PipelineRegistryCloud(
-    pipeline="finetune-causal-unsloth",
-    description="Finetune a causal model with unsloth",
-    tags=["finetuning", "causallm", "transformers", "unsloth"],
-    args=PipelineArgs,
-    infrastructure=CloudJobInfrastructure(
-        image="ghcr.io/dataesr/ml-hub/cuda-unsloth:latest",
-        name="finetune-causal-unsloth",
-        command=["ai-pipeline-run"],
-        volumes=[
-            CloudJobVolume(container=CONFIGS_CONTAINER, mount="configs"),
-            CloudJobVolume(container=DATASETS_CONTAINER, mount="datasets"),
-            CloudJobVolume(container=JOBS_CONTAINER, mount="jobs", permission="RWD"),
-        ],
-    ),
-    tracking=TrackingConfig(),  # default tracking config
-)
 
 # 4bit pre quantized models we support for 4x faster downloading + no OOMs.
 fourbit_models = [
@@ -99,10 +51,10 @@ def is_unsloth_model(model_name: str, limit_to_4bit: bool = False):
     return model_name.startswith("unsloth/")
 
 
-@register_pipeline_cloud(pipeline)
-def finetune_causal_unsloth(args: PipelineArgs):
-    # GPU imports should be inside the function to avoid dependencies
-    # Make sure selected packages are included in the cloud image
+@no_type_check
+def run(args: BaseModel, tracking=None, **kwargs):
+    """Finetune a causal LM with Unsloth."""
+    # GPU imports inside the function to avoid dependencies at import time
     from transformers.data.data_collator import DataCollatorForSeq2Seq
 
     # unlosth has to be imported before trl see https://stackoverflow.com/questions/79663362/sfttrainer-the-specified-eos-token-eos-token-is-not-found-in-the-vocabu
@@ -110,7 +62,7 @@ def finetune_causal_unsloth(args: PipelineArgs):
     from unsloth.chat_templates import train_on_responses_only
     from trl import SFTConfig, SFTTrainer
 
-    logger.info("Starting pipeline finetune-causal...")
+    logger.info("Starting pipeline finetune-causal-unsloth...")
     logger.debug(f"with args = {args.model_dump(exclude_defaults=True)}")
 
     ### --- Start tracking ---
@@ -138,7 +90,7 @@ def finetune_causal_unsloth(args: PipelineArgs):
         raise ValueError(f"Model {args.model_name} is not a valid unsloth 4bit model!")
 
     model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=args.model_name,  # or choose "unsloth/Llama-3.2-1B-Instruct"
+        model_name=args.model_name,
         max_seq_length=args.max_seq_length,
         dtype=None,
         load_in_4bit=True,
@@ -146,7 +98,7 @@ def finetune_causal_unsloth(args: PipelineArgs):
 
     model = FastLanguageModel.get_peft_model(
         model,
-        r=args.lora_r,  # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
+        r=args.lora_r,
         target_modules=[
             "q_proj",
             "k_proj",
@@ -157,13 +109,12 @@ def finetune_causal_unsloth(args: PipelineArgs):
             "down_proj",
         ],
         lora_alpha=args.lora_alpha,
-        lora_dropout=args.lora_dropout,  # Supports any, but = 0 is optimized
-        bias="none",  # Supports any, but = "none" is optimized
-        # [NEW] "unsloth" uses 30% less VRAM, fits 2x larger batch sizes!
-        use_gradient_checkpointing="unsloth",  # True or "unsloth" for very long context
+        lora_dropout=args.lora_dropout,
+        bias="none",
+        use_gradient_checkpointing="unsloth",
         random_state=69,
-        use_rslora=False,  # We support rank stabilized LoRA
-        loftq_config=None,  # And LoftQ
+        use_rslora=False,
+        loftq_config=None,
     )
 
     logger.debug(f"Model embeddings size: {model.get_input_embeddings().weight.size(0)}")
@@ -203,8 +154,6 @@ def finetune_causal_unsloth(args: PipelineArgs):
         save_steps=args.save_steps,
         logging_steps=args.logging_steps,
         bf16=True,
-        # group_by_length=False,
-        # packing=False,
         max_length=args.max_seq_length,
         report_to="mlflow" if mlflow_is_enabled() else "none",
     )

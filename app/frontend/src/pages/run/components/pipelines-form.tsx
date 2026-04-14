@@ -10,7 +10,7 @@ interface PipelineFormProps {
   pipeline: Pipeline;
 }
 export default function PipelineForm({ pipeline }: PipelineFormProps) {
-  const { mutate: runPipeline, isLoading, isSuccess, error } = useRunPipeline();
+  const { mutate: runPipeline, isSuccess, error } = useRunPipeline()
   const [formData, setFormData] = useState<any>({});
 
   const handleSubmit = ({ formData }: { formData: any }) => {

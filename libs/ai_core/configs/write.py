@@ -6,8 +6,8 @@ from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-def write_yaml_config(cfg: dict, cfg_name: str, cfg_type: str):
-    path = os.path.join(cfg_type, cfg_name)
+
+def write_yaml_config(cfg: dict, path: str):
     if not path.endswith(".yaml"):
         path += ".yaml"
 
@@ -15,20 +15,12 @@ def write_yaml_config(cfg: dict, cfg_name: str, cfg_type: str):
         tmp_path = os.path.join("/tmp", path)
         file_write_yaml(tmp_path, cfg)
     except Exception as error:
-        raise Exception(f"Error while writing config {cfg_name} as tmp file (details={error})")
+        raise Exception(f"Error while writing config {path} as tmp file (details={error})")
 
     try:
         ovhai_object_upload(tmp_path, CONFIGS_CONTAINER, remove_prefix="/tmp/")
     except Exception as error:
-        raise Exception(f"Error while uploading config {tmp_path} to {CONFIGS_CONTAINER}")
+        raise Exception(f"Error while uploading config {tmp_path} to {CONFIGS_CONTAINER} (details={error})")
 
     os.remove(tmp_path)
     return
-
-
-def write_prompt_config(cfg: dict, cfg_name: str):
-    write_yaml_config(cfg, cfg_name, "prompts")
-
-
-def write_pipeline_config(cfg: dict, cfg_name):
-    write_yaml_config(cfg, cfg_name, "pipeline")

@@ -1,54 +1,100 @@
+"""
+Pipeline runner — CLI entrypoint for running pipelines.
+
+Supports two modes:
+  1. Run a built-in pipeline by name:
+     ai-pipeline-run --pipeline finetune-causal -a model_name=mistralai/Mistral-7B-v0.3 -a dataset_name=my-data
+
+  2. Run from a YAML config file:
+     ai-pipeline-run --config path/to/my-config.yaml -a epochs=5
+"""
+
 import sys
 import argparse
+from pathlib import Path
 from pydantic import ValidationError
-from ai_core.pipelines.registry import get_pipeline
+from ai_core.pipelines.config import CONFIGS_DIR, load_user_config
+from ai_core.pipelines.executor import run_pipeline
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 
-def get_pipeline_args():
-    base_parser = argparse.ArgumentParser(add_help=False)
-    base_parser.add_argument("--pipeline", type=str, required=True)
-    known_args, _ = base_parser.parse_known_args()
-    pipeline = get_pipeline(known_args.pipeline)
+def _parse_override(arg_str: str) -> tuple:
+    """Parse a key=value argument string."""
+    if "=" not in arg_str:
+        raise argparse.ArgumentTypeError(f"Argument must be in 'key=value' format, got: {arg_str}")
+    key, value = arg_str.split("=", 1)
 
-    full_parser = argparse.ArgumentParser(description=f"Runner for {pipeline.pipeline}")
-    full_parser.add_argument("--pipeline", type=str, required=True, help="Name of the pipeline to run.")
-    for field_name, field_info in pipeline.args.model_fields.items():
-        arg_name = f'--{field_name.replace("_","-")}'
-        arg_type = str
-        python_type = field_info.annotation
-        if python_type in (int, float, bool):
-            arg_type = python_type
-        full_parser.add_argument(
-            arg_name,
-            type=arg_type,
-            default=argparse.SUPPRESS,
-            required=field_info.is_required(),
-            help=field_info.description,
-        )
+    # int, float handling
+    for cast in (int, float):
+        try:
+            return key.strip(), cast(value)
+        except (ValueError, TypeError):
+            continue
 
-    parsed_args = full_parser.parse_args(sys.argv[1:])
-    config_dict = vars(parsed_args)
+    # boolean handling
+    if value.lower() in ("true", "false"):
+        return key.strip(), value.lower() == "true"
+
+    return key.strip(), value
+
+
+def _parse_cli_args():
+    """Parse CLI arguments."""
+    parser = argparse.ArgumentParser(description="Runner for AI pipelines")
+    exclusive = parser.add_mutually_exclusive_group(required=True)
+    exclusive.add_argument("--config", type=str, default=None, help="Path to a user YAML config file")
+    exclusive.add_argument("--pipeline", "-p", type=str, default=None, help="Name of a built-in pipeline")
+    parser.add_argument("-a", "--arg", action="append", default=[], help="Pipeline arguments (format: arg_name=value)")
+    parsed_args = parser.parse_args()
+
+    # Parse key=value arguments
+    overrides = {}
+    for arg_str in parsed_args.arg:
+        key, value = _parse_override(arg_str)
+        overrides[key] = value
+
+    args_overrides = {"args": overrides} if overrides else {}
+
+    if parsed_args.config:
+        config_path = Path(parsed_args.config)
+        if not config_path.exists():
+            print(f"Error: Config file not found: {config_path}", file=sys.stderr)
+            sys.exit(1)
+        config = load_user_config(config_path, overrides=args_overrides)
+        return config
+
+    if parsed_args.pipeline:
+        config_path = CONFIGS_DIR / f"{parsed_args.pipeline}.yaml"
+        if not config_path.exists():
+            print(f"Error: Built-in pipeline '{parsed_args.pipeline}' not found.", file=sys.stderr)
+            sys.exit(1)
+        config = load_user_config(config_path, overrides=args_overrides)
+        return config
+
+
+def run_pipeline_cli():
+    """Main CLI entrypoint."""
+    config = _parse_cli_args()
+
+    # Get args dict from config defaults (CLI arguments have been merged as defaults)
+    args_dict = config.get_defaults()
+
+    logger.info(f"--- Start pipeline: {config.pipeline} ---")
+    logger.debug(f"Args: {args_dict}")
 
     try:
-        args = pipeline.args.model_validate(config_dict)
+        result = run_pipeline(config, args_dict)
+        logger.info(f"--- Pipeline {config.pipeline} completed ---")
+        return result
     except ValidationError as error:
-        logger.error(f"Configuration validation failed for pipeline {pipeline.pipeline}")
-        logger.error(f"CLI arguments received: {config_dict}")
-        raise error
-
-    return pipeline.pipeline, pipeline.func, args
-
-
-def run_pipeline():
-    pipeline_name, func, args = get_pipeline_args()
-    logger.info(f"--- Start pipeline {pipeline_name} ---")
-    func(args)
-    logger.info(f"--- Pipeline {pipeline_name} completed ---")
-    return
+        logger.error(f"Configuration validation failed: {error}")
+        raise
+    except Exception as error:
+        logger.error(f"Pipeline {config.pipeline} failed: {error}")
+        raise
 
 
 if __name__ == "__main__":
-    run_pipeline()
+    run_pipeline_cli()

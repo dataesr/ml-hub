@@ -34,7 +34,7 @@ ENV PATH="$HOME/.venv/bin:$PATH"
 # Install PyTorch for cuda 12.8
 RUN uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128 --trusted-host download.pytorch.org
 
-# Install python packages
+# Install python packages (ML dependencies)
 RUN uv pip install \
   bitsandbytes==0.47.0 \
   peft==0.17.1 \
@@ -42,14 +42,21 @@ RUN uv pip install \
   transformers==4.56.2 \
   trl==0.23.0
 
-# Add pyproject.toml and ai_core package
-COPY --chown=42420:42420 ./libs/pyproject.toml .
-COPY --chown=42420:42420 ./libs/ai_core ./ai_core
+# Install ai_core dependencies (not ai_core itself — installed at runtime from git)
+RUN uv pip install \
+  pydantic==2.12.5 \
+  datasets==4.4.1 \
+  huggingface-hub==0.35.3 \
+  mlflow==3.6.0 \
+  pandas==2.3.3 \
+  retry==0.9.2 \
+  pyyaml
 
-# Install package
-RUN uv pip install .
-RUN uv cache clean
-RUN rm -rf /workspace/ai_core
+# Generic entrypoint: installs ai_core from git at boot
+COPY --chown=42420:42420 docker/images/entrypoint.sh /entrypoint.sh
+USER root
+RUN chmod +x /entrypoint.sh
+USER 42420:42420
 
-# Default command
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["ai-pipeline-run"]

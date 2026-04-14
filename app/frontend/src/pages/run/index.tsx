@@ -1,4 +1,4 @@
-import { Accordion, Breadcrumb, Container, Link, SearchBar, Text } from "@dataesr/dsfr-plus"
+import { Accordion, Breadcrumb, Container, Link, Text } from "@dataesr/dsfr-plus"
 import { useListPipelines } from "../../api/pipelines/hooks"
 import PipelinesTable from "./components/pipelines-table"
 import ErrorCallOut from "../../components/error-call-out"
@@ -29,15 +29,16 @@ export default function Pipelines() {
   const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null)
   const { data, isFetching, error } = useListPipelines()
 
-
   return (
     <Container fluid>
       <PipelinesHeader />
       <Container className="fr-my-2w">
         {/* <SearchBar className="fr-mb-2w" style={{ maxWidth: "500px" }} onSearch={() => null} placeholder="Search pipelines..." /> */}
-        {selectedPipeline && <Drawer anchor="right" isOpen={!!selectedPipeline} onClose={() => setSelectedPipeline(null)}>
-          <PipelineForm pipeline={selectedPipeline} />
-        </Drawer>}
+        {selectedPipeline && (
+          <Drawer anchor="right" isOpen={!!selectedPipeline} onClose={() => setSelectedPipeline(null)}>
+            <PipelineForm pipeline={selectedPipeline} />
+          </Drawer>
+        )}
         {error && <ErrorCallOut error={error} />}
         {isFetching && !data && <LoadingSpinner position="left" />}
         {data && <PipelinesTable pipelines={data} onSelect={setSelectedPipeline} />}

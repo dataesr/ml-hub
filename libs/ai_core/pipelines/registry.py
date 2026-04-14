@@ -1,103 +1,66 @@
-import pkgutil
-import importlib
-from typing import Dict, Literal, List, Type, Callable, Optional
-from pydantic import BaseModel, Field
-from ai_core.cloud.schemas import CloudJobInfrastructure
-from ai_core.tracking.schemas import TrackingConfig
-from ai_core.pipelines.schema_builder import build_pipeline_input_model
-from ai_core.pipelines.execution import run_local, run_cloud
+"""
+Pipeline registry — scans YAML config files to discover pipelines.
+
+Replaces the old decorator-based registry with a simple filesystem scan
+of `pipelines/configs/*.yaml`.
+"""
+
+from typing import Dict, List
+from ai_core.pipelines.config import (
+    CONFIGS_DIR,
+    PipelineConfig,
+    load_pipeline_config,
+)
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-PIPELINE_REGISTRY: Dict[str, "PipelineRegistryLocal | PipelineRegistryCloud"] = {}
+# In-memory cache of loaded pipeline configs
+_PIPELINE_REGISTRY: Dict[str, PipelineConfig] = {}
 
 
-class PipelineRegistryBase(BaseModel):
-    pipeline: str
-    description: str = ""
-    tags: List[str] = Field(default_factory=list)
+def _load_all_configs() -> None:
+    """Scan the configs directory and load all pipeline YAML files."""
+    global _PIPELINE_REGISTRY
 
-    args: Optional[Type[BaseModel]] = None
-    infrastructure: Optional[BaseModel] = None
-    tracking: Optional[TrackingConfig] = None
+    if not CONFIGS_DIR.exists():
+        logger.warning(f"Pipeline configs directory not found: {CONFIGS_DIR}")
+        return
 
-    environment: Literal["cloud", "local"]
-    inputs: Optional[Type[BaseModel]] = None
-    func: Optional[Callable] = None
-
-    def run(self, config: BaseModel):
-        raise NotImplementedError("Subclasses must implement the run method.")
-
-
-class PipelineRegistryCloud(PipelineRegistryBase):
-    environment: Literal["cloud"] = "cloud"
-    infrastructure: CloudJobInfrastructure
-
-    def run(self, config: BaseModel):
-        return run_cloud(pipeline=self.pipeline, config=config, infrastructure=self.infrastructure, tracking=self.tracking)
-
-
-class PipelineRegistryLocal(PipelineRegistryBase):
-    environment: Literal["local"] = "local"
-
-    def run(self, config: BaseModel):
-        return run_local(pipeline=self.pipeline, config=config, func=self.func)
-
-
-def create_pipeline_decorator(pipeline: PipelineRegistryCloud | PipelineRegistryLocal) -> Callable[[Callable], Callable]:
-    Schema = build_pipeline_input_model(
-        args_model=pipeline.args,
-        infrastructure_default=pipeline.infrastructure,
-        tracking_default=pipeline.tracking,
-    )
-
-    def decorator(func: Callable) -> Callable:
-        pipeline.inputs = Schema
-        pipeline.func = func
-        PIPELINE_REGISTRY[pipeline.pipeline] = pipeline
-        logger.debug(f"Registered pipeline: {pipeline.pipeline} (environment={pipeline.environment})")
-        return func
-
-    return decorator
-
-
-def register_pipeline_cloud(pipeline: PipelineRegistryCloud) -> Callable[[Callable], Callable]:
-    return create_pipeline_decorator(pipeline)
-
-
-def register_pipeline_local(pipeline: PipelineRegistryLocal) -> Callable[[Callable], Callable]:
-    return create_pipeline_decorator(pipeline)
-
-
-def load_pipeline_modules():
-    try:
-        pipeline_packages = importlib.import_module("ai_core.pipelines.pipelines")
-    except Exception as error:
-        raise ImportError(f"Error while scanning pipelines (details={error})")
-
-    for _, module_name, _ in pkgutil.walk_packages(pipeline_packages.__path__, pipeline_packages.__name__ + "."):
+    for yaml_file in sorted(CONFIGS_DIR.glob("*.yaml")):
         try:
-            importlib.import_module(module_name)
+            config = load_pipeline_config(yaml_file)
+            _PIPELINE_REGISTRY[config.pipeline] = config
+            logger.debug(f"Registered pipeline: {config.pipeline} (env={config.environment})")
         except Exception as error:
-            logger.debug(f"Warning: Could not import module {module_name}: {error}")
+            logger.warning(f"Failed to load pipeline config {yaml_file.name}: {error}")
 
 
-def ensure_pipelines_loaded():
-    if not PIPELINE_REGISTRY:
-        load_pipeline_modules()
+def _ensure_loaded() -> None:
+    """Lazy-load pipeline configs on first access."""
+    if not _PIPELINE_REGISTRY:
+        _load_all_configs()
 
 
-def list_pipelines() -> List[PipelineRegistryLocal | PipelineRegistryCloud]:
-    ensure_pipelines_loaded()
-    return list(PIPELINE_REGISTRY.values())
+def list_pipelines() -> List[PipelineConfig]:
+    """Return all registered pipeline configs."""
+    _ensure_loaded()
+    return list(_PIPELINE_REGISTRY.values())
 
 
-def get_pipeline(name: str) -> PipelineRegistryLocal | PipelineRegistryCloud:
-    ensure_pipelines_loaded()
-    
-    pipeline = PIPELINE_REGISTRY.get(name)
-    if not pipeline:
-        raise KeyError(f"Pipeline '{name}' not found in registry.")
-    
-    return pipeline
+def get_pipeline(name: str) -> PipelineConfig:
+    """Get a pipeline config by name."""
+    _ensure_loaded()
+
+    config = _PIPELINE_REGISTRY.get(name)
+    if not config:
+        raise KeyError(f"Pipeline '{name}' not found. Available: {list(_PIPELINE_REGISTRY.keys())}")
+
+    return config
+
+
+def reload_pipelines() -> None:
+    """Force reload all pipeline configs from disk."""
+    global _PIPELINE_REGISTRY
+    _PIPELINE_REGISTRY = {}
+    _load_all_configs()

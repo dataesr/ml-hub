@@ -1,0 +1,38 @@
+# Pipeline: dataset-evaluate
+# Evaluate model completions using MLflow scorers (runs locally)
+
+pipeline: dataset-evaluate
+description: "Evaluate completions from a dataset or file using MLflow scorers"
+tags: [dataset, evaluate, mlflow]
+
+entrypoint: ai_core.pipelines.entrypoints.dataset_evaluate:run
+environment: local
+
+# --- Pipeline arguments ---
+args:
+  dataset_name:
+    type: str
+    required: true
+    description: "Name of the completions file to evaluate"
+
+  model_name:
+    type: str
+    default: "unnamed"
+    description: "Model name for tracking purposes"
+
+  container:
+    type: str
+    default: "llm-completions"
+    description: "OVH storage container name"
+
+  scorers:
+    type: str
+    default: null
+    description: "Comma-separated list of scorer names to use"
+
+# --- Tracking (MLflow) ---
+tracking:
+  project_name: "TEST"
+  enable_tracking: true
+  enable_log_model: true
+  enable_log_dataset: true
