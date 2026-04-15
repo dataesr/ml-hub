@@ -1,4 +1,5 @@
 [tool.ty.environment]
+python = ".venv/Scripts/python.exe"
 extra-paths = ["./libs"]
 
 [tool.ty.rules]

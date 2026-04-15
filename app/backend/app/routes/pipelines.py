@@ -18,9 +18,9 @@ def pipelines_list():
             "description": cfg.description,
             "tags": cfg.tags,
             "environment": cfg.environment,
-            "entrypoint": cfg.entrypoint,
+            # "entrypoint": cfg.entrypoint,
             "args": cfg.get_args(),
-            "inputs": cfg.get_schema(),
+            # "inputs": cfg.get_schema(),
             "cloud": cfg.cloud.model_dump() if cfg.cloud else None,
             "tracking": cfg.tracking.model_dump() if cfg.tracking else None,
         }

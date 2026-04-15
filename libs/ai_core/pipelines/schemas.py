@@ -1,5 +1,5 @@
 from pathlib import Path
-import jsonref  # ty:ignore[unresolved-import]
+import jsonref
 from typing import Any, Dict, List, Literal, Optional, Tuple, Type
 from pydantic import BaseModel, Field, create_model
 from ai_core.tracking.schemas import TrackingConfig
