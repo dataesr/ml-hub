@@ -6,3 +6,4 @@ extra-paths = ["./libs"]
 invalid-argument-type = "warn"
 unknown-argument = "warn"
 possibly-missing-attribute = "ignore"
+no-matching-overload = "ignore"

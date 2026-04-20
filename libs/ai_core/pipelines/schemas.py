@@ -76,7 +76,7 @@ class PipelineConfig(BaseModel):
                 else:
                     fields[name] = (Optional[python_type], Field(default=None, description=field.description))
 
-        model = create_model("Arguments", **fields)  # ty:ignore[no-matching-overload]
+        model = create_model("Arguments", **fields)
         return model
 
     def _build_cloud_model(self) -> Type[BaseModel]:
@@ -105,7 +105,7 @@ class PipelineConfig(BaseModel):
                     field_info,
                 )
 
-        return create_model("Cloud", __base__=CloudJobInfrastructure, **fields)  # ty:ignore[no-matching-overload]
+        return create_model("Cloud", __base__=CloudJobInfrastructure, **fields)
 
     def _build_tracking_model(self) -> Type[BaseModel]:
         """
@@ -133,7 +133,7 @@ class PipelineConfig(BaseModel):
                     field_info,
                 )
 
-        return create_model("Tracking", __base__=TrackingConfig, **fields)  # ty:ignore[no-matching-overload]
+        return create_model("Tracking", __base__=TrackingConfig, **fields)
 
     def _build_inputs_model(self) -> Type[BaseModel]:
         """
@@ -145,7 +145,7 @@ class PipelineConfig(BaseModel):
             fields["cloud"] = (self._build_cloud_model(), Field(title="Cloud configuration", default=None))
         if self.tracking:
             fields["tracking"] = (self._build_tracking_model(), Field(title="Tracking configuration", default=None))
-        return create_model("Inputs", **fields)  # ty:ignore[no-matching-overload]
+        return create_model("Inputs", **fields)
 
     def get_required_fields(self) -> List[str]:
         """Return names of args that must be provided by the user."""

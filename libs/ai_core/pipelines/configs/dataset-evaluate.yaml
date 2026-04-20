@@ -32,7 +32,7 @@ args:
 
 # --- Tracking (MLflow) ---
 tracking:
-  project_name: "TEST"
+  project_name: "Default"
   enable_tracking: true
   enable_log_model: true
   enable_log_dataset: true
