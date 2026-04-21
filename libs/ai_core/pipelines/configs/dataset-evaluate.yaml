@@ -29,6 +29,26 @@ args:
     type: str
     default: null
     description: "Comma-separated list of scorer names to use"
+  
+  input_col:
+    type: str
+    default: "inputs"
+    description: "Name of the column in the dataset containing the inputs text"
+  
+  output_col:
+    type: str
+    default: "outputs"
+    description: "Name of the column in the dataset containing the model completions"
+
+  expectation_col:
+    type: str
+    default: "expectations"
+    description: "Name of the column in the dataset containing the expected outputs"
+  
+  id_col:
+    type: str
+    default: "id"
+    description: "Name of the column in the dataset containing the id for each row"
 
 # --- Tracking (MLflow) ---
 tracking:

@@ -87,7 +87,7 @@ def load_user_config(
     Load a user-provided config (which may use `base:` inheritance)
     and apply optional programmatic overrides.
     """
-    data = load_yaml_config(str(path))
+    data = load_yaml_config(str(path), from_disk=True)
     data = resolve_base_config(data)
 
     # Apply overrides

@@ -1,0 +1,16 @@
+# Evaluation for acknowledgement detection
+base: dataset-evaluate
+
+args:
+  dataset_name: "benchmark_evaluation.json"
+  model_name: "dataesr/baguette-funders-600m-with-template"
+  container: "llm-completions"
+  scorers: "is_json, acknowledgement"
+  input_col: "text"
+  output_col: "parsed_output"
+  expectation_col: "expectations"
+  id_col: "publication_id"
+
+
+tracking:
+  project_name: "entity-extraction-acknowledgment"

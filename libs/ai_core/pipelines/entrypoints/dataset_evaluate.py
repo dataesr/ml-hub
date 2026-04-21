@@ -9,20 +9,13 @@ from ai_core.tracking.client import mlflow_set_experiment
 from ai_core.tracking.log import mlflow_start, mlflow_end
 from ai_core.tracking.scorers import SCORERS_MAPPING
 from ai_core.utils.logger import get_logger
+import mlflow
 from mlflow.genai import Scorer
 
 logger = get_logger(__name__)
 
 
-def run(args: BaseModel, tracking=None, **kwargs):
-    """Evaluate completions from a dataset using MLflow scorers."""
-    # Imports inside the function to avoid dependencies at import time
-    import mlflow
-
-    logger.info("Starting pipeline dataset-evaluate...")
-    logger.debug(f"with args = {args}")
-
-    # Parse scorers from comma-separated string
+def get_scorers_fns(args) -> list[Scorer]:
     scorers_list: list[str] = []
     scorers_fns: list[Scorer] = []
     if hasattr(args, "scorers") and args.scorers:
@@ -34,21 +27,47 @@ def run(args: BaseModel, tracking=None, **kwargs):
         scorers_fns.extend(SCORERS_MAPPING[scorer])
     if len(scorers_fns) == 0:
         raise ValueError(f"No scorers provided ({scorers_list=}), aborting...")
+    return scorers_fns
 
-    container = getattr(args, "container", "llm-completions")
 
-    df = load_from_storage(
-        args.dataset_name,
-        container=container,
-    ).to_pandas()
-    logger.info(f"✅ Dataset loaded: {df.shape[0]} rows")
-    df = df.rename(columns={"input": "inputs", "completion": "expectations", "inference": "outputs"})
-    df["expectations"] = df["expectations"].apply(lambda x: {"expected_response": x if isinstance(x, str) else ""})
-    if "id" in df.columns:
-        df["expectations"] = df[["id", "expectations"]].apply(
-            lambda row: {**row["expectations"], "doc_id": row["id"]}, axis=1
+def prepare_df(df, args):
+    input_col = getattr(args, "input_col", "input")
+    expectation_col = getattr(args, "expectation_col", "completions")
+    output_col = getattr(args, "output_col", "outputs")
+    id_col = getattr(args, "id_col", "id")
+    if input_col not in df.columns or expectation_col not in df.columns or output_col not in df.columns:
+        raise ValueError(f"DataFrame must contain columns '{input_col}', '{expectation_col}', and '{output_col}'")
+    cols_to_select = [input_col, expectation_col, output_col]
+    if id_col in df.columns:
+        cols_to_select.append(id_col)
+    prep_df = df[[input_col, expectation_col, output_col, id_col]].copy()
+    prep_df = prep_df.rename(columns={input_col: "inputs", expectation_col: "expectations", output_col: "outputs"})
+    prep_df["inputs"] = prep_df["inputs"].apply(lambda x: x if isinstance(x, dict) and "query" in x else {"query": str(x)})
+    prep_df["expectations"] = prep_df["expectations"].apply(lambda x: {"expected_response": x})
+    prep_df["outputs"] = prep_df["outputs"].apply(lambda x: x.strip() if isinstance(x, str) else x)
+    if id_col in df.columns:
+        prep_df["expectations"] = prep_df[[id_col, "expectations"]].apply(
+            lambda row: {**row["expectations"], "doc_id": row[id_col]}, axis=1
         )
-    logger.info(f"✅ Dataset ready for evaluation: {df.shape[0]} rows")
+    logger.info(f"✅ Dataset ready for evaluation: {prep_df.shape[0]} rows")
+    return prep_df
+
+
+def run(args: BaseModel, tracking=None, **kwargs):
+    """Evaluate completions from a dataset using MLflow scorers."""
+    # Imports inside the function to avoid dependencies at import time
+
+    logger.info("Starting pipeline dataset-evaluate...")
+    logger.debug(f"with args = {args}")
+
+    # Parse scorers from comma-separated string
+    scorers_fns = get_scorers_fns(args)
+
+    # Load and prepare dataset
+    container = getattr(args, "container", "llm-completions")
+    df = load_from_storage(args.dataset_name, container=container).to_pandas()
+    logger.info(f"✅ Dataset loaded: {df.shape[0]} rows")
+    df = prepare_df(df, args)
 
     # Use tracking config if available
     project_name = "Default"
@@ -57,6 +76,7 @@ def run(args: BaseModel, tracking=None, **kwargs):
         project_name = tracking.project_name
         active_model = tracking.set_active_model
 
+    # Run mlflow evaluation
     mlflow_set_experiment(experiment_name=project_name)
     mlflow_start(args.model_name, "evaluation")
     mlflow.genai.evaluate(df, scorers=scorers_fns, model_id=active_model)

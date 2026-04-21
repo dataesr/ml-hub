@@ -56,7 +56,9 @@ def mlflow_log_dataset(dataset_name: str, dataset: Dataset, dataset_split: str |
         mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
         logger.debug(f"Logged dataset {dataset_name} from {dataset_source.path}")
     else:
-        dataset_source = FileSystemDatasetSource.from_dict({"uri": f"s3://{os.path.join(DATASETS_CONTAINER, dataset_name)}"})
+        dataset_source = FileSystemDatasetSource.from_dict(
+            {"uri": f"s3://{os.path.join(DATASETS_CONTAINER, dataset_name)}"}
+        )  # ty:ignore[call-abstract-method]
         mlflow_dataset = MetaDataset(source=dataset_source, name=name)
         mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
         logger.debug(f"Logged dataset {dataset_name} from {dataset_source.uri}")

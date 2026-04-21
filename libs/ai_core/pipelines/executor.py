@@ -148,7 +148,7 @@ def run_pipeline(config: PipelineConfig, args_dict: Dict[str, Any]) -> Any:
     High-level pipeline execution: validate args and dispatch to local or cloud.
     """
     # Build and validate args
-    ArgsModel = config.build_args_model()
+    ArgsModel = config._build_args_model()
     args = ArgsModel.model_validate(args_dict)
 
     if config.environment == "local":

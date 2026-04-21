@@ -139,8 +139,7 @@ class PipelineConfig(BaseModel):
         """
         Dynamically build a Pydantic BaseModel from the inputs spec.
         """
-        fields: Dict[str, Tuple[Any, Any]] = {}
-        fields = {"args": (self._build_args_model(), Field(title="Pipeline arguments"))}
+        fields: Dict[str, Tuple[Any, Any]] = {"args": (self._build_args_model(), Field(title="Pipeline arguments"))}
         if self.cloud:
             fields["cloud"] = (self._build_cloud_model(), Field(title="Cloud configuration", default=None))
         if self.tracking:
