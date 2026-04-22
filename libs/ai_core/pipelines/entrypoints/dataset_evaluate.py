@@ -46,9 +46,7 @@ def prepare_df(df, args):
     prep_df["expectations"] = prep_df["expectations"].apply(lambda x: {"expected_response": x})
     prep_df["outputs"] = prep_df["outputs"].apply(lambda x: x.strip() if isinstance(x, str) else x)
     if id_col in df.columns:
-        prep_df["expectations"] = prep_df[[id_col, "expectations"]].apply(
-            lambda row: {**row["expectations"], "doc_id": row[id_col]}, axis=1
-        )
+        prep_df["inputs"] = prep_df[[id_col, "inputs"]].apply(lambda row: {**row["inputs"], "doc_id": row[id_col]}, axis=1)
     logger.info(f"✅ Dataset ready for evaluation: {prep_df.shape[0]} rows")
     return prep_df
 
@@ -79,7 +77,8 @@ def run(args: BaseModel, tracking=None, **kwargs):
     # Run mlflow evaluation
     mlflow_set_experiment(experiment_name=project_name)
     mlflow_start(args.model_name, "evaluation")
-    mlflow.genai.evaluate(df, scorers=scorers_fns, model_id=active_model)
+    eval_results = mlflow.genai.evaluate(df, scorers=scorers_fns, model_id=active_model)
+    logger.debug(f"Evaluation results: {eval_results.metrics}")
     mlflow_end()
 
     logger.info("Pipeline completed.")

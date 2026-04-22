@@ -1,16 +1,8 @@
 from typing import Any, Literal
-from pydantic import BaseModel, Field
-from enum import Enum
-from mlflow.genai import scorer, Scorer, scorers
+from mlflow.genai import Scorer
+from mlflow.genai.scorers import scorer
 from mlflow.entities import Feedback
-from ai_core.tracking.scorers.helpers import (
-    dict_similarity,
-    Similarity,
-    fuzzy_similarity,
-    exact_similarity,
-    greedy_match,
-    weighted_score,
-)
+from ai_core.tracking.scorers.helpers import dict_similarity, Similarity, fuzzy_similarity, exact_similarity
 from ai_core.utils import formatters
 from ai_core.utils.logger import get_logger
 
@@ -62,67 +54,7 @@ logger = get_logger(__name__)
 #     ]
 #   },
 
-CATEGORIES = ["funders", "projects", "infrastructures", "private_companies"]
-
-# Weight of each field when computing per-entity field accuracy
-FUNDER_FIELD_WEIGHTS: dict[str, float] = {
-    "canonical_name": 0.30,
-    "funder_short": 0.15,
-    "country": 0.15,
-    "grant_ids": 0.30,
-    "programs": 0.10,
-}
-
-PROJECT_FIELD_WEIGHTS: dict[str, float] = {
-    "name": 0.40,
-    "funder": 0.30,
-    "grant_id": 0.30,
-}
-
-INFRASTRUCTURE_FIELD_WEIGHTS: dict[str, float] = {
-    "name": 0.50,
-    "type": 0.30,
-    "resource_id": 0.20,
-}
-
-PERSON_FIELD_WEIGHTS: dict[str, float] = {
-    "name": 0.40,
-    "role": 0.40,
-    "affiliation": 0.20,
-}
-
-COMPANY_FIELD_WEIGHTS: dict[str, float] = {
-    "name": 0.50,
-    "role": 0.50,
-}
-
-WEIGHTS_MAPPING = {
-    "funders": FUNDER_FIELD_WEIGHTS,
-    "projects": PROJECT_FIELD_WEIGHTS,
-    "infrastructures": INFRASTRUCTURE_FIELD_WEIGHTS,
-    "private_companies": COMPANY_FIELD_WEIGHTS,
-}
-
-
-class ErrorType(str, Enum):
-    MISSED_ENTITY = "missed_entity"  # gold entity not predicted
-    HALLUCINATED_ENTITY = "hallucinated_entity"  # predicted entity not in gold
-    WRONG_CANONICAL = "wrong_canonical"  # funders: canonical_name wrong
-    WRONG_COUNTRY = "wrong_country"  # funders: country wrong
-    MISSED_GRANT = "missed_grant"  # grant ID present in gold but absent in pred
-    EXTRA_GRANT = "extra_grant"  # grant ID in pred but not in gold
-    WRONG_PROGRAM = "wrong_program"  # program missed or wrong
-    WRONG_ROLE = "wrong_role"  # persons/companies: role wrong
-    WRONG_TYPE = "wrong_type"  # infrastructure: type wrong
-    WRONG_FIELD = "wrong_field"  # generic field mismatch
-
-
-class EvalError(BaseModel):
-    error_type: ErrorType
-    category: str  # e.g. "funders", "projects"
-    doc_id: str
-    details: str
-
+NA_ENTITIES = Exception("NO ENTITIES")
 
 def _format_data(data: Any, format: Literal["json", "tsv"] = "json") -> dict[str, Any]:
     try:
@@ -134,63 +66,6 @@ def _format_data(data: Any, format: Literal["json", "tsv"] = "json") -> dict[str
         return formatter_fn(data)
     except Exception as error:
         raise Exception(f"Error while formatting data as {format}: {error}")
-
-
-def funders_similarity(pred: dict[str, Any], gold: dict[str, Any]) -> float | None:
-    """Returns a match score 0-1 between two funder dicts"""
-    return dict_similarity(
-        pred,
-        gold,
-        similarity_mapping={
-            "canonical_name": fuzzy_similarity,
-            "funder_short": exact_similarity,
-            "mention": fuzzy_similarity,
-        },
-    )
-
-
-def projects_similarity(pred: dict, gold: dict) -> float | None:
-    """Returns a match score 0-1 between two project dicts"""
-    return dict_similarity(
-        pred,
-        gold,
-        similarity_mapping={
-            "name": fuzzy_similarity,
-            "mention": fuzzy_similarity,
-        },
-    )
-
-
-def infrastructures_similarity(pred: dict, gold: dict) -> float | None:
-    """Returns a match score 0-1 between two infrastructure dicts"""
-    return dict_similarity(
-        pred,
-        gold,
-        similarity_mapping={
-            "name": fuzzy_similarity,
-            "mention": fuzzy_similarity,
-        },
-    )
-
-
-def companies_similarity(pred: dict, gold: dict) -> float | None:
-    """Returns a match score 0-1 between two private company dicts"""
-    return dict_similarity(
-        pred,
-        gold,
-        similarity_mapping={
-            "name": fuzzy_similarity,
-            "mention": fuzzy_similarity,
-        },
-    )
-
-
-SIMILARITY_FUNCTIONS = {
-    "funders": funders_similarity,
-    "projects": projects_similarity,
-    "infrastructures": infrastructures_similarity,
-    "private_companies": companies_similarity,
-}
 
 
 # def score_funder_fields(pred: dict, gold: dict) -> dict[str, float]:
@@ -414,77 +289,101 @@ SIMILARITY_FUNCTIONS = {
 
 
 def eval_funders(pred: dict[str, Any], gold: dict[str, Any]) -> Similarity:
-    pred_funders = pred.get("funders") or []
-    gold_funders = gold.get("funders") or []
+    pred_funders = pred.get("funders", [])
+    gold_funders = gold.get("funders", [])
+
+    def funders_similarity(pred: dict[str, Any], gold: dict[str, Any]) -> float | None:
+        """Returns a match score 0-1 between two funder dicts"""
+        return dict_similarity(
+            pred,
+            gold,
+            similarity_mapping={
+                "canonical_name": fuzzy_similarity,
+                "funder_short": exact_similarity,
+                "mention": fuzzy_similarity,
+            },
+        )
 
     return Similarity(pred_funders, gold_funders, similarity_fn=funders_similarity)
 
 
-def eval_document(pred: dict[str, Any], gold: dict[str, Any]) -> dict[str, Any]:
+def eval_projects(pred: dict[str, Any], gold: dict[str, Any]) -> Similarity:
+    pred_projects = pred.get("projects", [])
+    gold_projects = gold.get("projects", [])
+
+    def projects_similarity(pred: dict, gold: dict) -> float | None:
+        """Returns a match score 0-1 between two project dicts"""
+        return dict_similarity(
+            pred,
+            gold,
+            similarity_mapping={
+                "name": fuzzy_similarity,
+                "mention": fuzzy_similarity,
+            },
+        )
+
+    return Similarity(pred_projects, gold_projects, similarity_fn=projects_similarity)
+
+
+def eval_infrastructures(pred: dict[str, Any], gold: dict[str, Any]) -> Similarity:
+    pred_infra = pred.get("infrastructures", [])
+    gold_infra = gold.get("infrastructures", [])
+
+    def infrastructures_similarity(pred: dict, gold: dict) -> float | None:
+        """Returns a match score 0-1 between two infrastructure dicts"""
+        return dict_similarity(
+            pred,
+            gold,
+            similarity_mapping={
+                "name": fuzzy_similarity,
+                "mention": fuzzy_similarity,
+            },
+        )
+
+    return Similarity(pred_infra, gold_infra, similarity_fn=infrastructures_similarity)
+
+
+def eval_private_companies(pred: dict[str, Any], gold: dict[str, Any]) -> Similarity:
+    pred_companies = pred.get("private_companies", [])
+    gold_companies = gold.get("private_companies", [])
+
+    def companies_similarity(pred: dict, gold: dict) -> float | None:
+        """Returns a match score 0-1 between two private company dicts"""
+        return dict_similarity(
+            pred,
+            gold,
+            similarity_mapping={
+                "name": fuzzy_similarity,
+                "mention": fuzzy_similarity,
+            },
+        )
+
+    return Similarity(pred_companies, gold_companies, similarity_fn=companies_similarity)
+
+
+def eval_trace(outputs: str, expectations: dict[str, Any]) -> dict[str, Similarity]:
+    pred = _format_data(outputs, format="json")
+    gold = _format_data(expectations["expected_response"], format="json")
     results = {}
+
+    if pred is None or gold is None:
+        logger.error("Failed to parse outputs or expectations (empty)")
+        return results
 
     # funders
     results["funders"] = eval_funders(pred, gold)
     # results["grant_ids"] = eval_grant_ids(pred, gold)
-    # results["programs"] = eval_programs(pred, gold)
+
+    # projects
+    results["projects"] = eval_projects(pred, gold)
 
     # # infrastructures
-    # results["infrastructures"] = eval_infra(pred, gold)
+    results["infrastructures"] = eval_infrastructures(pred, gold)
 
     # # private companies
-    # results["private_companies"] = eval_companies(pred, gold)
+    results["private_companies"] = eval_private_companies(pred, gold)
 
     return results
-
-
-def eval_row(outputs: str, expectations: dict[str, Any]) -> dict[str, Similarity]:
-    pred = _format_data(outputs, format="json")
-    gold = _format_data(expectations["expected_response"], format="json")
-    if pred is None or gold is None:
-        logger.error("Failed to parse outputs or expectations (empty)")
-        return {}
-    return eval_document(pred, gold)
-
-
-# class CorpusResult(BaseModel):
-#     per_category: dict[str, CategoryResult] = Field(default_factory=dict)
-#     all_errors: list[EvalError] = Field(default_factory=list)
-
-#     def macro_f1(self) -> float:
-#         # Only include categories that have at least one entity in gold or pred
-#         f1s = [r.f1 for r in self.per_category.values() if (r.tp + r.fp + r.fn) > 0]
-#         return sum(f1s) / len(f1s) if f1s else 1.0
-
-#     def micro_f1(self) -> float:
-#         tp = sum(r.tp for r in self.per_category.values())
-#         fp = sum(r.fp for r in self.per_category.values())
-#         fn = sum(r.fn for r in self.per_category.values())
-#         p = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-#         r = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-#         return 2 * p * r / (p + r) if (p + r) > 0 else 0.0
-
-#     def error_summary(self) -> dict[str, int]:
-#         counts: dict[str, int] = {}
-#         for e in self.all_errors:
-#             counts[e.error_type.value] += 1
-#         return dict(sorted(counts.items(), key=lambda x: -x[1]))
-
-
-# def eval_aggregate(doc_results: list[dict[str, CategoryResult]]) -> CorpusResult:
-#     corpus = CorpusResult()
-#     # Accumulate per-category
-#     accum: dict[str, CategoryResult] = {cat: CategoryResult(category=cat) for cat in CATEGORIES}
-
-#     for doc in doc_results:
-#         for cat, res in doc.items():
-#             accum[cat].tp += res.tp
-#             accum[cat].fp += res.fp
-#             accum[cat].fn += res.fn
-#             accum[cat].field_scores.extend(res.field_scores)
-#             corpus.all_errors.extend(res.errors)
-
-#     corpus.per_category = accum
-#     return corpus
 
 
 # def trace_attributes(
@@ -521,77 +420,93 @@ def eval_row(outputs: str, expectations: dict[str, Any]) -> dict[str, Similarity
 #     return attrs
 
 
-def build_acknowledgement_scorers() -> list[Scorer]:
+def entity_scorer(entity: str, outputs: str, expectations: dict[str, Any]) -> list[Feedback]:
+    feedbacks = []
 
-    @scorer()
-    def funders_precision(outputs: str, expectations: dict[str, Any]) -> Feedback:
-        similarity = eval_row(outputs, expectations)["funders"]
-        precision = similarity.precision()
-        if precision is None:
-            return Feedback(
-                name="funders_precision", value=None, rationale="No funders in gold and pred, precision undefined"
+    similarity = eval_trace(outputs, expectations)[entity]
+    precision = similarity.precision()
+    recall = similarity.recall()
+    matches = [matched[0].get("mention", "?") for matched in similarity.matched]
+    hallucinations = [unmatched.get("mention", "?") for unmatched in similarity.unmatched_preds]
+    misses = [unmatched.get("mention", "?") for unmatched in similarity.unmatched_golds]
+
+    feedbacks.append(
+        Feedback(
+            name=f"{entity}_score",
+            value=len(matches) / len(similarity.golds) if similarity.golds else 1.0,
+            rationale=f"{len(matches)}/{len(similarity.golds)} correct, {len(hallucinations)} hallucinated, {len(misses)} missed {entity}",
+            metadata={"matched": ",".join(matches)} if matches else {},
+        )
+    )
+
+    if precision is not None:
+        feedbacks.append(
+            Feedback(
+                name=f"{entity}_precision",
+                value=round(precision, 4),
+                rationale=f"{len(hallucinations)} hallucinated {entity}",
+                metadata={"hallucinations": ",".join(hallucinations)} if hallucinations else {},
             )
-        return Feedback(
-            name="funders_precision", value=round(precision, 4), rationale=f"Hallucinated: {similarity.unmatched_preds}"
         )
 
-    @scorer()
-    def funders_recall(outputs: str, expectations: dict[str, Any]) -> Feedback:
-        similarity = eval_row(outputs, expectations)["funders"]
-        recall = similarity.recall()
-        if recall is None:
-            return Feedback(name="funders_recall", value=None, rationale="No funders in gold and pred, recall undefined")
-        return Feedback(name="funders_recall", value=round(recall, 4), rationale=f"Missed: {similarity.unmatched_golds}")
+    if recall is not None and similarity.golds:  # misleading recall if no golds
+        feedbacks.append(
+            Feedback(
+                name=f"{entity}_recall",
+                value=round(recall, 4),
+                rationale=f"{len(misses)} missed {entity}",
+                metadata={"misses": ",".join(misses)} if misses else {},
+            )
+        )
 
-    return [funders_precision, funders_recall]
+    return feedbacks
 
 
-# def build_acknowledgement_scorers() -> list[Scorer]:
-#     scorers: list[Scorer] = []
-#     for category in CATEGORIES:
+def scorer_precision(entity: str, outputs: str, expectations: dict[str, Any]) -> Feedback:
+    """Returns precision for the given entity, along with a rationale listing any hallucinated items (unmatched preds)"""
+    similarity = eval_trace(outputs, expectations)[entity]
+    precision = similarity.precision()
+    hallucinations = [unmatched.get("mention", "No mention") for unmatched in similarity.unmatched_preds]
+    if precision is None:
+        return Feedback(name=f"{entity}_precision", error=NA_ENTITIES, rationale=f"No {entity} found in gold and pred")
+    if precision == 0 and not hallucinations:
+        return Feedback(name=f"{entity}_precision", value=precision, rationale="No predictions")
+    rationale = f"Hallucinated: {', '.join(hallucinations)}" if hallucinations else "No hallucinations"
+    return Feedback(name=f"{entity}_precision", value=round(precision, 4), rationale=rationale)
 
-#         @scorer(name=f"{category}_precision")
-#         def _precision(outputs: str, expectations: dict[str, Any]) -> float:
-#             return round(eval_row(outputs, expectations)[category].precision(), 4)
 
-#         @scorer(name=f"{category}_recall")
-#         def _recall(outputs: str, expectations: dict[str, Any]) -> float:
-#             return round(eval_row(outputs, expectations)[category].recall(), 4)
+def scorer_recall(entity: str, outputs: str, expectations: dict[str, Any]) -> Feedback:
+    """Returns recall for the given entity, along with a rationale listing any missed items (unmatched golds)"""
+    similarity = eval_trace(outputs, expectations)[entity]
+    recall = similarity.recall()
+    misses = [unmatched.get("mention", "No mention") for unmatched in similarity.unmatched_golds]
+    if recall is None:
+        return Feedback(name=f"{entity}_recall", error=NA_ENTITIES, rationale=f"No {entity} found in gold and pred")
+    if recall == 0 and not misses:
+        return Feedback(name=f"{entity}_recall", value=recall, rationale="No predictions")
+    rationale = f"Missed: {', '.join(misses)}" if misses else "No misses"
+    return Feedback(name=f"{entity}_recall", value=round(recall, 4), rationale=rationale)
 
-#         @scorer(name=f"{category}_f1")
-#         def _f1(outputs: str, expectations: dict[str, Any]) -> float:
-#             return round(eval_row(outputs, expectations)[category].f1(), 4)
 
-#         @scorer(name=f"{category}_field_accuracy")
-#         def _field_accuracy(outputs: str, expectations: dict[str, Any]) -> float:
-#             return round(eval_row(outputs, expectations)[category].avg_field_accuracy(), 4)
+def build_acknowledgement_scorers() -> list[Scorer]:
 
-#         scorers.extend([_precision, _recall, _f1, _field_accuracy])
+    @scorer(name="funders_score")
+    def funders_scorer(outputs: str, expectations: dict[str, Any]) -> list[Feedback]:
+        return entity_scorer("funders", outputs, expectations)
 
-#     # @scorer(name="micro_f1")
-#     # def _micro_f1(outputs: str, expectations: dict[str, Any]) -> float:
-#     #     res = eval_row(outputs, expectations)
-#     #     tp = sum(r.tp for r in res.values())
-#     #     fp = sum(r.fp for r in res.values())
-#     #     fn = sum(r.fn for r in res.values())
-#     #     p = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-#     #     r = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-#     #     return round(2 * p * r / (p + r) if (p + r) > 0 else 0.0, 4)
+    @scorer(name="projects_score")
+    def projects_scorer(outputs: str, expectations: dict[str, Any]) -> list[Feedback]:
+        return entity_scorer("projects", outputs, expectations)
 
-#     @scorer(name="funders_grant_id_recall")
-#     def _grant_recall(outputs: str, expectations: dict[str, Any]) -> float:
-#         """grant IDs can't be hallucinated from priors."""
-#         pred = _format_data(outputs, format="json")
-#         gold = _format_data(expectations, format="json")
-#         gold_grants = [g for f in (gold.get("funders") or []) for g in (f.get("grant_ids") or [])]
-#         pred_grants = [g for f in (pred.get("funders") or []) for g in (f.get("grant_ids") or [])]
-#         if not gold_grants:
-#             return 1.0
-#         hits = sum(1 for g in gold_grants if any(g.strip().lower() == p.strip().lower() for p in pred_grants))
-#         return round(hits / len(gold_grants), 4)
+    @scorer(name="infrastructures_score")
+    def infrastructures_scorer(outputs: str, expectations: dict[str, Any]) -> list[Feedback]:
+        return entity_scorer("infrastructures", outputs, expectations)
 
-#     scorers.extend([_micro_f1, _grant_recall])
-#     return scorers
+    @scorer(name="private_companies_score")
+    def private_companies_scorer(outputs: str, expectations: dict[str, Any]) -> list[Feedback]:
+        return entity_scorer("private_companies", outputs, expectations)
+
+    return [funders_scorer, projects_scorer, infrastructures_scorer, private_companies_scorer]
 
 
 ACKNOWLEDGEMENT_SCORERS = build_acknowledgement_scorers()

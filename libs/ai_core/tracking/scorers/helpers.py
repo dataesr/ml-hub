@@ -139,11 +139,10 @@ def dict_similarity(
     scores = []
     if not similarity_mapping:
         logger.error("No similarity mapping provided, skipping dict similarity")
+        return None
 
-    keys = similarity_mapping.keys()
-    for key in keys:
+    for key, sim_fn in similarity_mapping.items():
         if pred_dict.get(key) and gold_dict.get(key):
-            sim_fn = similarity_mapping[key]
             scores.append(sim_fn(pred_dict[key], gold_dict[key]))
 
     return max(scores) if scores else 0.0
