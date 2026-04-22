@@ -4,9 +4,10 @@ Evaluate model completions using MLflow scorers.
 """
 
 from pydantic import BaseModel
+import pandas as pd
 from ai_core.datasets.load import load_from_storage
 from ai_core.tracking.client import mlflow_set_experiment
-from ai_core.tracking.log import mlflow_start, mlflow_end
+from ai_core.tracking.log import mlflow_start, mlflow_end, mlflow_log_dict
 from ai_core.tracking.scorers import SCORERS_MAPPING
 from ai_core.utils.logger import get_logger
 import mlflow
@@ -30,7 +31,7 @@ def get_scorers_fns(args) -> list[Scorer]:
     return scorers_fns
 
 
-def prepare_df(df, args):
+def prepare_inputs(df, args) -> pd.DataFrame:
     input_col = getattr(args, "input_col", "input")
     expectation_col = getattr(args, "expectation_col", "completions")
     output_col = getattr(args, "output_col", "outputs")
@@ -51,6 +52,24 @@ def prepare_df(df, args):
     return prep_df
 
 
+def prepare_output(df) -> pd.DataFrame:
+    scores_df = df[["trace_id", "request", "response", "expected_response/value", "assessments"]].copy()
+    scores_df["assessments"] = scores_df["assessments"].apply(
+        lambda assessments: [
+            {
+                "name": a.get("assessment_name"),
+                "value": a.get("feedback", {}).get("value"),
+                "rationale": a.get("rationale"),
+                "metadata": {k: v for k, v in a.get("metadata", {}).items() if k not in ["mlflow.assessment.sourceRunId"]},
+            }
+            for a in assessments
+            if a.get("assessment_name") not in ["expected_resposne"]
+        ]
+    )
+    scores_df = scores_df.rename(columns={"expected_response/value": "expected_response", "assessments": "scores"})
+    return scores_df.set_index("trace_id", drop=True)
+
+
 def run(args: BaseModel, tracking=None, **kwargs):
     """Evaluate completions from a dataset using MLflow scorers."""
     # Imports inside the function to avoid dependencies at import time
@@ -65,7 +84,7 @@ def run(args: BaseModel, tracking=None, **kwargs):
     container = getattr(args, "container", "llm-completions")
     df = load_from_storage(args.dataset_name, container=container).to_pandas()
     logger.info(f"✅ Dataset loaded: {df.shape[0]} rows")
-    df = prepare_df(df, args)
+    df = prepare_inputs(df, args)
 
     # Use tracking config if available
     project_name = "Default"
@@ -78,7 +97,8 @@ def run(args: BaseModel, tracking=None, **kwargs):
     mlflow_set_experiment(experiment_name=project_name)
     mlflow_start(args.model_name, "evaluation")
     eval_results = mlflow.genai.evaluate(df, scorers=scorers_fns, model_id=active_model)
-    logger.debug(f"Evaluation results: {eval_results.metrics}")
+    scores_df = prepare_output(eval_results.result_df)
+    mlflow_log_dict(scores_df.to_dict(orient="index"), f"scores/{eval_results.run_id}.json")
     mlflow_end()
 
     logger.info("Pipeline completed.")

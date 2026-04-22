@@ -1,5 +1,5 @@
 from rapidfuzz import fuzz
-from typing import Any
+from typing import Any, TypeVar, Callable
 from pydantic import BaseModel, Field
 from ai_core.utils.logger import get_logger
 
@@ -7,21 +7,76 @@ logger = get_logger(__name__)
 
 SIMILARITY_THRESHOLD = 0.85
 
+T = TypeVar("T")
+
+# class Similarity(BaseModel):
+#     preds: list = Field(default_factory=list)
+#     golds: list = Field(default_factory=list)
+#     matched: list[tuple] = Field(default_factory=list)
+#     unmatched_preds: list = Field(default_factory=list)
+#     unmatched_golds: list = Field(default_factory=list)
+#     tp: int = 0
+#     fp: int = 0
+#     fn: int = 0
+
+#     def __init__(
+#         self,
+#         preds: list[T],
+#         golds: list[T],
+#         matching_fn: Callable[[list[T], list[T]], tuple[list[tuple[T, T]], list[T], list[T]]],
+#     ):
+#         super().__init__(preds=preds, golds=golds)
+#         self.matched, self.unmatched_preds, self.unmatched_golds = matching_fn(preds, golds)
+#         self.tp = len(self.matched)
+#         self.fp = len(self.unmatched_preds)
+#         self.fn = len(self.unmatched_golds)
+
+#     def precision(self) -> float | None:
+#         if not self.preds and not self.golds:
+#             return None
+#         return self.tp / (self.tp + self.fp) if (self.tp + self.fp) > 0 else 0.0
+
+#     def recall(self) -> float | None:
+#         if not self.preds and not self.golds:
+#             return None
+#         return self.tp / (self.tp + self.fn) if (self.tp + self.fn) > 0 else 0.0
+
+#     def f1(self) -> float | None:
+#         if not self.preds and not self.golds:
+#             return None
+#         p = self.precision()
+#         r = self.recall()
+#         if p is None or r is None:
+#             return None
+#         f1 = 2 * p * r / (p + r) if (p + r) > 0 else 0.0
+#         return f1
+
 
 class Similarity(BaseModel):
     preds: list = Field(default_factory=list)
     golds: list = Field(default_factory=list)
-    matched: list[tuple[str, str]] = Field(default_factory=list)
-    unmatched_preds: list[str] = Field(default_factory=list)
-    unmatched_golds: list[str] = Field(default_factory=list)
+    matched: list[tuple] = Field(default_factory=list)
+    unmatched_preds: list = Field(default_factory=list)
+    unmatched_golds: list = Field(default_factory=list)
     tp: int = 0
     fp: int = 0
     fn: int = 0
 
-    def __init__(self, preds: list, golds: list, similarity_fn=None, threshold: float = SIMILARITY_THRESHOLD):
-        super().__init__(preds=preds, golds=golds)
-        sim_fn = similarity_fn or exact_similarity
-        self.matched, self.unmatched_preds, self.unmatched_golds = greedy_match(preds, golds, sim_fn, threshold)
+    def __init__(
+        self,
+        matched: list[tuple[T, T]],
+        unmatched_preds: list[T],
+        unmatched_golds: list[T],
+        preds: list[T] | None = None,
+        golds: list[T] | None = None,
+    ):
+        super().__init__(
+            matched=matched,
+            unmatched_preds=unmatched_preds,
+            unmatched_golds=unmatched_golds,
+            preds=preds or [],
+            golds=golds or [],
+        )
         self.tp = len(self.matched)
         self.fp = len(self.unmatched_preds)
         self.fn = len(self.unmatched_golds)
@@ -34,7 +89,7 @@ class Similarity(BaseModel):
     def recall(self) -> float | None:
         if not self.preds and not self.golds:
             return None
-        return self.tp / (self.tp + self.fn) if (self.tp + self.fn) > 0 else 0.0
+        return self.tp / (self.tp + self.fn) if (self.tp + self.fn) > 0 else 1.0
 
     def f1(self) -> float | None:
         if not self.preds and not self.golds:
@@ -63,67 +118,6 @@ def exact_similarity(a: Any, b: Any) -> float:
     return 1.0 if str(a).strip().lower() == str(b).strip().lower() else 0.0
 
 
-def list_matching(
-    pred_list: list[str], gold_list: list[str], similarity_fn=None, threshold: float = SIMILARITY_THRESHOLD
-) -> tuple[list[tuple[str, str]], list[str], list[str]]:
-    if not pred_list and not gold_list:
-        return [], [], []
-
-    sim_fn = similarity_fn or exact_similarity
-
-    scores: list[tuple[float, int, int]] = []
-    for i, pred in enumerate(pred_list):
-        for j, gold in enumerate(gold_list):
-            score = sim_fn(pred, gold)
-            if score >= threshold:
-                scores.append((score, i, j))
-
-    # Sort by similarity score in descending order
-    scores.sort(key=lambda x: -x[0])
-
-    used_preds: set[int] = set()
-    used_golds: set[int] = set()
-    matched: list[tuple[str, str]] = []
-
-    for _, i, j in scores:
-        if i not in used_preds and j not in used_golds:
-            matched.append((pred_list[i], gold_list[j]))
-            used_preds.add(i)
-            used_golds.add(j)
-
-    unmatched_preds = [pred for i, pred in enumerate(pred_list) if i not in used_preds]
-    unmatched_golds = [gold for j, gold in enumerate(gold_list) if j not in used_golds]
-
-    return matched, unmatched_preds, unmatched_golds
-
-
-def list_similarity(
-    pred_list: list[str],
-    gold_list: list[str],
-    similarity_fn=None,
-    threshold: float = SIMILARITY_THRESHOLD,
-) -> Any:
-    """
-    Similarity (precision, recall, f1, unmatched_pred, unmatched_gold) between two lists of strings (order-insensitive).
-    Uses similarity_fn to compare individual elements (defaults to exact_similarity).
-    """
-    if not gold_list and not pred_list:
-        return None, None, None, [], []
-
-    sim_fn = similarity_fn or exact_similarity
-
-    matched, unmatched_preds, unmatched_golds = list_matching(pred_list, gold_list, sim_fn, threshold)
-    tp = len(matched)
-    fp = len(unmatched_preds)
-    fn = len(unmatched_golds)
-
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    f1 = 0 if precision + recall == 0 else 2 * precision * recall / (precision + recall)
-
-    return precision, recall, f1, unmatched_preds, unmatched_golds
-
-
 def dict_similarity(
     pred_dict: dict[str, Any],
     gold_dict: dict[str, Any],
@@ -149,11 +143,11 @@ def dict_similarity(
 
 
 def greedy_match(
-    preds: list[dict[str, Any]],
-    golds: list[dict[str, Any]],
-    similarity_fn,
+    preds: list[T],
+    golds: list[T],
+    similarity_fn: Callable[[T, T], float | None],
     threshold: float = SIMILARITY_THRESHOLD,
-) -> tuple[list[tuple[dict, dict]], list[dict], list[dict]]:
+) -> tuple[list[tuple[T, T]], list[T], list[T]]:
     """
     Greedy bipartite matching (highest similarity first).
 
@@ -170,7 +164,7 @@ def greedy_match(
     for i, pred in enumerate(preds):
         for j, gold in enumerate(golds):
             score = similarity_fn(pred, gold)
-            if score >= threshold:
+            if score and score >= threshold:
                 scores.append((score, i, j))
 
     # Sort by similarity score in descending order
@@ -178,7 +172,7 @@ def greedy_match(
 
     used_preds: set[int] = set()
     used_golds: set[int] = set()
-    matched: list[tuple[dict, dict]] = []
+    matched: list[tuple[T, T]] = []
 
     for _, i, j in scores:
         if i not in used_preds and j not in used_golds:
@@ -191,8 +185,49 @@ def greedy_match(
     return matched, unmatched_preds, unmatched_golds
 
 
-def weighted_score(scores: dict[str, float], weights: dict[str, float]) -> float:
-    total_w = sum(weights.get(k, 0) for k in scores)
-    if total_w == 0:
-        return 0.0
-    return sum(scores[k] * weights.get(k, 0) for k in scores) / total_w
+def dict_matching(
+    pred_dicts: list[dict[str, Any]],
+    gold_dicts: list[dict[str, Any]],
+    similarity_mapping: dict[str, Any],
+    matching_threshold: float = SIMILARITY_THRESHOLD,
+) -> tuple[list[tuple[dict[str, Any], dict[str, Any]]], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Matching between two lists of dicts (order-insensitive) based on similarity_mapping for each key."""
+
+    def _similarity(p: dict[str, Any], g: dict[str, Any]) -> float | None:
+        return dict_similarity(p, g, similarity_mapping)
+
+    return greedy_match(pred_dicts, gold_dicts, similarity_fn=_similarity, threshold=matching_threshold)
+
+
+def field_list_matching(
+    matching_parents: list[tuple[dict[str, Any], dict[str, Any]]], field: str, parent_name_field: str = "name"
+) -> tuple[list[tuple[Any, Any]], list[Any], list[Any]]:
+    """Matching between two lists of str (order-insensitive) based on a specific field in the dicts."""
+    field_list: list[tuple[str, set, set]] = []
+    for pred, gold in matching_parents:
+        _parent = gold.get(parent_name_field, "?")
+        _pred = pred.get(field, [])
+        _gold = gold.get(field, [])
+        if not _pred and not _gold:
+            continue
+        field_list.append((_parent, set(_pred), set(_gold)))
+
+    matched: list[tuple[str, set]] = []
+    unmatched_preds: list[tuple[str, set]] = []
+    unmatched_golds: list[tuple[str, set]] = []
+
+    for parent, pred, gold in field_list:
+        intersection = pred.intersection(gold)
+        pred_difference = pred.difference(gold)
+        gold_difference = gold.difference(pred)
+
+        if intersection:
+            matched.append((parent, intersection))
+
+        if pred_difference:
+            unmatched_preds.append((parent, pred_difference))
+
+        if gold_difference:
+            unmatched_golds.append((parent, gold_difference))
+
+    return matched, unmatched_preds, unmatched_golds

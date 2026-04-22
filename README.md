@@ -57,6 +57,9 @@ Docker images used for running pipelines on OVH AI cloud:
 Create your ML pipelines in the `libs/ai_core/pipelines/pipelines/` folder using the pipeline registry decorator. Each pipeline defines its input schema, configuration, and execution logic. Once registered, pipelines become available through the API and can be executed either **locally** or on **OVH AI cloud infrastructure**. The execution mode is determined by the pipeline configuration.
 See `examples/pipelines.ipynb` for how to use pipelines API.
 
+Running local:
+`uv run --env-file app/backend/.env python -m ai_core.pipelines.runner --config examples/eval_ack.yaml`
+
 ### Experiment Tracking
 
 All pipeline runs are automatically tracked via **MLflow** integration. The API provides access to experiment projects and their associated runs, allowing you to browse training metrics, compare model performance, and review logged artifacts. Each run captures parameters, metrics, and outputs for full reproducibility.

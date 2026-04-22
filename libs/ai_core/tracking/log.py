@@ -89,6 +89,13 @@ def mlflow_log_artifact(local_path: str, artifact_path: str | None = None):
     mlflow.log_artifact(local_path=local_path, artifact_path=artifact_path)
 
 
+def mlflow_log_dict(dict: dict, artifact_path: str):
+    if not mlflow_is_enabled():
+        return
+
+    mlflow.log_dict(dict, artifact_file=artifact_path)
+
+
 def mlflow_log_model(model_name: str, model, tokenizer):
     if not mlflow_is_enabled():
         return
