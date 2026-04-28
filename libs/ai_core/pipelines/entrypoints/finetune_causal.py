@@ -8,16 +8,9 @@ from typing import no_type_check
 from pydantic import BaseModel
 from ai_core.datasets.load import load
 from ai_core.datasets.convert import construct_prompts
-from ai_core.datasets.utils import should_use_conversational_format
-from ai_core.configs.load import load_prompt_config
+from ai_core.datasets.utils import should_use_chat_format
 from ai_core.tracking.client import mlflow_is_enabled
-from ai_core.tracking.log import (
-    mlflow_log_dataset,
-    mlflow_start,
-    mlflow_end,
-    mlflow_log_tags,
-    mlflow_log_params,
-)
+from ai_core.tracking.log import mlflow_log_dataset, mlflow_start, mlflow_end
 from ai_core.models.write import merge_and_write
 from ai_core.models.push import push_model_to_hf
 from ai_core.utils.files import folder_create
@@ -42,7 +35,7 @@ def run(args: BaseModel, tracking=None, **kwargs):
     mlflow_start(
         args.model_name,
         run_type="training",
-        tags={"model_name": args.model_name, "dataset_name": args.dataset_name},
+        tags={"model_name": args.model_name, "dataset_name": args.dataset.path},
     )
 
     ### --- Setup ---
@@ -50,12 +43,6 @@ def run(args: BaseModel, tracking=None, **kwargs):
     output_dir = os.path.join(model_dir, "output")
     checkpoint_dir = os.path.join(output_dir, "checkpoints")
     finetuned_dir = os.path.join(output_dir, "finetuned")
-
-    ### --- Load prompts config ---
-    prompts_cfg = load_prompt_config(args.prompts_config, from_disk=True) if args.prompts_config else None
-    if prompts_cfg:
-        mlflow_log_tags({"prompts_config": args.prompts_config})
-        mlflow_log_params(prompts_cfg)
 
     ### --- Load model and tokenizer ---
     logger.info(f"Start loading model {args.model_name}")
@@ -93,18 +80,18 @@ def run(args: BaseModel, tracking=None, **kwargs):
     logger.info("✅ Model and tokenizer loaded")
 
     ### --- Load dataset ---
-    dataset = load(args.dataset_name, split=args.dataset_split)
-    mlflow_log_dataset(args.dataset_name, dataset, dataset_split=args.dataset_split)
+    dataset = load(args.dataset.path, split=args.dataset.split)
+    mlflow_log_dataset(args.dataset.path, dataset, dataset_split=args.dataset.split)
     logger.info("✅ Dataset loaded")
 
     ### --- Format prompts ---
     dataset = construct_prompts(
         dataset,
-        custom_instruction=prompts_cfg.get("instruction"),
-        custom_text_format=prompts_cfg.get("text_format"),
-        use_conversational_format=should_use_conversational_format(
-            dataset_format_arg=prompts_cfg.get("format"),
-            dataset_chat_template=tokenizer.chat_template,
+        custom_instruction=args.dataset.system_prompt,
+        custom_text_format=args.dataset.text_format,
+        use_conversational_format=should_use_chat_format(
+            config_format=args.dataset.format,
+            dataset_chat_template=args.dataset.chat_template or tokenizer.chat_template,
         ),
     )
 

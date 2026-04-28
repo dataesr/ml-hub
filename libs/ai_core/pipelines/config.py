@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 CONFIGS_DIR = Path(__file__).parent / "configs"
 
 
-def _parse_args_section(raw_args: Dict[str, Any]) -> Dict[str, ArgField]:
+def _parse_args_section(raw_args: Dict[str, Any]) -> Dict[str, ArgField | Dict[str, ArgField]]:
     """
     Parse the `args:` section from YAML into ArgField objects.
 
@@ -20,10 +20,13 @@ def _parse_args_section(raw_args: Dict[str, Any]) -> Dict[str, ArgField]:
     parsed = {}
     for name, spec in raw_args.items():
         if isinstance(spec, dict):
-            # If 'required' not explicitly set, infer from 'default' key presence
-            if "required" not in spec and "default" not in spec:
-                spec["required"] = True
-            parsed[name] = ArgField(**spec)
+            if "type" not in spec or not isinstance(spec["type"], str):
+                parsed[name] = _parse_args_section(spec)
+            else:
+                # If 'required' not explicitly set, infer from 'default' key presence
+                if "required" not in spec and "default" not in spec:
+                    spec["required"] = True
+                parsed[name] = ArgField(**spec)
         else:
             # Short-form: bare value is the default
             inferred_type = type(spec).__name__ if spec is not None else "str"

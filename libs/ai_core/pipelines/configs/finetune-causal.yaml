@@ -15,20 +15,26 @@ args:
     required: true
     description: "HuggingFace model name or path"
 
-  dataset_name:
-    type: str
-    required: true
-    description: "HuggingFace dataset name or local path"
+  dataset:
+    path:
+      type: str
+      required: true
+      description: "HuggingFace dataset name or local path"
 
-  dataset_split:
-    type: str
-    default: "train"
-    description: "Dataset split to use"
-
-  prompts_config:
-    type: str
-    default: null
-    description: "Name of the prompts YAML config (stored in configs/prompts/)"
+    split: 
+      type: str
+      default: "train"
+      description: "Dataset split to use for training"
+    
+    format:
+      type: str
+      default: null
+      description: "Format of the dataset ('chat' or 'text', if not specified it will be inferred from the prompts config or dataset structure)"
+    
+    text_format:
+      type: str
+      default: null
+      description: "Format the text prompts. Use {instruction}/{input} as key to be replaced"
 
   # LoRA parameters
   lora_r:

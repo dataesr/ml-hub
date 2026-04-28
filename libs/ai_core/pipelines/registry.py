@@ -32,6 +32,7 @@ def _load_all_configs() -> None:
             config = load_pipeline_config(yaml_file)
             _PIPELINE_REGISTRY[config.pipeline] = config
             logger.debug(f"Registered pipeline: {config.pipeline} (env={config.environment})")
+            logger.debug(f"{config=}")
         except Exception as error:
             logger.warning(f"Failed to load pipeline config {yaml_file.name}: {error}")
 

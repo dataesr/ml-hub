@@ -7,9 +7,8 @@ import os
 from typing import no_type_check
 from pydantic import BaseModel
 from datasets import Dataset
-from ai_core.configs.load import load_prompt_config
 from ai_core.datasets.load import load
-from ai_core.datasets.utils import get_prompts, should_use_conversational_format
+from ai_core.datasets.utils import get_prompts, should_use_chat_format
 from ai_core.datasets.convert import construct_one_prompt, construct_one_conversation
 from ai_core.utils.misc import timestamp
 from ai_core.tracking.client import mlflow
@@ -18,7 +17,6 @@ from ai_core.tracking.log import (
     mlflow_start,
     mlflow_end,
     mlflow_active_model,
-    mlflow_log_tags,
     mlflow_log_params,
     mlflow_log_artifact,
 )
@@ -41,16 +39,9 @@ def run(args: BaseModel, tracking=None, **kwargs):
     mlflow_start(
         args.model_name,
         run_type="inference",
-        tags={"model_name": args.model_name, "dataset_name": args.dataset_name},
+        tags={"model_name": args.model_name, "dataset_name": args.dataset.path},
     )
     mlflow_active_model()
-
-    ### --- Load prompts config ---
-    prompts_cfg = None
-    if args.prompts_config:
-        prompts_cfg = load_prompt_config(args.prompts_config, from_disk=True, disk_folder_path="configs")
-        mlflow_log_tags({"prompts_config": args.prompts_config})
-        mlflow_log_params(prompts_cfg)
 
     ### --- Load dataset ---
     dataset = load(args.dataset_name, split=args.dataset_split)
@@ -90,18 +81,17 @@ def run(args: BaseModel, tracking=None, **kwargs):
 
     ### --- Get prompts from dataset ---
     prompts = get_prompts(dataset)
-    use_conversation = should_use_conversational_format(prompts_cfg.get("format"), tokenizer.chat_template)
+    use_conversation = should_use_chat_format(args.dataset.format, args.dataset.chat_template or tokenizer.chat_template)
     prompts = [
-        (
-            tokenizer.apply_chat_template(
-                construct_one_conversation(prompt, system=prompts_cfg.get("instruction")),
+        tokenizer.apply_chat_template(
+            construct_one_conversation(
+                prompt,
+                system=args.dataset.system_prompt,
                 tokenize=False,
                 add_generation_prompt=True,
             )
             if use_conversation
-            else construct_one_prompt(
-                prompt, instruction=prompts_cfg.get("instruction"), text_format=prompts_cfg.get("text_format")
-            )
+            else construct_one_prompt(prompt, instruction=args.dataset.system_prompt, text_format=args.dataset.text_format)
         )
         for prompt in prompts
     ]

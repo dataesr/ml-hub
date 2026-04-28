@@ -46,7 +46,7 @@ class PipelineConfig(BaseModel):
     environment: Literal["cloud", "local"] = "cloud"
 
     # Pipeline arguments spec
-    args: Dict[str, ArgField] = Field(default_factory=dict)
+    args: Dict[str, ArgField | Dict[str, ArgField]] = Field(default_factory=dict)
 
     # Infrastructure & tracking
     cloud: Optional[CloudJobInfrastructure] = None
@@ -55,29 +55,38 @@ class PipelineConfig(BaseModel):
     # Internal: base config name (for inheritance)
     base: Optional[str] = None
 
-    def _build_args_model(self) -> Type[BaseModel]:
+    def _build_model_from_spec(self, spec: Dict[str, Any], model_name: str) -> Type[BaseModel]:
         """
-        Dynamically build a Pydantic BaseModel from the args spec.
-
-        Returns a model class where:
-        - Fields with `required: true` are mandatory
-        - Fields with a `default` value are optional
+        Recursively build a Pydantic BaseModel from a spec dict.
+        A field is considered nested if it has no 'type' key (it's a group of sub-fields).
         """
         fields: Dict[str, Tuple[Any, Any]] = {}
 
-        for name, field in self.args.items():
-            python_type = _PYTHON_TYPE_MAP.get(field.type, str)
+        for name, field in spec.items():
+            # --- Nested group: no 'type' key means it's a sub-model ---
+            logger.debug("Processing field '%s': %s", name, field)
+            if isinstance(field, dict) and ("type" not in field or not isinstance(field["type"], str)):
+                sub_model = self._build_model_from_spec(field, model_name=name.capitalize())
+                fields[name] = (sub_model, Field(..., description=f"{name} configuration"))
 
-            if field.required:
-                fields[name] = (python_type, Field(..., description=field.description))
             else:
-                if field.default:
+                python_type = _PYTHON_TYPE_MAP.get(field.type, str)
+
+                if field.required:
+                    fields[name] = (python_type, Field(..., description=field.description))
+                elif field.default is not None:
                     fields[name] = (python_type, Field(default=field.default, description=field.description))
                 else:
                     fields[name] = (Optional[python_type], Field(default=None, description=field.description))
 
-        model = create_model("Arguments", **fields)
-        return model
+        return create_model(model_name, **fields)
+
+    def _build_args_model(self) -> Type[BaseModel]:
+        """
+        Dynamically build a Pydantic BaseModel from the args spec.
+        Supports nested argument groups (e.g., args.dataset.split).
+        """
+        return self._build_model_from_spec(self.args, model_name="Arguments")
 
     def _build_cloud_model(self) -> Type[BaseModel]:
         """

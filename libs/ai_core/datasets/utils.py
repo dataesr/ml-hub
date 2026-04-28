@@ -36,16 +36,16 @@ def get_prompts(data: Dataset) -> list[str]:
     return prompts
 
 
-def should_use_conversational_format(dataset_format_arg: str | None = None, dataset_chat_template=None):
-    if dataset_format_arg == "conversational":
-        logger.debug("Format set to 'conversational'")
+def should_use_chat_format(config_format: str | None = None, dataset_chat_template=None):
+    if config_format == "chat":
+        logger.debug("Format set to 'chat'")
         return True
-    elif dataset_format_arg == "text":
+    elif config_format == "text":
         logger.debug("Format set to 'text'")
         return False
     else:
         if dataset_chat_template is not None:
-            logger.debug("Format automatically set to 'conversational'")
+            logger.debug("Format automatically set to 'chat'")
             return True
         else:
             logger.debug("Format automatically set to 'text'")

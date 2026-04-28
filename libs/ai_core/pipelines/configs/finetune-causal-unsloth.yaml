@@ -8,27 +8,44 @@ tags: [finetuning, causallm, transformers, unsloth]
 entrypoint: ai_core.pipelines.entrypoints.finetune_causal_unsloth:run
 environment: cloud
 
+
 # --- Pipeline arguments ---
 args:
   model_name:
     type: str
     required: true
-    description: "HuggingFace model name (must be an unsloth 4-bit model)"
+    description: "HuggingFace model name or path"
 
-  dataset_name:
-    type: str
-    required: true
-    description: "HuggingFace dataset name or local path"
+  dataset:
+    path:
+      type: str
+      required: true
+      description: "HuggingFace dataset name or local path"
 
-  dataset_split:
-    type: str
-    default: "train"
-    description: "Dataset split to use"
-
-  prompts_config:
-    type: str
-    default: null
-    description: "Name of the prompts YAML config (stored in configs/prompts/)"
+    split: 
+      type: str
+      default: "train"
+      description: "Dataset split to use for training"
+    
+    format:
+      type: str
+      default: null
+      description: "Format of the dataset ('chat' or 'text', if not specified it will be inferred from the prompts config or dataset structure)"
+    
+    text_format:
+      type: str
+      default: null
+      description: "Format the text prompts. Use {instruction}/{input} as key to be replaced"
+    
+    instruction_part:
+      type: str
+      default: null
+      description: "Instruction part of the conversations (use to train on response only)"
+    
+    response_part:
+      type: str
+      default: null
+      description: "Response part of the conversations (use to train on response only)"
 
   # LoRA parameters
   lora_r:
@@ -59,7 +76,7 @@ args:
     description: "Max training steps (-1 for unlimited)"
   batch_size:
     type: int
-    default: 2
+    default: 1
     description: "Per-device train batch size"
   grad_acc_steps:
     type: int
@@ -67,7 +84,7 @@ args:
     description: "Gradient accumulation steps"
   optim:
     type: str
-    default: "adamw_8bit"
+    default: "paged_adamw_8bit"
     description: "Optimizer name"
   learning_rate:
     type: float
@@ -89,10 +106,6 @@ args:
     type: float
     default: 0.03
     description: "Warmup ratio"
-  warmup_steps:
-    type: int
-    default: 5
-    description: "Number of warmup steps"
   save_steps:
     type: int
     default: 500
@@ -104,8 +117,8 @@ args:
 
 # --- Cloud infrastructure ---
 cloud:
-  image: "ghcr.io/dataesr/ml-hub/cuda-unsloth:latest"
-  name: "finetune-causal-unsloth"
+  image: "ghcr.io/dataesr/ml-hub/cuda-base:latest"
+  name: "finetune-causallm"
   command: ["ai-pipeline-run"]
   gpu: 1
   flavor: "l4-1-gpu"
