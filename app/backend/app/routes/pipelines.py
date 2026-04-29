@@ -19,10 +19,10 @@ def pipelines_list():
             "tags": cfg.tags,
             "environment": cfg.environment,
             # "entrypoint": cfg.entrypoint,
-            "args": cfg.get_args(),
+            "args": cfg.args.model_dump(),
             # "inputs": cfg.get_schema(),
-            "cloud": cfg.cloud.model_dump() if cfg.cloud else None,
-            "tracking": cfg.tracking.model_dump() if cfg.tracking else None,
+            "cloud": cfg.cloud.model_dump(exclude_unset=True) if cfg.cloud else None,
+            "tracking": cfg.tracking.model_dump(exclude_unset=True) if cfg.tracking else None,
         }
         for cfg in pipelines
     ]
@@ -55,14 +55,11 @@ def pipelines_run(pipeline_name: str, raw_input_data: dict):
     except KeyError:
         raise HTTPException(status_code=404, detail=f"Pipeline '{pipeline_name}' not found.")
 
-    # Extract args from input data (allow flat or nested format)
-    args_dict = raw_input_data.get("args", raw_input_data)
-    logger.debug(f"Pipeline args: {args_dict}")
-
     # Run pipeline (validates args internally)
     try:
         logger.info(f"Starting pipeline '{pipeline_name}' execution...")
-        results = run_pipeline(cfg, args_dict)
+        run_cfg = cfg.model_validate(raw_input_data)
+        results = run_pipeline(run_cfg)
         logger.info(f"Pipeline '{pipeline_name}' completed with results: {results}")
     except ValidationError as error:
         raise HTTPException(status_code=422, detail=error.errors())

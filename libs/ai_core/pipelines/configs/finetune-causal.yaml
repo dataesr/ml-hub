@@ -95,6 +95,10 @@ args:
     type: float
     default: 0.03
     description: "Warmup ratio"
+  warmup_steps:
+    type: int
+    default: 0
+    description: "Warmup steps (overrides warmup_ratio)"
   save_steps:
     type: int
     default: 500

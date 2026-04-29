@@ -26,7 +26,7 @@ logger = get_logger(__name__)
 
 
 @no_type_check
-def run(args: BaseModel, tracking=None, **kwargs):
+def run(args: BaseModel):
     """Run batch inference on a dataset with vLLM."""
     # GPU imports inside the function to avoid dependencies at import time
     from vllm import LLM, SamplingParams

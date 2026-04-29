@@ -6,8 +6,7 @@ and dispatches to the appropriate execution environment.
 """
 
 import importlib
-from typing import Any, Callable, Dict, Optional
-from pydantic import BaseModel
+from typing import Any, Callable, Optional
 from ai_core.cloud.build import build_command_args
 from ai_core.cloud.compute import job_run
 from ai_core.cloud.schemas import (
@@ -84,7 +83,7 @@ def _build_cloud_infrastructure(cloud: CloudJobInfrastructure) -> CloudJobInfras
     )
 
 
-def run_local(config: PipelineConfig, args: BaseModel, tracking: Optional[TrackingConfig] = None):
+def run_local(config: PipelineConfig):
     """
     Run a pipeline locally by resolving and calling its entrypoint.
     """
@@ -95,42 +94,36 @@ def run_local(config: PipelineConfig, args: BaseModel, tracking: Optional[Tracki
 
     logger.info(f"Running pipeline '{config.pipeline}' locally...")
     try:
-        return func(args, tracking=tracking)
+        return func(config.args, tracking=config.tracking)
     except Exception as error:
         logger.error(f"Failed to run local pipeline '{config.pipeline}': {error}")
         raise
 
 
-def run_cloud(config: PipelineConfig, args: BaseModel) -> dict:
+def run_cloud(config: PipelineConfig) -> dict:
     """
     Submit a pipeline as a cloud job on OVH AI.
     """
     if not config.cloud:
         raise ValueError(f"Pipeline '{config.pipeline}' has no cloud configuration.")
 
-    infra = _build_cloud_infrastructure(config.cloud)
-    tracking = _build_tracking_config(config.tracking)
-
     logger.info(f"Submitting cloud pipeline '{config.pipeline}'...")
 
-    infra_dict = infra.model_dump(exclude_unset=True)
-    logger.debug(f"Infrastructure: {infra_dict}")
-
-    envs = list(infra_dict.get("envs", []))
-
+    # Manage envs
+    envs = config.cloud.envs
     # Add HuggingFace secret as env
     envs.extend(SECRET_ENV_HF)
-
     # Add tracking envs
-    if tracking:
-        envs.extend(tracking.get_envs())
+    if config.tracking:
+        envs.extend(config.tracking.get_envs())
 
     # Build command arguments from pipeline args
-    args_dict = args.model_dump(exclude_defaults=True)
+    args_dict = config.args.get_values(exclude_defaults=True)
+    logger.debug(f"args_dict = {args_dict}")
     command_args = build_command_args({"pipeline": config.pipeline, **args_dict})
 
     inputs_dict = {
-        **infra_dict,
+        **config.cloud.model_dump(exclude_defaults=True),
         "envs": envs,
         "command_args": command_args,
     }
@@ -143,18 +136,11 @@ def run_cloud(config: PipelineConfig, args: BaseModel) -> dict:
     return data
 
 
-def run_pipeline(config: PipelineConfig, args_dict: Dict[str, Any]) -> Any:
+def run_pipeline(config: PipelineConfig) -> Any:
     """
     High-level pipeline execution: validate args and dispatch to local or cloud.
     """
-    # Build and validate args
-    ArgsModel = config._build_args_model()
-    args = ArgsModel.model_validate(args_dict)
-
     if config.environment == "local":
-        tracking = _build_tracking_config(config.tracking)
-        return run_local(config, args, tracking=tracking)
+        return run_local(config)
     elif config.environment == "cloud":
-        return run_cloud(config, args)
-    else:
-        raise ValueError(f"Unknown environment: {config.environment}")
+        return run_cloud(config)

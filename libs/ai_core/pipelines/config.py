@@ -1,39 +1,12 @@
 from pathlib import Path
-from typing import Any, Dict, Optional
-from ai_core.pipelines.schemas import ArgField, PipelineConfig, _PYTHON_TYPE_MAP
+from typing import Any, Dict
+from ai_core.pipelines.schemas import PipelineConfig
 from ai_core.configs.load import deep_merge, load_yaml_config
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 CONFIGS_DIR = Path(__file__).parent / "configs"
-
-
-def _parse_args_section(raw_args: Dict[str, Any]) -> Dict[str, ArgField | Dict[str, ArgField]]:
-    """
-    Parse the `args:` section from YAML into ArgField objects.
-
-    Supports two formats:
-    - Full: `{ type: str, default: "train", description: "..." }`
-    - Short: just a scalar value treated as the default
-    """
-    parsed = {}
-    for name, spec in raw_args.items():
-        if isinstance(spec, dict):
-            if "type" not in spec or not isinstance(spec["type"], str):
-                parsed[name] = _parse_args_section(spec)
-            else:
-                # If 'required' not explicitly set, infer from 'default' key presence
-                if "required" not in spec and "default" not in spec:
-                    spec["required"] = True
-                parsed[name] = ArgField(**spec)
-        else:
-            # Short-form: bare value is the default
-            inferred_type = type(spec).__name__ if spec is not None else "str"
-            if inferred_type not in _PYTHON_TYPE_MAP:
-                inferred_type = "str"
-            parsed[name] = ArgField(type=inferred_type, default=spec, required=False)
-    return parsed
 
 
 def resolve_base_config(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -59,19 +32,16 @@ def resolve_base_config(data: Dict[str, Any]) -> Dict[str, Any]:
     return merged
 
 
-def load_pipeline_config(path: str | Path) -> PipelineConfig:
+def load_pipeline_config(path: str | Path, overrides: Dict[str, Any] = {}) -> PipelineConfig:
     """
     Load a pipeline config from a YAML file path.
     Supports `base:` inheritance.
     """
-    data = load_yaml_config(path.as_posix(), from_disk=True)
+    data = load_yaml_config(str(path), from_disk=True)
     data = resolve_base_config(data)
 
-    # Parse args section specially
-    if "args" in data and isinstance(data["args"], dict):
-        data["args"] = _parse_args_section(data["args"])
-
     config = PipelineConfig.model_validate(data)
+    config = config.update_args(overrides)
     logger.debug(f"Loaded pipeline config: {config.pipeline}")
     return config
 
@@ -84,25 +54,25 @@ def load_pipeline_config_by_name(name: str) -> PipelineConfig:
 
 def load_user_config(
     path: str | Path,
-    overrides: Optional[Dict[str, Any]] = None,
+    overrides: Dict[str, Any] = {},
 ) -> PipelineConfig:
     """
     Load a user-provided config (which may use `base:` inheritance)
     and apply optional programmatic overrides.
     """
-    data = load_yaml_config(str(path), from_disk=True)
-    data = resolve_base_config(data)
+    user_data = load_yaml_config(str(path), from_disk=True)
+    user_args = user_data.pop("args", {})
+    if "base" not in user_data:
+        raise ValueError(f"User config must specify a 'base' pipeline to inherit from: {path}")
+
+    base_data = resolve_base_config(user_data)
+    base_config = PipelineConfig.model_validate(base_data)  # validate base config first to ensure it's correct
 
     # Apply overrides
     if overrides:
-        if "args" in overrides:
-            data.setdefault("args", {})
-            data["args"] = deep_merge(data["args"], overrides.pop("args"))
-        data = deep_merge(data, overrides)
+        user_args = deep_merge(user_args, overrides)
 
-    # Parse args section
-    if "args" in data and isinstance(data["args"], dict):
-        data["args"] = _parse_args_section(data["args"])
-
-    config = PipelineConfig.model_validate(data)
+    # Update user args on top of base config
+    config = base_config.update_args(user_args)
+    logger.debug(f"Loaded user pipeline config: {config.args.model_dump(exclude_unset=True)} from {path}")
     return config

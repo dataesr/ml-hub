@@ -1,9 +1,7 @@
 import shlex
 from typing import List
-from ai_core.cloud.schemas import CloudJobArgument, CloudJobInputs, CloudJobInfrastructure
-from ai_core.tracking.schemas import TrackingConfig
-from ai_core.utils.types import ENV
-from ai_core.utils.secrets import SECRET_ENV_HF
+from ai_core.cloud.schemas import CloudJobArgument, CloudJobInputs
+from ai_core.utils.misc import flatten_dict
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -42,7 +40,7 @@ def build_cli_args(inputs: CloudJobInputs) -> list[str]:
         for command in inputs.command_args:
             arg = [f"--{command.name}"]
             if command.value:
-                arg.append(f"{shlex.quote(command.value)}")
+                arg.append(shlex.quote(command.value))
             args.extend(arg)
 
     return args
@@ -64,8 +62,9 @@ def build_command_args(config_dict: dict) -> List[CloudJobArgument]:
         List of CommandArg objects with name/value pairs
     """
     cmd_args: List[CloudJobArgument] = []
-    for key, value in config_dict.items():
-        arg_name = key.replace("_", "-")
+    flat_dict = flatten_dict(config_dict)
+    for key, value in flat_dict.items():
+        arg_name = str(key).replace("_", "-")  # convert to kebab-case for CLI
         arg_value = str(value)
         cmd_args.append(CloudJobArgument(name=arg_name, value=arg_value))
     return cmd_args

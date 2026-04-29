@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 
 
 @no_type_check
-def run(args: BaseModel, tracking=None, **kwargs):
+def run(args: BaseModel):
     """Finetune a causal LM with LoRA + BitsAndBytes."""
     # GPU imports inside the function to avoid dependencies at import time
     import torch
@@ -114,6 +114,7 @@ def run(args: BaseModel, tracking=None, **kwargs):
         gradient_accumulation_steps=args.grad_acc_steps,
         max_grad_norm=args.max_grad_norm,
         warmup_ratio=args.warmup_ratio,
+        warmup_steps=args.warmup_steps,
         weight_decay=args.weight_decay,
         optim=args.optim,
         save_steps=args.save_steps,

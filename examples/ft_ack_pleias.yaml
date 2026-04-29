@@ -4,15 +4,14 @@ base: "finetune-causal-unsloth"
 args:
   model_name: "unsloth/Qwen3-0.6B-unsloth-bnb-4bit"
   dataset:
-    - path: "data/pleais_ack_reasoning_train.json"
-
-  lora_r: 16
-  lora_alpha: 32
-  lora_dropout: 0.05
-
+    path: "data/pleais_ack_reasoning_train.json"
   max_seq_length: 4096
   epochs: 3
   max_steps: -1
+  optim: AdamW
+  learning_rate: 5e-5
+  weight_decay: 0.01
+  warmup_steps: 100
 
 tracking:
   project_name: "entity-extraction-acknowledgment"
