@@ -42,16 +42,6 @@ RUN uv pip install \
   transformers==4.56.2 \
   trl==0.23.0
 
-# Install ai_core dependencies (not ai_core itself — installed at runtime from git)
-RUN uv pip install \
-  pydantic==2.12.5 \
-  datasets==4.4.1 \
-  huggingface-hub==0.35.3 \
-  mlflow==3.6.0 \
-  pandas==2.3.3 \
-  retry==0.9.2 \
-  pyyaml
-
 # Clean cache
 RUN uv cache clean
 

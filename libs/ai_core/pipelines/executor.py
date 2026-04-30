@@ -6,19 +6,15 @@ and dispatches to the appropriate execution environment.
 """
 
 import importlib
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 from ai_core.cloud.build import build_command_args
 from ai_core.cloud.compute import job_run
 from ai_core.cloud.schemas import (
-    CloudJobInfrastructure,
     CloudJobInputs,
-    CloudJobVolume,
 )
 from ai_core.pipelines.schemas import PipelineConfig
-from ai_core.tracking.schemas import TrackingConfig
 from ai_core.utils.logger import get_logger
 from ai_core.utils.secrets import SECRET_ENV_HF
-from ai_core.utils.types import ENV
 
 logger = get_logger(__name__)
 
@@ -48,40 +44,6 @@ def resolve_entrypoint(entrypoint: str) -> Callable:
         raise TypeError(f"Entrypoint '{entrypoint}' is not callable")
 
     return func
-
-
-def _build_tracking_config(tracking: Optional[TrackingConfig]) -> Optional[TrackingConfig]:
-    """Convert TrackingConfig from YAML config to TrackingConfig."""
-    if not tracking:
-        return None
-    return TrackingConfig(**tracking.model_dump())
-
-
-def _build_cloud_infrastructure(cloud: CloudJobInfrastructure) -> CloudJobInfrastructure:
-    """Convert CloudJobInfrastructure from YAML to CloudJobInfrastructure."""
-    volumes = [
-        CloudJobVolume(
-            container=v.container,
-            mount=v.mount,
-            region=v.region,
-            permission=v.permission,
-        )
-        for v in cloud.volumes
-    ]
-
-    envs = [ENV(name=env.name, value=env.value) for env in cloud.envs]
-
-    return CloudJobInfrastructure(
-        image=cloud.image,
-        name=cloud.name,
-        command=cloud.command,
-        gpu=cloud.gpu,
-        cpu=cloud.cpu,
-        flavor=cloud.flavor,
-        envs=envs,
-        volumes=volumes,
-    )
-
 
 def run_local(config: PipelineConfig):
     """
@@ -116,6 +78,10 @@ def run_cloud(config: PipelineConfig) -> dict:
     # Add tracking envs
     if config.tracking:
         envs.extend(config.tracking.get_envs())
+
+    # Add entrypoint to cloud command
+    if config.entrypoint:
+        config.cloud.command.append(config.entrypoint)
 
     # Build command arguments from pipeline args
     args_dict = config.args.get_values(exclude_defaults=True)

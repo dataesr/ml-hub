@@ -123,7 +123,7 @@ args:
 cloud:
   image: "ghcr.io/dataesr/ml-hub/cuda-unsloth:latest"
   name: "finetune-causallm"
-  command: ["/run.sh", "ai-pipeline-run"]
+  command: ["/run.sh"]
   gpu: 1
   flavor: "l4-1-gpu"
   volumes:

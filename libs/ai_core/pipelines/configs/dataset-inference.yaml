@@ -40,7 +40,7 @@ args:
 cloud:
   image: "ghcr.io/dataesr/ml-hub/cuda-vllm:latest"
   name: "dataset-inference"
-  command: ["/run.sh", "ai-pipeline-run"]
+  command: ["/run.sh"]
   gpu: 1
   flavor: "l4-1-gpu"
   volumes:

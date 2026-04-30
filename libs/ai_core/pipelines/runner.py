@@ -14,7 +14,7 @@ import sys
 import argparse
 from pathlib import Path
 from pydantic import ValidationError
-from ai_core.pipelines.config import CONFIGS_DIR, load_user_config, load_pipeline_config
+from ai_core.pipelines.load import CONFIGS_DIR, load_user_config, load_pipeline_config
 from ai_core.pipelines.executor import run_pipeline
 from ai_core.utils.logger import get_logger
 
