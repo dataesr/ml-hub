@@ -58,8 +58,9 @@ def load_user_config(
 ) -> PipelineConfig:
     """
     Load a user-provided config (which may use `base:` inheritance)
-    and apply optional programmatic overrides.
+    and apply optional pipeline args overrides.
     """
+
     user_data = load_yaml_config(str(path), from_disk=True)
     user_args = user_data.pop("args", {})
     if "base" not in user_data:

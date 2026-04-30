@@ -35,7 +35,7 @@ def _cast_value(value: str) -> Any:
     return value
 
 
-def _parse_override(unknown_args: list[str]) -> dict:
+def parse_override(unknown_args: list[str]) -> dict:
     """Parse unknown CLI args into a nested dict."""
     iterator = iter(unknown_args)
     parsed = {}
@@ -75,8 +75,7 @@ def parse_cli_args() -> PipelineConfig:
     args, overrides = parser.parse_known_args()  # allow unknown args for overrides
 
     # Parse dotted.key=value arguments
-    overrides = _parse_override(overrides)
-    overrides = {"args": overrides} if overrides else {}
+    overrides = parse_override(overrides)
 
     if args.config:
         config_path = Path(args.config)

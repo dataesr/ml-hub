@@ -1,6 +1,5 @@
-# docker/images/run.sh
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 # export PATH="/workspace/.venv/bin:$PATH"
 
