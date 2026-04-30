@@ -66,7 +66,7 @@ def _parse_override(unknown_args: list[str]) -> dict:
     return overrides
 
 
-def _parse_cli_args() -> PipelineConfig:
+def parse_cli_args() -> PipelineConfig:
     """Parse CLI arguments."""
     parser = argparse.ArgumentParser(description="Runner for AI pipelines")
     exclusive = parser.add_mutually_exclusive_group(required=True)
@@ -100,7 +100,7 @@ def _parse_cli_args() -> PipelineConfig:
 
 def run_pipeline_cli():
     """Main CLI entrypoint."""
-    config = _parse_cli_args()
+    config = parse_cli_args()
     logger.info(f"--- Start pipeline: {config.pipeline} ---")
 
     try:

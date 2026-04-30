@@ -56,10 +56,7 @@ RUN uv pip install \
 RUN uv cache clean
 
 # Generic entrypoint: installs ai_core from git at boot
-COPY --chown=42420:42420 docker/images/entrypoint.sh /entrypoint.sh
+COPY --chown=42420:42420 docker/scripts/run.sh /run.sh
 USER root
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /run.sh
 USER 42420:42420
-
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["ai-pipeline-run"]
