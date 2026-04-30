@@ -45,26 +45,25 @@ def resolve_entrypoint(entrypoint: str) -> Callable:
 
     return func
 
-def run_local(config: PipelineConfig):
+
+def run_entrypoint(config: PipelineConfig):
     """
-    Run a pipeline locally by resolving and calling its entrypoint.
+    Run a pipeline entrypoint.
     """
     if not config.entrypoint:
         raise ValueError(f"Pipeline '{config.pipeline}' has no entrypoint defined.")
 
     func = resolve_entrypoint(config.entrypoint)
-
-    logger.info(f"Running pipeline '{config.pipeline}' locally...")
     try:
         return func(config.args, tracking=config.tracking)
     except Exception as error:
-        logger.error(f"Failed to run local pipeline '{config.pipeline}': {error}")
+        logger.error(f"Failed to run pipeline '{config.pipeline}': {error}")
         raise
 
 
-def run_cloud(config: PipelineConfig) -> dict:
+def submit_cloud(config: PipelineConfig) -> dict:
     """
-    Submit a pipeline as a cloud job on OVH AI.
+    Submit a pipeline as a cloud job.
     """
     if not config.cloud:
         raise ValueError(f"Pipeline '{config.pipeline}' has no cloud configuration.")
@@ -78,10 +77,6 @@ def run_cloud(config: PipelineConfig) -> dict:
     # Add tracking envs
     if config.tracking:
         envs.extend(config.tracking.get_envs())
-
-    # Add entrypoint to cloud command
-    if config.entrypoint:
-        config.cloud.command.append(config.entrypoint)
 
     # Build command arguments from pipeline args
     args_dict = config.args.get_values(exclude_defaults=True)
@@ -102,11 +97,9 @@ def run_cloud(config: PipelineConfig) -> dict:
     return data
 
 
-def run_pipeline(config: PipelineConfig) -> Any:
-    """
-    High-level pipeline execution: validate args and dispatch to local or cloud.
-    """
+def exec_pipeline(config: PipelineConfig) -> Any:
+    """Dispatches pipeline to local or cloud execution."""
     if config.environment == "local":
-        return run_local(config)
+        return run_entrypoint(config)
     elif config.environment == "cloud":
-        return run_cloud(config)
+        return submit_cloud(config)

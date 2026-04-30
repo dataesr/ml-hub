@@ -37,7 +37,9 @@ Homepage = "https://github.com/dataesr/ml-hub"
 Documentation = "https://github.com/dataesr/ml-hub"
 
 [project.scripts]
-ai-pipeline-run = "ai_core.pipelines.runner:run_pipeline_cli"
+run_pipeline = "ai_core.pipelines.runner:run_pipeline_cli"
+run_entrypoint = "ai_core.pipelines.runner:run_entrypoint_cli"
+
 
 [tool.setuptools.packages.find]
 where = ["."]

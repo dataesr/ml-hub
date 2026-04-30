@@ -15,7 +15,7 @@ import argparse
 from pathlib import Path
 from pydantic import ValidationError
 from ai_core.pipelines.load import CONFIGS_DIR, load_user_config, load_pipeline_config
-from ai_core.pipelines.executor import run_pipeline
+from ai_core.pipelines.executor import exec_pipeline, run_entrypoint
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -97,14 +97,26 @@ def parse_cli_args() -> PipelineConfig:
     raise ValueError("Either --config or --pipeline must be provided.")
 
 
-def run_pipeline_cli():
-    """Main CLI entrypoint."""
+def run_entrypoint_cli():
+    """Pipeline entrypoint CLI"""
     config = parse_cli_args()
-    logger.info(f"--- Start pipeline: {config.pipeline} ---")
+    logger.info(f"--- Pipeline {config.pipeline} ---")
+    try:
+        run_entrypoint(config)
+        logger.info("--- Success ---")
+    except ValidationError as error:
+        logger.error(f"Configuration validation failed: {error}")
+        raise
+
+
+def run_pipeline_cli():
+    """Pipeline runner CLI"""
+    config = parse_cli_args()
+    logger.info(f"--- Pipeline {config.pipeline} ---")
 
     try:
-        result = run_pipeline(config)
-        logger.info(f"--- Pipeline {config.pipeline} completed ---")
+        result = exec_pipeline(config)
+        logger.info("--- Success ---")
         return result
     except ValidationError as error:
         logger.error(f"Configuration validation failed: {error}")

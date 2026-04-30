@@ -112,7 +112,7 @@ args:
 cloud:
   image: "ghcr.io/dataesr/ml-hub/cuda-base:latest"
   name: "finetune-causallm"
-  command: ["/run.sh"]
+  command: ["/run.sh", "run_entrypoint"]
   gpu: 1
   flavor: "l4-1-gpu"
   volumes:
