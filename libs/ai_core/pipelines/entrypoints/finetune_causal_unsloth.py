@@ -45,7 +45,7 @@ def is_unsloth_model(model_name: str, limit_to_4bit: bool = False):
 
 
 @no_type_check
-def run(args: BaseModel):
+def run(args: BaseModel, **kwargs):
     """Finetune a causal LM with Unsloth."""
     # GPU imports inside the function to avoid dependencies at import time
     from transformers.data.data_collator import DataCollatorForSeq2Seq

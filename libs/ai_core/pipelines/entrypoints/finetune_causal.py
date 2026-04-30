@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 
 
 @no_type_check
-def run(args: BaseModel):
+def run(args: BaseModel, **kwargs):
     """Finetune a causal LM with LoRA + BitsAndBytes."""
     # GPU imports inside the function to avoid dependencies at import time
     import torch

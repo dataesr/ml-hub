@@ -70,7 +70,7 @@ def prepare_output(df) -> pd.DataFrame:
     return scores_df.set_index("trace_id", drop=True)
 
 
-def run(args: BaseModel, tracking=None):
+def run(args: BaseModel, tracking=None, **kwargs):
     """Evaluate completions from a dataset using MLflow scorers."""
     # Imports inside the function to avoid dependencies at import time
 
