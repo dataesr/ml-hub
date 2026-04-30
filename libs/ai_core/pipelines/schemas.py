@@ -64,6 +64,11 @@ class PipelineArgs(RootModel[Dict[str, Args]]):
         """Flat dict of arg name -> resolved value, ready to pass to entrypoint."""
         return self._resolve(self.root, exclude_defaults=exclude_defaults)
 
+    def to_values(self, exclude_defaults: bool = False) -> BaseModel:
+        """Dynamically build a Pydantic model instance from the args values."""
+        args_model = _build_args_model(self.get_values(exclude_defaults=exclude_defaults), model_name="args")
+        return args_model.model_validate(self.get_values(exclude_defaults=exclude_defaults))
+
     pass
 
 

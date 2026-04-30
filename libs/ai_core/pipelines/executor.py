@@ -55,7 +55,7 @@ def run_entrypoint(config: PipelineConfig):
 
     func = resolve_entrypoint(config.entrypoint)
     try:
-        return func(config.args, tracking=config.tracking)
+        return func(config.args.to_values(), tracking=config.tracking)
     except Exception as error:
         logger.error(f"Failed to run pipeline '{config.pipeline}': {error}")
         raise
