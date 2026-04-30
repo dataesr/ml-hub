@@ -15,7 +15,7 @@ authors = [
 
 dependencies = [
     "datasets>=4.8",
-    "huggingface-hub>=1.11",
+    "huggingface-hub==0.36.0",
     "jsonref==1.1.0",
     "mlflow>=3.6",
     "pandas>=2.3",
