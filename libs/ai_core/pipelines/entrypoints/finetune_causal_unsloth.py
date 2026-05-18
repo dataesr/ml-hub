@@ -18,31 +18,11 @@ from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-# 4bit pre quantized models we support for 4x faster downloading + no OOMs.
-fourbit_models = [
-    "unsloth/Meta-Llama-3.1-8B-bnb-4bit",  # Llama-3.1 2x faster
-    "unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit",
-    "unsloth/Meta-Llama-3.1-70B-bnb-4bit",
-    "unsloth/Meta-Llama-3.1-405B-bnb-4bit",  # 4bit for 405b!
-    "unsloth/Mistral-Small-Instruct-2409",  # Mistral 22b 2x faster!
-    "unsloth/mistral-7b-instruct-v0.3-bnb-4bit",
-    "unsloth/Phi-3.5-mini-instruct",  # Phi-3.5 2x faster!
-    "unsloth/Phi-3-medium-4k-instruct",
-    "unsloth/gemma-2-9b-bnb-4bit",
-    "unsloth/gemma-2-27b-bnb-4bit",  # Gemma 2x faster!
-    "unsloth/Llama-3.2-1B-bnb-4bit",  # NEW! Llama 3.2 models
-    "unsloth/Llama-3.2-1B-Instruct-bnb-4bit",
-    "unsloth/Llama-3.2-3B-bnb-4bit",
-    "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
-    "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",  # NEW! Llama 3.3 70B!
-]  # More models at https://huggingface.co/unsloth
-
-
 def is_unsloth_model(model_name: str, limit_to_4bit: bool = False):
     if limit_to_4bit:
-        return model_name in fourbit_models
+        if not model_name.endswith("-4bit"):
+            return False
     return model_name.startswith("unsloth/")
-
 
 @no_type_check
 def run(args: BaseModel, **kwargs):
