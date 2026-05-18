@@ -59,9 +59,9 @@ def mlflow_log_dataset(dataset_name: str, dataset: Dataset, dataset_split: str |
         dataset_source = FileSystemDatasetSource().from_dict(
             {"uri": f"s3://{os.path.join(DATASETS_CONTAINER, dataset_name)}"}
         )
+        if not dataset_source:
+            logger.warning(f"Failed to create MLflow FileSystem dataset source for {dataset_name}, skipping logging.")
         mlflow_dataset = MetaDataset(source=dataset_source, name=name)
-        if not mlflow_dataset:
-            logger.warning(f"Failed to create MLflow FileSystem dataset for {dataset_name}, skipping logging.")
         mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
         logger.debug(f"Logged dataset {dataset_name} from {dataset_source.uri}")
 
