@@ -6,11 +6,8 @@ of `pipelines/configs/*.yaml`.
 """
 
 from typing import Dict, List
-from ai_core.pipelines.config import (
-    CONFIGS_DIR,
-    PipelineConfig,
-    load_pipeline_config,
-)
+from ai_core.pipelines.schemas import PipelineConfig
+from ai_core.pipelines.load import CONFIGS_DIR, load_pipeline_config
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)

@@ -1,7 +1,7 @@
 import os
 from datasets import Dataset, load_dataset
 from ai_core.cloud.storage import ovhai_object_download
-from ai_core.cloud.constants import DATASETS_CONTAINER
+from ai_core.cloud.constants import DATASETS_CONTAINER, DATASETS_VOLUME
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -24,19 +24,28 @@ def load_from_local(path: str) -> Dataset:
 
 
 def load_from_hf(dataset_name: str, split: str | None = None) -> Dataset:
-    dataset: Dataset = load_dataset(dataset_name, split=split)
+    dataset: Dataset = load_dataset(dataset_name, split=split)  # ty:ignore[invalid-assignment]
     return dataset
 
 
 def load(path_or_name: str, split: str | None = None) -> Dataset:
     try:
         logger.debug(f"Trying to load {path_or_name} from HuggingFace...")
-        dataset: Dataset = load_dataset(path_or_name, split=split)
+        dataset: Dataset = load_dataset(path_or_name, split=split)  # ty:ignore[invalid-assignment]
     except Exception as error:
         logger.debug(f"Error while loading from HuggingFace: {error}")
-        logger.debug("Trying to load from local disk...")
-        local_path = os.path.join(DATASETS_CONTAINER, path_or_name)
-        dataset = load_from_local(local_path)
+        try:
+            logger.debug("Trying to load from local storage...")
+            local_path = os.path.join(DATASETS_VOLUME, path_or_name)
+            dataset = load_from_local(local_path)
+        except Exception as error:
+            logger.debug(f"Error while loading from local storage: {error}")
+            try:
+                logger.debug("Trying to load from cloud storage...")
+                dataset = load_from_storage(path_or_name, container=DATASETS_CONTAINER)
+            except Exception as error:
+                logger.error(f"Error while loading from cloud storage: {error}")
+                raise Exception(f"Failed to load dataset {path_or_name}")
 
     if dataset:
         logger.debug(f"✅ Dataset {path_or_name} loaded!")

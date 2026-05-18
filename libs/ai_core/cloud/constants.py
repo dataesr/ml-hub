@@ -9,8 +9,12 @@ COMPLETIONS_CONTAINER = "llm-completions"
 
 # --- volumes ---
 VOLUMES_PERMISSIONS = Literal["RO", "RW", "RWD"]  # read-only / read-write / read-write-delete
+CONFIGS_VOLUME = "configs"
+DATASETS_VOLUME = "datasets"
+COMPLETIONS_VOLUME = "completions"
+JOBS_VOLUME = "jobs"
 
-# --- Compute  ---
+# --- compute  ---
 COMPUTE_GPU = "l4-1-gpu"
 JOB_STATE = Literal[
     "QUEUED",
