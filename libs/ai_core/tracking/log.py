@@ -1,10 +1,8 @@
 import os
 from typing import Literal, Dict
 import mlflow
-from mlflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
-from mlflow.data.huggingface_dataset import from_huggingface
 from mlflow.data.meta_dataset import MetaDataset
-from mlflow.data.filesystem_dataset_source import FileSystemDatasetSource
+from mlflow.data.dataset_source_registry import resolve_dataset_source
 from datasets import Dataset
 from ai_core.cloud.constants import DATASETS_CONTAINER
 from ai_core.tracking.client import mlflow_is_enabled
@@ -51,20 +49,17 @@ def mlflow_log_dataset(dataset_name: str, dataset: Dataset, dataset_split: str |
     commit_hash = get_commit_hash(dataset)
     if commit_hash:
         metadata["commit_hash"] = commit_hash
-        dataset_source = HuggingFaceDatasetSource(dataset_name, split=dataset_split)
-        mlflow_dataset = from_huggingface(dataset, source=dataset_source, name=name)
-        mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
-        logger.debug(f"Logged dataset {dataset_name} from {dataset_source.path}")
+        raw_source = dataset
     else:
-        dataset_source = FileSystemDatasetSource().from_dict(
-            {"uri": f"s3://{os.path.join(DATASETS_CONTAINER, dataset_name)}"}
-        )
-        if not dataset_source:
-            logger.warning(f"Failed to create MLflow FileSystem dataset source for {dataset_name}, skipping logging.")
+        raw_source = f"s3://{os.path.join(DATASETS_CONTAINER, dataset_name)}"
+
+    try:
+        dataset_source = resolve_dataset_source(raw_source)
         mlflow_dataset = MetaDataset(source=dataset_source, name=name)
         mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
-        logger.debug(f"Logged dataset {dataset_name} from {dataset_source.uri}")
-
+        logger.debug(f"Logged dataset {dataset_name} metadata")
+    except Exception as error:
+        logger.warning(f"Error while logging dataset {dataset_name}: {error}")
 
 def mlflow_log_params(params: dict):
     if not mlflow_is_enabled():
