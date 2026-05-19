@@ -34,9 +34,19 @@ args:
     
     text_format:
       type: str
-      default: null
+      default: "{instruction}\n{input}"
       description: "Format the text prompts. Use {instruction}/{input} as key to be replaced"
-    
+
+    system_prompt:
+      type: str
+      default: null
+      description: "System prompt to prepend to all inputs"
+
+    chat_template:
+      type: str
+      default: null
+      description: "Chat template to format conversations"
+
     instruction_part:
       type: str
       default: null
