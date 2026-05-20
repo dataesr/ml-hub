@@ -2,6 +2,7 @@
 Entrypoint: dataset-evaluate
 Evaluate model completions using MLflow scorers.
 """
+from ai_core.tracking.schemas import TrackingConfig
 
 from pydantic import BaseModel
 import pandas as pd
@@ -31,8 +32,8 @@ def get_scorers_fns(args) -> list[Scorer]:
     return scorers_fns
 
 
-def prepare_inputs(df, args) -> pd.DataFrame:
-    input_col = getattr(args, "input_col", "input")
+def prepare_inputs(df: pd.DataFrame, args) -> pd.DataFrame:
+    input_col = getattr(args, "input_col", "inputs")
     expectation_col = getattr(args, "expectation_col", "completions")
     output_col = getattr(args, "output_col", "outputs")
     id_col = getattr(args, "id_col", "id")
@@ -52,7 +53,7 @@ def prepare_inputs(df, args) -> pd.DataFrame:
     return prep_df
 
 
-def prepare_output(df) -> pd.DataFrame:
+def prepare_output(df: pd.DataFrame) -> pd.DataFrame:
     scores_df = df[["trace_id", "request", "response", "expected_response/value", "assessments"]].copy()
     scores_df["assessments"] = scores_df["assessments"].apply(
         lambda assessments: [
@@ -70,7 +71,7 @@ def prepare_output(df) -> pd.DataFrame:
     return scores_df.set_index("trace_id", drop=True)
 
 
-def run(args: BaseModel, tracking=None, **kwargs):
+def run(args: BaseModel, tracking: TrackingConfig | None = None, **kwargs):
     """Evaluate completions from a dataset using MLflow scorers."""
     # Imports inside the function to avoid dependencies at import time
 
@@ -97,7 +98,7 @@ def run(args: BaseModel, tracking=None, **kwargs):
     mlflow_set_experiment(experiment_name=project_name)
     mlflow_start(args.model_name, "evaluation")
     eval_results = mlflow.genai.evaluate(df, scorers=scorers_fns, model_id=active_model)
-    scores_df = prepare_output(eval_results.result_df)
+    scores_df = prepare_output(eval_results.result_df)  # ty:ignore[unresolved-attribute]
     mlflow_log_dict(scores_df.to_dict(orient="index"), f"scores/{eval_results.run_id}.json")
     mlflow_end()
 

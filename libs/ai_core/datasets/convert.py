@@ -99,3 +99,24 @@ def construct_prompts(
     logger.debug(f"Dataset columns: {dataset.column_names}")
     logger.debug(f"Dataset sample: {dataset[0][prompts_field]}")
     return dataset
+
+
+def rename_columns(dataset: Dataset, instruction_col: str, input_col: str, output_col: str) -> Dataset:
+    """
+    Rename a dataset with default column names
+
+    Args:
+    - dataset (Dataset): input dataset
+    - instruction_col (str): custom name of the instruction column
+    - input_col (str): custom name of the input column
+    - output_col (str): custom name of the output column
+    Returns a dataset with the expected INSTRUCTION_COLUMN, INPUT_COLUMN and OUTPUT_COLUMN
+    """
+
+    if instruction_col in dataset.column_names:
+        dataset = dataset.rename_column(instruction_col, INSTRUCTION_COLUMN)
+    if input_col in dataset.column_names:
+        dataset = dataset.rename_column(input_col, INPUT_COLUMN)
+    if output_col in dataset.column_names:
+        dataset = dataset.rename_column(output_col, OUTPUT_COLUMN)
+    return dataset

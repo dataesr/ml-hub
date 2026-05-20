@@ -46,6 +46,21 @@ args:
       default: null
       description: "Chat template to format conversations"
 
+    instruction_col:
+      type: str
+      default: "instruction"
+      description: "Name of the column in the dataset containing the instruction text"
+
+    input_col:
+      type: str
+      default: "input"
+      description: "Name of the column in the dataset containing the inputs text"
+    
+    output_col:
+      type: str
+      default: "completion"
+      description: "Name of the column in the dataset containing the completion text"
+
 
   # LoRA parameters
   lora_r:

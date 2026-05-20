@@ -7,7 +7,7 @@ import os
 from typing import no_type_check
 from pydantic import BaseModel
 from ai_core.datasets.load import load
-from ai_core.datasets.convert import construct_prompts
+from ai_core.datasets.convert import construct_prompts, rename_columns
 from ai_core.datasets.utils import should_use_chat_format
 from ai_core.tracking.client import mlflow_is_enabled
 from ai_core.tracking.log import mlflow_log_dataset, mlflow_start, mlflow_end
@@ -85,6 +85,7 @@ def run(args: BaseModel, **kwargs):
     logger.info("✅ Dataset loaded")
 
     ### --- Format prompts ---
+    dataset = rename_columns(dataset, args.dataset.instruction_col, args.dataset.input_col, args.dataset.output_col)
     dataset = construct_prompts(
         dataset,
         custom_instruction=args.dataset.system_prompt,
