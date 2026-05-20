@@ -5,6 +5,9 @@ args:
   model_name: "unsloth/Qwen3-0.6B-unsloth-bnb-4bit"
   dataset:
     path: "pleias_ack_reasoning_train.json"
+    format: "text"
+    text_format: "{input}"
+    input_col: "text"
   max_seq_length: 4096
   epochs: 3
   max_steps: -1
