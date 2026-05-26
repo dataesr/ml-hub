@@ -84,14 +84,18 @@ def construct_prompts(
                 prompts_field: construct_one_conversation(
                     system=custom_instruction or example.get(INSTRUCTION_COLUMN),
                     user=example[INPUT_COLUMN],
-                    assistant=example[OUTPUT_COLUMN],
+                    assistant=example[OUTPUT_COLUMN] if OUTPUT_COLUMN in example else None,
                 )
             }
         else:
             # Non-conversational (Alpaca-style prompt-response text)
             instruction = custom_instruction if custom_instruction is not None else "You are an helpful assistant."
             text_format = custom_text_format or DEFAULT_TEXT_FORMAT
-            text = text_format.format(instruction=instruction, input=example[INPUT_COLUMN], response=example[OUTPUT_COLUMN])
+            text = text_format.format(
+                instruction=instruction,
+                input=example[INPUT_COLUMN],
+                response=example[OUTPUT_COLUMN] if OUTPUT_COLUMN in example else "",
+            )
             return {prompts_field: text}
 
     dataset = dataset.map(map_conversations).select_columns([prompts_field])  # keep only the formatted column
