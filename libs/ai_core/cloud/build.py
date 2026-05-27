@@ -40,7 +40,7 @@ def build_cli_args(inputs: CloudJobInputs) -> list[str]:
         for command in inputs.command_args:
             arg = [f"--{command.name}"]
             if command.value:
-                arg.append(shlex.quote(command.value))
+                arg.append(str(command.value))
             args.extend(arg)
 
     return args
