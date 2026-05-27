@@ -1,0 +1,12 @@
+base: dataset-inference
+
+args:
+  model_name: "dataesr/Qwen3-0.6B-ack"
+  dataset:
+    path: "benchmark_acknowledgments.json"
+    format: "text"
+    text_format: "{input}"
+    input_col: "text"
+
+tracking:
+  project_name: "entity-extraction-acknowledgment"

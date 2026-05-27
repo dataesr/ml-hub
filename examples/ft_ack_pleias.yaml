@@ -11,7 +11,6 @@ args:
   max_seq_length: 4096
   epochs: 3
   max_steps: -1
-  optim: AdamW
   learning_rate: 5e-5
   weight_decay: 0.01
   warmup_steps: 100
