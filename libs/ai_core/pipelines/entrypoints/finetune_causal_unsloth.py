@@ -46,7 +46,7 @@ def run(args: BaseModel, **kwargs):
     )
 
     ### --- Setup ---
-    model_dir = folder_create(os.path.join("jobs", args.model_name))
+    model_dir: str = folder_create(os.path.join("jobs", args.model_name))
     output_dir = os.path.join(model_dir, "output")
     checkpoint_dir = os.path.join(output_dir, "checkpoints")
     finetuned_dir = os.path.join(output_dir, "finetuned")
@@ -146,7 +146,7 @@ def run(args: BaseModel, **kwargs):
     unsloth_merge_and_write(trainer, tokenizer, args.model_name, finetuned_dir)
 
     ### --- Push model ---
-    push_model_to_hf(finetuned_dir)
+    push_model_to_hf(finetuned_dir, args.hf_push_repo)
 
     ### --- Finalize ---
     mlflow_end()

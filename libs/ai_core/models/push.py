@@ -5,7 +5,7 @@ from huggingface_hub import create_repo, upload_folder
 logger = get_logger(__name__)
 
 
-def push_folder_to_hf(folder_path: str, repo_id: str, private=False) -> str:
+def push_folder_to_hf(folder_path: str, repo_id: str, private=False) -> str | None:
     """
     Uploads a model directory to the Hugging Face Hub.
 
@@ -47,13 +47,13 @@ def push_folder_to_hf(folder_path: str, repo_id: str, private=False) -> str:
     return commit_info.oid
 
 
-def push_model_to_hf(model_dir: str, raise_error: bool = False) -> str:
-    repo_id = os.getenv("HF_PUSH_REPO")
+def push_model_to_hf(model_dir: str, repo_id: str | None = None, raise_error: bool = False) -> str | None:
+    repo_id = repo_id or os.getenv("HF_PUSH_REPO")
 
     if not repo_id:
         if raise_error:
-            raise ValueError("Env var 'HF_PUSH_REPO' not defined, can't push model to huggingface")
-        logger.warning("Env var 'HF_PUSH_REPO' not defined, can't push model to huggingface")
+            raise ValueError("HF repo ID not defined, can't push model to huggingface")
+        logger.warning("HF repo ID not defined, can't push model to huggingface")
         return None
 
     logger.info(f"Pushing folder (from {model_dir}) to HF ({repo_id})...")

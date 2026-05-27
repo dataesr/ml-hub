@@ -72,6 +72,13 @@ args:
       default: null
       description: "Response part of the conversations (use to train on response only)"
 
+  # Hugging Face
+  hf_push_repo:
+    type: str
+    default: null
+    description: "Hugging Face repo ID to push the finetuned model to (e.g. 'username/repo-name'). If not specified, it will skip the push step."
+
+
   # LoRA parameters
   lora_r:
     type: int

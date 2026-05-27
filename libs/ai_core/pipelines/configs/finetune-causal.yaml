@@ -60,6 +60,12 @@ args:
       type: str
       default: "completion"
       description: "Name of the column in the dataset containing the completion text"
+  
+  # Hugging Face
+  hf_push_repo:
+    type: str
+    default: null
+    description: "Hugging Face repo ID to push the finetuned model to (e.g. 'username/repo-name'). If not specified, it will skip the push step."
 
 
   # LoRA parameters

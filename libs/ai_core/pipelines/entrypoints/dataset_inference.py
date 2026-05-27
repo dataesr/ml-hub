@@ -3,13 +3,13 @@ Entrypoint: dataset-inference
 Run batch inference on a dataset using vLLM.
 """
 
-import os
 from typing import no_type_check
 from pydantic import BaseModel
 from datasets import Dataset
 from ai_core.datasets.load import load
 from ai_core.datasets.utils import get_prompts, should_use_chat_format
 from ai_core.datasets.convert import construct_one_prompt, construct_one_conversation, rename_columns
+from ai_core.datasets.constants import OUTPUT_COLUMN
 from ai_core.utils.misc import timestamp
 from ai_core.tracking.client import mlflow
 from ai_core.tracking.log import (
@@ -44,8 +44,8 @@ def run(args: BaseModel, **kwargs):
     mlflow_active_model()
 
     ### --- Load dataset ---
-    dataset = load(args.dataset_name, split=args.dataset_split)
-    mlflow_log_dataset(args.dataset_name, dataset, dataset_split=args.dataset_split)
+    dataset = load(args.dataset.path, split=args.dataset.split)
+    mlflow_log_dataset(args.dataset.path, dataset, dataset_split=args.dataset.split)
     logger.info("✅ Dataset loaded")
 
     sampling_params_dict = getattr(args, "sampling_params", None) or {}
@@ -110,7 +110,7 @@ def run(args: BaseModel, **kwargs):
     completions = vllm_completions()
 
     ### --- Merge results ---
-    output_col = os.getenv("OUTPUT_COLUMN", "inference")
+    output_col = args.dataset.output_column or OUTPUT_COLUMN
     if output_col in dataset.column_names:
         logger.warning(f"Existing column '{output_col}' will be overridden by generated completions!")
 
