@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from datasets import Dataset
 from ai_core.datasets.load import load
 from ai_core.datasets.utils import get_prompts, should_use_chat_format
-from ai_core.datasets.convert import construct_one_prompt, construct_one_conversation
+from ai_core.datasets.convert import construct_one_prompt, construct_one_conversation, rename_columns
 from ai_core.utils.misc import timestamp
 from ai_core.tracking.client import mlflow
 from ai_core.tracking.log import (
@@ -80,6 +80,7 @@ def run(args: BaseModel, **kwargs):
     logger.info(f"✅ {args.model_name} tokenizer loaded")
 
     ### --- Get prompts from dataset ---
+    dataset = rename_columns(dataset, input_col=args.dataset.input_column)
     prompts = get_prompts(dataset)
     use_conversation = should_use_chat_format(args.dataset.format, args.dataset.chat_template or tokenizer.chat_template)
     prompts = [

@@ -117,10 +117,10 @@ def rename_columns(dataset: Dataset, instruction_col: str, input_col: str, outpu
     Returns a dataset with the expected INSTRUCTION_COLUMN, INPUT_COLUMN and OUTPUT_COLUMN
     """
 
-    if instruction_col in dataset.column_names:
+    if instruction_col and instruction_col in dataset.column_names:
         dataset = dataset.rename_column(instruction_col, INSTRUCTION_COLUMN)
-    if input_col in dataset.column_names:
+    if input_col and input_col in dataset.column_names:
         dataset = dataset.rename_column(input_col, INPUT_COLUMN)
-    if output_col in dataset.column_names:
+    if output_col and output_col in dataset.column_names:
         dataset = dataset.rename_column(output_col, OUTPUT_COLUMN)
     return dataset

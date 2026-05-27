@@ -1,5 +1,6 @@
 import os
 from datasets import Dataset
+from ai_core.datasets.constants import INPUT_COLUMN
 from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -28,7 +29,7 @@ def get_commit_hash(dataset: Dataset) -> str | None:
 
 
 def get_prompts(data: Dataset) -> list[str]:
-    input_col = os.getenv("INPUT_COLUMN", "input")
+    input_col = INPUT_COLUMN
     if input_col not in data.column_names:
         raise ValueError(f"Column {input_col} not found on data! Set env var 'INPUT_COLUMN' to select the column name.")
 
