@@ -80,7 +80,7 @@ def run(args: BaseModel, **kwargs):
     logger.info(f"✅ {args.model_name} tokenizer loaded")
 
     ### --- Get prompts from dataset ---
-    dataset = rename_columns(dataset, input_col=args.dataset.input_column)
+    dataset = rename_columns(dataset, input_col=args.dataset.input_col)
     prompts = get_prompts(dataset)
     use_conversation = should_use_chat_format(args.dataset.format, args.dataset.chat_template or tokenizer.chat_template)
     prompts = [
