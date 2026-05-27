@@ -105,7 +105,9 @@ def construct_prompts(
     return dataset
 
 
-def rename_columns(dataset: Dataset, instruction_col: str, input_col: str, output_col: str) -> Dataset:
+def rename_columns(
+    dataset: Dataset, instruction_col: str | None = None, input_col: str | None = None, output_col: str | None = None
+) -> Dataset:
     """
     Rename a dataset with default column names
 
