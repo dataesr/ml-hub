@@ -29,7 +29,10 @@ def construct_one_prompt(
     if text_format is None:
         text_format = DEFAULT_TEXT_FORMAT
 
-    return text_format.format(instruction=instruction or "", input=input, response=response or "")
+    logger.debug(f"{text_format=} {input=}")
+    p = text_format.format(instruction=instruction or "", input=input, response=response or "")
+    logger.debug(f"prompt = {p}")
+    return p
 
 
 def construct_one_conversation(user: str, system: str | None = None, assistant: str | None = None):

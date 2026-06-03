@@ -85,14 +85,18 @@ def run(args: BaseModel, **kwargs):
     use_conversation = should_use_chat_format(args.dataset.format, args.dataset.chat_template or tokenizer.chat_template)
     prompts = [
         tokenizer.apply_chat_template(
-            construct_one_conversation(
-                prompt,
-                system=args.dataset.system_prompt,
-                tokenize=False,
-                add_generation_prompt=True,
-            )
-            if use_conversation
-            else construct_one_prompt(prompt, instruction=args.dataset.system_prompt, text_format=args.dataset.text_format)
+            (
+                construct_one_conversation(
+                    prompt,
+                    system=args.dataset.system_prompt,
+                )
+                if use_conversation
+                else construct_one_prompt(
+                    prompt, instruction=args.dataset.system_prompt, text_format=args.dataset.text_format
+                )
+            ),
+            tokenize=False,
+            add_generation_prompt=True,
         )
         for prompt in prompts
     ]

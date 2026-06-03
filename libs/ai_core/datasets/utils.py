@@ -33,7 +33,7 @@ def get_prompts(data: Dataset) -> list[str]:
     if input_col not in data.column_names:
         raise ValueError(f"Column {input_col} not found on data! Set env var 'INPUT_COLUMN' to select the column name.")
 
-    prompts = data[input_col]
+    prompts = list(data[input_col])
     return prompts
 
 
