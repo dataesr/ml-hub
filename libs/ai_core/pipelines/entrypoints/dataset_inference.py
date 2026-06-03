@@ -114,7 +114,7 @@ def run(args: BaseModel, **kwargs):
     completions = vllm_completions()
 
     ### --- Merge results ---
-    output_col = args.dataset.output_column or OUTPUT_COLUMN
+    output_col = args.dataset.output_col or OUTPUT_COLUMN
     if output_col in dataset.column_names:
         logger.warning(f"Existing column '{output_col}' will be overridden by generated completions!")
 
