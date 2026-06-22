@@ -23,7 +23,7 @@ def get_commit_hash(dataset: Dataset) -> str | None:
     checksums = dataset.info.download_checksums
     if isinstance(checksums, dict) and checksums:
         checksums_list = list(checksums.keys())
-        checksum_file = checksums_list[0].split("@")[1]
+        checksum_file = checksums_list[0].split("@")[1]  # ty:ignore[unresolved-attribute]
         commit_hash = checksum_file.split("/")[0]
     return commit_hash
 

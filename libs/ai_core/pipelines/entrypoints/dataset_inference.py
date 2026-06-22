@@ -48,15 +48,15 @@ def run(args: BaseModel, **kwargs):
     mlflow_log_dataset(args.dataset.path, dataset, dataset_split=args.dataset.split)
     logger.info("✅ Dataset loaded")
 
-    sampling_params_dict = getattr(args, "sampling_params", None) or {}
-    if sampling_params_dict:
-        logger.debug(f"Custom sampling params: {sampling_params_dict}")
+    sampling_params = args.sampling_params
+    if sampling_params:
+        logger.debug(f"Custom sampling params: {sampling_params.__dict__}")
     full_params = {
         "seed": 0,
         "temperature": 0,
         "max_tokens": 2048,
         "skip_special_tokens": True,
-        **(sampling_params_dict or {}),
+        **(sampling_params.__dict__ or {}),
     }
     mlflow_log_params(full_params)
 
@@ -71,7 +71,7 @@ def run(args: BaseModel, **kwargs):
         enforce_eager=True,
         disable_custom_all_reduce=True,
         disable_log_stats=False,
-        max_model_len=12288,
+        max_model_len=args.max_model_len or 2048,
     )
     logger.info(f"✅ vLLM engine {VLLM_VERSION} loaded")
 

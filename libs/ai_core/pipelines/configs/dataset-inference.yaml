@@ -14,6 +14,11 @@ args:
     type: str
     required: true
     description: "HuggingFace model name or path"
+  
+  max_model_len:
+    type: int
+    default: 2048
+    description: "vLLM max model len"
 
   dataset:
     path:
@@ -60,6 +65,28 @@ args:
       type: str
       default: "completion"
       description: "Name of the column in the dataset containing the completion text"
+  
+  sampling_params:
+      seed:
+        type: int
+        default: 0
+        description: "vllm seed"
+
+      temperature:
+        type: int
+        default: 0
+        description: "vllm temperature"
+      
+      max_tokens:
+        type: int
+        default: 2048
+        description: "vllm max tokens"
+      
+      skip_special_tokens:
+        type: bool
+        default: False
+        description: "vllm skip special tokens"
+
 
 # --- Cloud infrastructure ---
 cloud:

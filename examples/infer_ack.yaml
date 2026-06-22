@@ -1,12 +1,13 @@
 base: dataset-inference
 
 args:
-  model_name: "dataesr/Qwen3-0.6B-ack"
+  model_name: "dataesr/baguette-funders-600m-4k-with-template"
   dataset:
     path: "benchmark_acknowledgments.json"
     format: "text"
-    text_format: "{input}"
+    text_format: '### Acknowledgement Text ###\n{input}\n\n### Reasoning ###\n'
     input_col: "text"
+  model_max_length: 4096
 
 tracking:
   project_name: "entity-extraction-acknowledgment"
