@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
 from ai_core.pipelines.registry import list_pipelines, get_pipeline
-from ai_core.pipelines.executor import run_pipeline
+from ai_core.pipelines.executor import exec_pipeline
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -59,7 +59,7 @@ def pipelines_run(pipeline_name: str, raw_input_data: dict):
     try:
         logger.info(f"Starting pipeline '{pipeline_name}' execution...")
         run_cfg = cfg.model_validate(raw_input_data)
-        results = run_pipeline(run_cfg)
+        results = exec_pipeline(run_cfg)
         logger.info(f"Pipeline '{pipeline_name}' completed with results: {results}")
     except ValidationError as error:
         raise HTTPException(status_code=422, detail=error.errors())
