@@ -1,7 +1,7 @@
 import time
 from ai_core.cloud.client import ovhai_run_cmd
 from ai_core.cloud.schemas import CloudJobInputs
-from ai_core.cloud.build import build_cli_string
+from ai_core.cloud.build import build_cli_string, build_cli_args
 from ai_core.cloud.constants import JOB_STATE, APP_STATE
 from ai_core.utils.misc import env_exist
 from ai_core.utils.logger import get_logger
@@ -11,25 +11,26 @@ logger = get_logger(__name__)
 
 ### --- ovhai jobs ---
 def job_list(state: JOB_STATE | None = None):  # TODO: use schema
-    filter = f"-s {state}" if state else "-a"
-    cmd = f"ovhai job list -o json {filter}"
+    filter = ["-s", state] if state else ["-a"]
+    cmd = ["ovhai", "job", "list", "-o", "json"]
+    cmd.extend(filter)
     data = ovhai_run_cmd(cmd, capture_json=True)
     return data
 
 
 def job_get(id: str):
-    cmd = f"ovhai job get {id} -o json"
+    cmd = ["ovhai", "job", "get", id, "-o", "json"]
     data = ovhai_run_cmd(cmd, capture_json=True)
     return data
 
 
 def job_stop(id: str):
-    cmd = f"ovhai job stop {id}"
+    cmd = ["ovhai", "job", "stop", id]
     ovhai_run_cmd(cmd)
 
 
 def job_run(inputs: CloudJobInputs):
-    cli = build_cli_string(inputs)
+    cli = build_cli_args(inputs)
     logger.debug(f"Job CLI: {cli}")
     data = ovhai_run_cmd(cli, capture_json=True)
     return data
@@ -37,14 +38,14 @@ def job_run(inputs: CloudJobInputs):
 
 ## --- ovhai apps ---
 def app_list(state: APP_STATE | None = None):  # TODO: use schema
-    filter = f"-s {state}" if state else ""
-    cmd = f"ovhai app list -o json {filter}"
+    filter = ["-s", state] if state else []
+    cmd = ["ovhai", "app", "list", "-o", "json"] + filter
     data = ovhai_run_cmd(cmd, capture_json=True)
     return data
 
 
 def app_get(id: str):
-    cmd = f"ovhai app get {id} -o json"
+    cmd = ["ovhai", "app", "get", id, "-o", "json"]
     data = ovhai_run_cmd(cmd, capture_json=True)
     return data
 
@@ -58,7 +59,7 @@ def app_has_env(id: str, env_name: str, env_value: str):
 
 def app_update_env(id: str, env_name: str, env_value: str):
     if not app_has_env(id, env_name=env_name, env_value=env_value):
-        cmd = f"ovhai app update {id} --env {env_name}={env_value} -o json"
+        cmd = ["ovhai", "app", "update", id, "--env", f"{env_name}={env_value}", "-o", "json"]
         updated_app = ovhai_run_cmd(cmd, capture_json=True)
 
         # check modification is ok
@@ -110,12 +111,12 @@ def is_error(id: str):
 
 
 def app_start(id: str):
-    cmd = f"ovhai app start {id}"
+    cmd = ["ovhai", "app", "start", id]
     ovhai_run_cmd(cmd)
 
 
 def app_stop(id: str):
-    cmd = f"ovhai app stop {id}"
+    cmd = ["ovhai", "app", "stop", id]
     ovhai_run_cmd(cmd)
 
 

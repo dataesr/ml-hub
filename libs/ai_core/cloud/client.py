@@ -15,8 +15,8 @@ def ovhai_initialize():
     result.check_returncode()
 
 
-def ovhai_run_cmd(cmd: str, capture_json: bool = False):
-    result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+def ovhai_run_cmd(cmd: list[str], capture_json: bool = False):
+    result = subprocess.run(cmd, shell=False, text=True, capture_output=True)
     if result.returncode != 0:
         message = result.stderr or result.stdout
         raise Exception(f"CMD ERR: {message}")

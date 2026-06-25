@@ -4,10 +4,10 @@ args:
   model_name: "dataesr/baguette-funders-600m-4k-with-template"
   dataset:
     path: "benchmark_acknowledgments.json"
-    format: "text"
+    format: "chat"
     text_format: '### Acknowledgement Text ###\n{input}\n\n### Reasoning ###\n'
     input_col: "text"
-  model_max_length: 4096
+  max_model_len: 4096
 
 tracking:
   project_name: "entity-extraction-acknowledgment"
