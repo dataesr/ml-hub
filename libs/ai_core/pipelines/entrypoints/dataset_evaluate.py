@@ -42,7 +42,7 @@ def prepare_inputs(df: pd.DataFrame, args) -> pd.DataFrame:
     cols_to_select = [input_col, expectation_col, output_col]
     if id_col in df.columns:
         cols_to_select.append(id_col)
-    prep_df = df[[input_col, expectation_col, output_col, id_col]].copy()
+    prep_df = df[cols_to_select].copy()
     prep_df = prep_df.rename(columns={input_col: "inputs", expectation_col: "expectations", output_col: "outputs"})
     prep_df["inputs"] = prep_df["inputs"].apply(lambda x: x if isinstance(x, dict) and "query" in x else {"query": str(x)})
     prep_df["expectations"] = prep_df["expectations"].apply(lambda x: {"expected_response": x})

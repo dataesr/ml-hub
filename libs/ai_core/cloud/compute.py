@@ -52,9 +52,7 @@ def app_get(id: str):
 
 def app_has_env(id: str, env_name: str, env_value: str):
     app = app_get(id)
-    if env_exist(app["spec"]["envVars"], env_name=env_name, env_value=env_value):
-        return True
-    return False
+    return env_exist(app["spec"]["envVars"], env_name=env_name, env_value=env_value)
 
 
 def app_update_env(id: str, env_name: str, env_value: str):
@@ -84,30 +82,22 @@ def app_get_url(id: str):
 
 def is_stopped(id: str):
     state = app_get_state(id)
-    if state in ["STOPPING", "STOPPED", "FAILED", "ERROR"]:
-        return True
-    return False
+    return state in ["STOPPING", "STOPPED", "FAILED", "ERROR"]
 
 
 def is_started(id: str):
     state = app_get_state(id)
-    if state in ["QUEUED", "PENDING", "INITALIZING", "SCALING", "RUNNING"]:
-        return True
-    return False
+    return state in ["QUEUED", "PENDING", "INITALIZING", "SCALING", "RUNNING"]
 
 
 def is_running(id: str):
     state = app_get_state(id)
-    if state == "RUNNING":
-        return True
-    return False
+    return state == "RUNNING"
 
 
 def is_error(id: str):
     state = app_get_state(id)
-    if state in ["FAILED", "ERROR"]:
-        return True
-    return False
+    return state in ["FAILED", "ERROR"]
 
 
 def app_start(id: str):

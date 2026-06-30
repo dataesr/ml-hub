@@ -1,13 +1,13 @@
 from ai_core.tracking.client import mlflow_get_client
-from app.logger import get_logger
+from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-client = mlflow_get_client()
-logger.debug(f"client_tracking_uri = {client.tracking_uri}")
-
 
 def get_all():
+    client = mlflow_get_client()
+    if not client:
+        return []
     projects = client.search_experiments(view_type="ACTIVE_ONLY")
     projects = [
         {
@@ -25,6 +25,9 @@ def get_all():
 
 
 def get(id: str):
+    client = mlflow_get_client()
+    if not client:
+        return {}
     project = client.get_experiment(experiment_id=id)
     project = {
         "id": project.experiment_id,
@@ -38,6 +41,9 @@ def get(id: str):
 
 
 def list_runs(id: str, state: str | None = None):
+    client = mlflow_get_client()
+    if not client:
+        return []
     runs = client.search_runs(experiment_ids=[id])
     runs = [
         {
@@ -59,6 +65,9 @@ def list_runs(id: str, state: str | None = None):
 
 
 def get_run(run_id: str):
+    client = mlflow_get_client()
+    if not client:
+        return {}
     run = client.get_run(run_id=run_id)
     run = {
         "id": run.info.run_id,
@@ -74,21 +83,3 @@ def get_run(run_id: str):
         "external_url": f"{client.tracking_uri}/#/experiments/{run.info.experiment_id}/runs/{run.info.run_id}",
     }
     return run
-
-
-def list_registered_models():
-    models = client.search_registered_models()
-    models = [model.__dict__ for model in models]
-    return models
-
-
-def list_logged_models():
-    models = client.search_logged_models(experiment_ids=["4"])
-    models = [model.to_dictionary() for model in models]
-    return models
-
-
-def list_datasets():
-    ds = client.search_datasets(experiment_ids=["4"])
-    ds = [d.to_dict() for d in ds]
-    return ds

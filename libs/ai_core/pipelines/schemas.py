@@ -9,8 +9,6 @@ from ai_core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-CONFIGS_DIR = Path(__file__).parent / "configs"
-
 # Supported Python types in YAML arg definitions
 _PYTHON_TYPE_MAP = {
     "str": str,

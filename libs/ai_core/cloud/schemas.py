@@ -1,7 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from ai_core.cloud.constants import COMPUTE_GPU, VOLUMES_PERMISSIONS, CONTAINERS_REGION
-from ai_core.tracking.schemas import TrackingConfig
 from ai_core.utils.types import ENV
 
 
@@ -38,6 +37,3 @@ class CloudJobInputs(CloudJobInfrastructure):
 
     # Image command arguments
     command_args: List[CloudJobArgument] = Field(default_factory=list)
-
-    # Tracking
-    tracking_config: Optional[TrackingConfig] = None

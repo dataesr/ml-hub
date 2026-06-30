@@ -26,11 +26,3 @@ def experiments_runs_list(id: str, state: str | None = None):
 def experiments_runs_get(run_id: str):
     run = exp_svc.get_run(run_id)
     return run
-
-
-@router.get("/experiments_test")
-def experiments_test():
-    reg_models = exp_svc.list_registered_models()
-    log_models = exp_svc.list_logged_models()
-    datasets = exp_svc.list_datasets()
-    return {"registered_models": reg_models, "logged_models": log_models, "datasets": datasets}
