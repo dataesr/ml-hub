@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from ai_core.configs.load import load_yaml_config
-from ai_core.configs.write import write_yaml_config
-from ai_core.configs.list import list_configs
+from core.configs.load import load_yaml_config
+from core.configs.write import write_yaml_config
+from core.configs.list import list_configs
 
 router = APIRouter(tags=["configs"])
 

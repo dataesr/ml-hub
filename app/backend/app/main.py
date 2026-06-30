@@ -3,8 +3,8 @@ from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
-from ai_core.cloud.client import ovhai_initialize
-from ai_core.tracking.client import mlflow_initialize
+from core.cloud.client import ovhai_initialize
+from core.tracking.client import mlflow_initialize
 from app.routes.configs import router as configs_router
 from app.routes.datasets import router as datasets_router
 from app.routes.models import router as models_router

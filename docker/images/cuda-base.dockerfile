@@ -42,7 +42,7 @@ RUN uv pip install \
   transformers==4.56.2 \
   trl==0.23.0
 
-# Generic entrypoint: installs ai_core from git at boot
+# Generic entrypoint: installs core from git at boot
 COPY --chown=42420:42420 docker/scripts/run.sh /run.sh
 USER root
 RUN chmod +x /run.sh

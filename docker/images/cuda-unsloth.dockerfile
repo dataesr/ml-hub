@@ -45,7 +45,7 @@ RUN uv pip install \
 # Clean cache
 RUN uv cache clean
 
-# Generic entrypoint: installs ai_core from git at boot
+# Generic entrypoint: installs core from git at boot
 COPY --chown=42420:42420 docker/scripts/run.sh /run.sh
 USER root
 RUN chmod +x /run.sh

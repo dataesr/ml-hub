@@ -3,11 +3,11 @@ set -euo pipefail
 
 # export PATH="/workspace/.venv/bin:$PATH"
 
-AI_CORE_BRANCH=${AI_CORE_BRANCH:-main}
+core_BRANCH=${core_BRANCH:-main}
 
-echo "[runner] Installing ai_core (branch=${AI_CORE_BRANCH})..."
+echo "[runner] Installing core (branch=${core_BRANCH})..."
 
-uv pip install --no-cache "git+https://github.com/dataesr/ml-hub.git@${AI_CORE_BRANCH}#subdirectory=libs"
+uv pip install --no-cache "git+https://github.com/dataesr/ml-hub.git@${core_BRANCH}#subdirectory=core"
 
 echo "[runner] Running command: $@"
 

@@ -1,5 +1,5 @@
-from ai_core.tracking.client import mlflow_get_client
-from ai_core.utils.logger import get_logger
+from core.tracking.client import mlflow_get_client
+from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

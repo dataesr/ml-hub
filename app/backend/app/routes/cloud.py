@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter
-from ai_core.cloud.constants import APP_STATE, JOB_STATE
-from ai_core.cloud.compute import (
+from core.cloud.constants import APP_STATE, JOB_STATE
+from core.cloud.compute import (
     job_list,
     job_get,
     job_stop,

@@ -1,0 +1,163 @@
+# Pipeline: finetune-causal
+# Finetune a causal LM with LoRA + BitsAndBytes (4-bit quantization)
+
+pipeline: finetune-causal
+description: "Finetune a causal model with LoRA and BitsAndBytes 4-bit quantization"
+tags: [finetuning, causallm, transformers, lora, bitsandbytes]
+
+entrypoint: core.pipelines.entrypoints.finetune_causal:run
+environment: cloud
+
+# --- Pipeline arguments ---
+args:
+  model_name:
+    type: str
+    required: true
+    description: "HuggingFace model name or path"
+
+  dataset:
+    path:
+      type: str
+      required: true
+      description: "HuggingFace dataset name or local path"
+
+    split:
+      type: str
+      default: "train"
+      description: "Dataset split to use for training"
+
+    format:
+      type: str
+      default: null
+      description: "Format of the dataset ('chat' or 'text', if not specified it will be inferred from the prompts config or dataset structure)"
+
+    text_format:
+      type: str
+      default: "{instruction}\n{input}"
+      description: "Format the text prompts. Use {instruction}/{input} as key to be replaced"
+
+    system_prompt:
+      type: str
+      default: null
+      description: "System prompt to prepend to all inputs"
+
+    chat_template:
+      type: str
+      default: null
+      description: "Chat template to format conversations"
+
+    instruction_col:
+      type: str
+      default: "instruction"
+      description: "Name of the column in the dataset containing the instruction text"
+
+    input_col:
+      type: str
+      default: "input"
+      description: "Name of the column in the dataset containing the inputs text"
+
+    output_col:
+      type: str
+      default: "completion"
+      description: "Name of the column in the dataset containing the completion text"
+
+  # Hugging Face
+  hf_push_repo:
+    type: str
+    default: null
+    description: "Hugging Face repo ID to push the finetuned model to (e.g. 'username/repo-name'). If not specified, it will skip the push step."
+
+  # LoRA parameters
+  lora_r:
+    type: int
+    default: 16
+    description: "LoRA rank"
+  lora_alpha:
+    type: int
+    default: 32
+    description: "LoRA alpha"
+  lora_dropout:
+    type: float
+    default: 0.05
+    description: "LoRA dropout rate"
+
+  # Training parameters
+  max_seq_length:
+    type: int
+    default: 8192
+    description: "Maximum sequence length"
+  epochs:
+    type: int
+    default: 3
+    description: "Number of training epochs"
+  max_steps:
+    type: int
+    default: -1
+    description: "Max training steps (-1 for unlimited)"
+  batch_size:
+    type: int
+    default: 1
+    description: "Per-device train batch size"
+  grad_acc_steps:
+    type: int
+    default: 4
+    description: "Gradient accumulation steps"
+  optim:
+    type: str
+    default: "paged_adamw_8bit"
+    description: "Optimizer name"
+  learning_rate:
+    type: float
+    default: 2e-5
+    description: "Learning rate"
+  lr_scheduler_type:
+    type: str
+    default: "linear"
+    description: "Learning rate scheduler type"
+  weight_decay:
+    type: float
+    default: 0.001
+    description: "Weight decay"
+  max_grad_norm:
+    type: float
+    default: 0.3
+    description: "Maximum gradient norm for clipping"
+  warmup_ratio:
+    type: float
+    default: 0.03
+    description: "Warmup ratio"
+  warmup_steps:
+    type: int
+    default: 0
+    description: "Warmup steps (overrides warmup_ratio)"
+  save_steps:
+    type: int
+    default: 500
+    description: "Save checkpoint every N steps"
+  logging_steps:
+    type: int
+    default: 50
+    description: "Log metrics every N steps"
+
+# --- Cloud infrastructure ---
+cloud:
+  image: "ghcr.io/dataesr/ml-hub/cuda-base:latest"
+  name: "finetune-causallm"
+  command: ["/run.sh", "run_entrypoint"]
+  gpu: 1
+  flavor: "l4-1-gpu"
+  volumes:
+    - container: llm-configs
+      mount: configs
+    - container: llm-datasets
+      mount: datasets
+    - container: llm-jobs
+      mount: jobs
+      permission: RWD
+
+# --- Tracking (MLflow) ---
+tracking:
+  project_name: "Default"
+  enable_tracking: true
+  enable_log_model: true
+  enable_log_dataset: true

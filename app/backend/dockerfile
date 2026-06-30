@@ -24,9 +24,9 @@ RUN mkdir -p ~/.config/ovhai && curl -o ~/.config/ovhai/config.json https://cli.
 COPY ./app/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Add libs
-COPY ./libs ./libs
-RUN pip install ./libs
+# Add core library
+COPY ./core ./core
+RUN pip install ./core
 
 # Add code
 COPY ./app/backend .

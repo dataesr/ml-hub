@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=65.5.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-core" 
+version = "0.1.0"
+description = "AI core library for all ml-hub services."
+readme = "README.md"
+requires-python = ">=3.11.5"
+license = { text = "MIT" }
+authors = [
+    { name="Victor Barbier", email="victor.barbier@recherche.gouv.fr" }
+]
+
+dependencies = [
+    "datasets>=4.8",
+    "huggingface-hub==0.36.0",
+    "jsonref==1.1.0",
+    "mlflow>=3.6",
+    "pandas>=2.3",
+    "pydantic>=2.12",
+    "pyyaml>=6.0",
+    "rapidfuzz==3.14.5",
+    "retry==0.9.2",
+]
+
+# [project.optional-dependencies]
+# gpu = [
+#     "torch>=2.0",
+#     "transformers",
+#     "accelerate",
+# ]
+
+[project.urls]
+Homepage = "https://github.com/dataesr/ml-hub"
+Documentation = "https://github.com/dataesr/ml-hub"
+
+[project.scripts]
+run_pipeline = "core.pipelines.runner:run_pipeline_cli"
+run_entrypoint = "core.pipelines.runner:run_entrypoint_cli"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*"]
+
+[tool.setuptools.package-data]
+core = ["py.typed", "pipelines/configs/*.yaml"]

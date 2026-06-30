@@ -16,16 +16,16 @@
 
 ```
 ml-hub/
-├── libs/ai_core/       # Core ML library (shared logic)
+├── core/       # Core ML library (shared logic)
 ├── app/
 │   ├── backend/        # FastAPI REST API
 │   └── frontend/       # React (Vite) web interface
 └── docker/images/      # Docker images for cloud execution
 ```
 
-### `libs/ai_core/` — Core Library
+### `core/` — Core Library
 
-The `ai_core` library contains all the core ML logic, independent of the API layer. It is organized into modules:
+The `core` library contains all the core ML logic, independent of the API layer. It is organized into modules:
 
 - **`pipelines/`** — Pipeline registry, execution engine, schema builder
 - **`cloud/`** — OVH AI client for managing jobs and apps
@@ -39,13 +39,13 @@ This library can be used standalone (e.g., in scripts or notebooks) or through t
 
 ### `app/backend/` — REST API
 
-A **FastAPI** application that exposes `ai_core` functionalities via HTTP endpoints. It handles request validation, routing, and serves as the interface between the frontend and the core library.
+A **FastAPI** application that exposes `core` functionalities via HTTP endpoints. It handles request validation, routing, and serves as the interface between the frontend and the core library.
 
 ### `docker/images/` — Cloud Execution Images
 
 Docker images used for running pipelines on OVH AI cloud:
 
-- **`cuda-base`** — Base CUDA image with ai_core installed
+- **`cuda-base`** — Base CUDA image with core installed
 - **`cuda-unsloth`** — Optimized image for Unsloth fine-tuning
 - **`cuda-vllm`** — Image for vLLM inference
 - **`mlflow`** — MLflow tracking server
@@ -54,11 +54,11 @@ Docker images used for running pipelines on OVH AI cloud:
 
 ### Pipelines
 
-Create your ML pipelines in the `libs/ai_core/pipelines/pipelines/` folder using the pipeline registry decorator. Each pipeline defines its input schema, configuration, and execution logic. Once registered, pipelines become available through the API and can be executed either **locally** or on **OVH AI cloud infrastructure**. The execution mode is determined by the pipeline configuration.
+Create your ML pipelines in the `core/core/pipelines/pipelines/` folder using the pipeline registry decorator. Each pipeline defines its input schema, configuration, and execution logic. Once registered, pipelines become available through the API and can be executed either **locally** or on **OVH AI cloud infrastructure**. The execution mode is determined by the pipeline configuration.
 See `examples/pipelines.ipynb` for how to use pipelines API.
 
 Running local:
-`uv run --env-file app/backend/.env python -m ai_core.pipelines.runner --config examples/eval_ack.yaml`
+`uv run --env-file app/backend/.env python -m core.pipelines.runner --config examples/eval_ack.yaml`
 
 ### Experiment Tracking
 

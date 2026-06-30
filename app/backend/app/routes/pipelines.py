@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
-from ai_core.pipelines.registry import list_pipelines, get_pipeline
-from ai_core.pipelines.executor import exec_pipeline
+from core.pipelines.registry import list_pipelines, get_pipeline
+from core.pipelines.executor import exec_pipeline
 from app.logger import get_logger
 
 logger = get_logger(__name__)

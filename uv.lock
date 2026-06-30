@@ -14,7 +14,7 @@ members = [
 [[package]]
 name = "ai-core"
 version = "0.1.0"
-source = { editable = "libs" }
+source = { editable = "core" }
 dependencies = [
     { name = "datasets" },
     { name = "huggingface-hub" },
