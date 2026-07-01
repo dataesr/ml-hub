@@ -12,14 +12,14 @@ from core.cloud.compute import job_run
 from core.cloud.schemas import (
     CloudJobInputs,
 )
-from core.pipelines.schemas import PipelineConfig
+from core.pipelines.schemas.base import PipelineConfig
 from core.utils.logger import get_logger
 from core.utils.secrets import SECRET_ENV_HF
 
 logger = get_logger(__name__)
 
 
-def resolve_entrypoint(entrypoint: str) -> Callable:
+def _resolve_entrypoint(entrypoint: str) -> Callable:
     """
     Resolve a dotted entrypoint string to a callable.
 
@@ -53,9 +53,9 @@ def run_entrypoint(config: PipelineConfig):
     if not config.entrypoint:
         raise ValueError(f"Pipeline '{config.pipeline}' has no entrypoint defined.")
 
-    func = resolve_entrypoint(config.entrypoint)
+    func = _resolve_entrypoint(config.entrypoint)
     try:
-        return func(config.args.to_values(), tracking=config.tracking)
+        return func(config.args, tracking=config.tracking)
     except Exception as error:
         logger.error(f"Failed to run pipeline '{config.pipeline}': {error}")
         raise
@@ -79,7 +79,7 @@ def submit_cloud(config: PipelineConfig) -> dict:
         envs.extend(config.tracking.get_envs())
 
     # Build command arguments from pipeline args
-    args_dict = config.args.get_values(exclude_defaults=True)
+    args_dict = config.args.model_dump(exclude_defaults=True) if config.args else {}
     logger.debug(f"args_dict = {args_dict}")
     command_args = build_command_args({"pipeline": config.pipeline, **args_dict})
 

@@ -1,64 +1,42 @@
 """
-Pipeline registry — scans YAML config files to discover pipelines.
+Pipeline registry — maps pipeline names to their config classes.
 
-Replaces the old decorator-based registry with a simple filesystem scan
-of `pipelines/configs/*.yaml`.
+To register a new pipeline, import its config class and add an entry to
+``_PIPELINE_REGISTRY``.
 """
 
-from typing import Dict, List
-from core.pipelines.schemas import PipelineConfig
-from core.pipelines.load import CONFIGS_DIR, load_pipeline_config
+from typing import Dict, List, Type
+from core.pipelines.schemas.base import PipelineConfig
+from core.pipelines.schemas.pipeline import (
+    FinetuneCausalConfig,
+    FinetuneCausalUnslothConfig,
+    DatasetInferenceConfig,
+    DatasetEvaluateConfig,
+    FinetuneCausalAxolotlConfig,
+)
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-# In-memory cache of loaded pipeline configs
-_PIPELINE_REGISTRY: Dict[str, PipelineConfig] = {}
-
-
-def _load_all_configs() -> None:
-    """Scan the configs directory and load all pipeline YAML files."""
-    global _PIPELINE_REGISTRY
-
-    if not CONFIGS_DIR.exists():
-        logger.warning(f"Pipeline configs directory not found: {CONFIGS_DIR}")
-        return
-
-    for yaml_file in sorted(CONFIGS_DIR.glob("*.yaml")):
-        try:
-            config = load_pipeline_config(yaml_file)
-            _PIPELINE_REGISTRY[config.pipeline] = config
-            logger.debug(f"Registered pipeline: {config.pipeline} (env={config.environment})")
-            logger.debug(f"{config=}")
-        except Exception as error:
-            logger.warning(f"Failed to load pipeline config {yaml_file.name}: {error}")
-
-
-def _ensure_loaded() -> None:
-    """Lazy-load pipeline configs on first access."""
-    if not _PIPELINE_REGISTRY:
-        _load_all_configs()
+_PIPELINE_REGISTRY: Dict[str, Type[PipelineConfig]] = {
+    "finetune-causal": FinetuneCausalConfig,
+    "finetune-causal-unsloth": FinetuneCausalUnslothConfig,
+    "dataset-inference": DatasetInferenceConfig,
+    "dataset-evaluate": DatasetEvaluateConfig,
+    "finetune-causal-axolotl": FinetuneCausalAxolotlConfig,
+}
 
 
 def list_pipelines() -> List[PipelineConfig]:
-    """Return all registered pipeline configs."""
-    _ensure_loaded()
-    return list(_PIPELINE_REGISTRY.values())
+    """Return a fresh default instance for every registered pipeline."""
+
+    return [cls() for cls in _PIPELINE_REGISTRY.values()]
 
 
 def get_pipeline(name: str) -> PipelineConfig:
-    """Get a pipeline config by name."""
-    _ensure_loaded()
+    """Return a fresh default instance for the named pipeline."""
 
-    config = _PIPELINE_REGISTRY.get(name)
-    if not config:
+    cls = _PIPELINE_REGISTRY.get(name)
+    if cls is None:
         raise KeyError(f"Pipeline '{name}' not found. Available: {list(_PIPELINE_REGISTRY.keys())}")
-
-    return config
-
-
-def reload_pipelines() -> None:
-    """Force reload all pipeline configs from disk."""
-    global _PIPELINE_REGISTRY
-    _PIPELINE_REGISTRY = {}
-    _load_all_configs()
+    return cls()

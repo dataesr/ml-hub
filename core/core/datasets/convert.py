@@ -123,9 +123,9 @@ def rename_columns(
     """
 
     if instruction_col and instruction_col in dataset.column_names:
-        dataset = dataset.rename_column(instruction_col, INSTRUCTION_COLUMN)
+        dataset: Dataset = dataset.rename_column(instruction_col, INSTRUCTION_COLUMN)
     if input_col and input_col in dataset.column_names:
-        dataset = dataset.rename_column(input_col, INPUT_COLUMN)
+        dataset: Dataset = dataset.rename_column(input_col, INPUT_COLUMN)
     if output_col and output_col in dataset.column_names:
-        dataset = dataset.rename_column(output_col, OUTPUT_COLUMN)
+        dataset: Dataset = dataset.rename_column(output_col, OUTPUT_COLUMN)
     return dataset

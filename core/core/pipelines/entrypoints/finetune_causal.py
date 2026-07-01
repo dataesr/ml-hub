@@ -5,7 +5,6 @@ Finetune a causal LM with LoRA + BitsAndBytes (4-bit quantization).
 
 import os
 from typing import no_type_check
-from pydantic import BaseModel
 from core.datasets.load import load
 from core.datasets.convert import construct_prompts, rename_columns
 from core.datasets.utils import should_use_chat_format
@@ -13,6 +12,7 @@ from core.tracking.client import mlflow_is_enabled
 from core.tracking.log import mlflow_log_dataset, mlflow_start, mlflow_end
 from core.models.write import merge_and_write
 from core.models.push import push_model_to_hf
+from core.pipelines.schemas.args import FinetuneArgs
 from core.utils.files import folder_create
 from core.utils.logger import get_logger
 
@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 
 
 @no_type_check
-def run(args: BaseModel, **kwargs):
+def run(args: FinetuneArgs, **kwargs):
     """Finetune a causal LM with LoRA + BitsAndBytes."""
     # GPU imports inside the function to avoid dependencies at import time
     import torch

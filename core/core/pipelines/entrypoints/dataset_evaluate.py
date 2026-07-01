@@ -3,14 +3,13 @@ Entrypoint: dataset-evaluate
 Evaluate model completions using MLflow scorers.
 """
 
-from core.tracking.schemas import TrackingConfig
-
-from pydantic import BaseModel
 import pandas as pd
 from core.datasets.load import load_from_storage
 from core.tracking.client import mlflow_set_experiment
 from core.tracking.log import mlflow_start, mlflow_end, mlflow_log_dict
+from core.tracking.schemas import TrackingConfig
 from core.tracking.scorers import SCORERS_MAPPING
+from core.pipelines.schemas.args import EvaluateArgs
 from core.utils.logger import get_logger
 import mlflow
 from mlflow.genai import Scorer
@@ -72,7 +71,7 @@ def prepare_output(df: pd.DataFrame) -> pd.DataFrame:
     return scores_df.set_index("trace_id", drop=True)
 
 
-def run(args: BaseModel, tracking: TrackingConfig | None = None, **kwargs):
+def run(args: EvaluateArgs, tracking: TrackingConfig = TrackingConfig(), **kwargs):
     """Evaluate completions from a dataset using MLflow scorers."""
     # Imports inside the function to avoid dependencies at import time
 
@@ -88,17 +87,10 @@ def run(args: BaseModel, tracking: TrackingConfig | None = None, **kwargs):
     logger.info(f"✅ Dataset loaded: {df.shape[0]} rows")
     df = prepare_inputs(df, args)
 
-    # Use tracking config if available
-    project_name = "Default"
-    active_model = None
-    if tracking:
-        project_name = tracking.project_name
-        active_model = tracking.set_active_model
-
     # Run mlflow evaluation
-    mlflow_set_experiment(experiment_name=project_name)
+    mlflow_set_experiment(experiment_name=tracking.project_name)
     mlflow_start(args.model_name, "evaluation")
-    eval_results = mlflow.genai.evaluate(df, scorers=scorers_fns, model_id=active_model)
+    eval_results = mlflow.genai.evaluate(df, scorers=scorers_fns, model_id=tracking.set_active_model)
     scores_df = prepare_output(eval_results.result_df)  # ty:ignore[unresolved-attribute]
     mlflow_log_dict(scores_df.to_dict(orient="index"), f"scores/{eval_results.run_id}.json")
     mlflow_end()

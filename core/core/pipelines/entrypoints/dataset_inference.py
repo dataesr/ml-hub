@@ -4,7 +4,6 @@ Run batch inference on a dataset using vLLM.
 """
 
 from typing import no_type_check
-from pydantic import BaseModel
 from datasets import Dataset
 from core.datasets.load import load
 from core.datasets.utils import get_prompts, should_use_chat_format
@@ -20,13 +19,14 @@ from core.tracking.log import (
     mlflow_log_params,
     mlflow_log_artifact,
 )
+from core.pipelines.schemas.args import InferenceArgs
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 
 @no_type_check
-def run(args: BaseModel, **kwargs):
+def run(args: InferenceArgs, **kwargs):
     """Run batch inference on a dataset with vLLM."""
     # GPU imports inside the function to avoid dependencies at import time
     from vllm import LLM, SamplingParams
