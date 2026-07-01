@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM astral/uv:python3.11-trixie-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
@@ -16,21 +16,21 @@ RUN curl https://cli.gra.ai.cloud.ovh.net/ovhai-linux.zip -o ovhai-linux.zip && 
     unzip ovhai-linux.zip && \
     mkdir -p /bin && \
     mv ovhai /bin/ovhai && \
-    export PATH=$PATH:/bin/ && \
     rm -rf ovhai-linux.zip ovhai
 RUN mkdir -p ~/.config/ovhai && curl -o ~/.config/ovhai/config.json https://cli.gra.ai.cloud.ovh.net/config.json
 
-# Install dependencies
-COPY ./app/backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies from workspace lock
+COPY ./uv.lock .
+COPY ./app/backend/pyproject.toml .
+COPY ./core/pyproject.toml ./core/pyproject.toml
+RUN uv sync --frozen --no-cache
 
-# Add core library
+# Add source code
 COPY ./core ./core
-RUN pip install ./core
+COPY ./app/backend ./
 
-# Add code
-COPY ./app/backend .
+ENV PYTHONPATH="/app/core"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
