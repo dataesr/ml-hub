@@ -1,7 +1,7 @@
 import { ArrayFieldTemplateProps, getSubmitButtonOptions, SubmitButtonProps, WidgetProps } from "@rjsf/utils"
 import { FormProps } from "@rjsf/core"
 import { withTheme, ThemeProps } from "@rjsf/core"
-import { Accordion, Button, Checkbox, TextInput } from "@dataesr/dsfr-plus"
+import { Accordion, Button, Checkbox, Text, TextInput } from "@dataesr/dsfr-plus"
 import { ChangeEvent, FocusEvent } from "react"
 import { getInputProps, FieldTemplateProps, ObjectFieldTemplateProps, BaseInputTemplateProps } from "@rjsf/utils"
 
@@ -47,7 +47,8 @@ function CustomInputTemplate(props: BaseInputTemplateProps) {
 
   return (
     <TextInput
-      className="fr-mb-2w"
+      className="fr-mt-2w fr-mb-5w"
+      hint={schema?.description || ""}
       id={id}
       label={label}
       value={value}
@@ -68,10 +69,10 @@ function CustomInputTemplate(props: BaseInputTemplateProps) {
 }
 
 function CustomFieldTemplate(props: FieldTemplateProps) {
-  const { classNames, style, help, description, errors, children } = props
+  const { classNames, style, help, errors, children } = props
+
   return (
     <div className={classNames} style={style}>
-      {description}
       {children}
       {help}
       {errors}
@@ -83,7 +84,11 @@ function CustomObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   const { title, description, properties } = props
   return (
     <div>
-      {description}
+      {description && (
+        <Text className="fr-mb-1w" size="sm">
+          {description}
+        </Text>
+      )}
       <Accordion
         title={title}
         onClick={(e) => {
