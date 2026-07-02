@@ -12,6 +12,7 @@ router = APIRouter(tags=["pipelines"])
 @router.get("/pipelines")
 def pipelines_list():
     pipelines = list_pipelines()
+    pipelines.sort(key=lambda x: x.pipeline)
     return [
         {
             "pipeline": cfg.pipeline,
