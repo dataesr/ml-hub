@@ -1,4 +1,4 @@
-from core.tracking.client import mlflow_get_client
+from core.common.mlflow import mlflow_get_client
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -8,7 +8,7 @@ def get_all():
     client = mlflow_get_client()
     if not client:
         return []
-    projects = client.search_experiments(view_type="ACTIVE_ONLY")
+    projects = client.search_experiments(view_type="ACTIVE_ONLY")  # ty:ignore[invalid-argument-type]
     projects = [
         {
             "id": project.experiment_id,

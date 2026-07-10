@@ -6,7 +6,7 @@ members = [
 
 [tool.ty.environment]
 python = ".venv/Scripts/python.exe"
-extra-paths = ["./core"]
+extra-paths = ["./core", "./core/core"]
 
 [tool.ty.rules]
 invalid-argument-type = "warn"

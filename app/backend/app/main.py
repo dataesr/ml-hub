@@ -3,14 +3,14 @@ from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
-from core.cloud.client import ovhai_initialize
-from core.tracking.client import mlflow_initialize
+from core.common.ovh import ovhai_initialize
 from app.routes.configs import router as configs_router
 from app.routes.datasets import router as datasets_router
 from app.routes.models import router as models_router
-from app.routes.cloud import router as cloud_router
+from app.routes.ovh import router as ovh_router
 from app.routes.experiments import router as experiments_router
-from app.routes.pipelines import router as pipelines_router
+# from app.routes.pipelines import router as pipelines_router
+from app.routes.jobs import router as jobs_router
 from app.logger import get_logger
 
 logger = get_logger(__name__)
@@ -54,8 +54,8 @@ api_router = APIRouter(prefix="/api")
 api_router.include_router(configs_router)
 api_router.include_router(datasets_router)
 api_router.include_router(models_router)
-api_router.include_router(cloud_router)
-api_router.include_router(pipelines_router)
+api_router.include_router(ovh_router)
+api_router.include_router(jobs_router)
 api_router.include_router(experiments_router)
 app.include_router(api_router)
 
@@ -64,7 +64,7 @@ app.include_router(api_router)
 ovhai_initialize()
 
 # Init mlflow
-mlflow_initialize()
+# mlflow_initialize()
 
 @app.get("/health")
 def health_check():

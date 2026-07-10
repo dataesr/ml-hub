@@ -1,15 +1,14 @@
 from fastapi import APIRouter
-from core.configs.load import load_yaml_config
-from core.configs.write import write_yaml_config
-from core.configs.list import list_configs
+from core.common.configs import load_yaml_config, write_yaml_config
 
 router = APIRouter(tags=["configs"])
 
 
 @router.get("/configs")
 def configs_list():
-    configs = list_configs()
-    return configs
+    # configs = list_configs()
+    # return configs
+    return {"0": "not developped yet"}
 
 
 @router.post("/configs")

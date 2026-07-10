@@ -9,8 +9,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
 # OVHAI CLI
 RUN curl https://cli.gra.ai.cloud.ovh.net/ovhai-linux.zip -o ovhai-linux.zip && \
     unzip ovhai-linux.zip && \
@@ -19,17 +17,22 @@ RUN curl https://cli.gra.ai.cloud.ovh.net/ovhai-linux.zip -o ovhai-linux.zip && 
     rm -rf ovhai-linux.zip ovhai
 RUN mkdir -p ~/.config/ovhai && curl -o ~/.config/ovhai/config.json https://cli.gra.ai.cloud.ovh.net/config.json
 
+WORKDIR /app
+
 # Install dependencies from workspace lock
 COPY ./uv.lock .
-COPY ./app/backend/pyproject.toml .
+COPY ./pyproject.toml .
+COPY ./app/backend/pyproject.toml ./app/backend/pyproject.toml
 COPY ./core/pyproject.toml ./core/pyproject.toml
 RUN uv sync --frozen --no-cache
 
 # Add source code
 COPY ./core ./core
-COPY ./app/backend ./
+COPY ./app/backend ./app/backend
 
 ENV PYTHONPATH="/app/core"
+
+WORKDIR /app/app/backend
 
 EXPOSE 8000
 

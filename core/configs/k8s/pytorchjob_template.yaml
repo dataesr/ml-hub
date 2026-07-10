@@ -1,0 +1,78 @@
+# Template générique pour lancer n'importe quel job du package llmtrain.
+# Substitutions attendues (via render_manifest ou envsubst) :
+#   {{RUN_NAME}}      nom unique du run (ex: sft-lora-run-42)
+#   {{IMAGE}}         image Docker (ton-registry/llmtrain:tag)
+#   {{JOB_NAME}}      sft | pretrain | evaluate
+#   {{CONFIG_PATH}}   path monté du YAML de config (ex: /config/sft_lora_llama3.yaml)
+#   {{NPROC}}         nb de GPU par pod
+#   {{GPU_COUNT}}     nb de GPU demandés (limits)
+#   {{WORKER_REPLICAS}} nb de Workers (0 si single-GPU/single-node)
+
+apiVersion: kubeflow.org/v1
+kind: PyTorchJob
+metadata:
+  name: "{{RUN_NAME}}"
+spec:
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 1
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+            - name: pytorch
+              image: "{{IMAGE}}"
+              command:
+                - torchrun
+                - "--nproc_per_node={{NPROC}}"
+                - -m
+                - llmtrain.cli
+                - run
+                - "{{JOB_NAME}}"
+                - --config
+                - "{{CONFIG_PATH}}"
+              envFrom:
+                - secretRef:
+                    name: llmtrain-secrets   # HF_TOKEN, MLFLOW_TRACKING_URI, etc.
+              resources:
+                limits:
+                  nvidia.com/gpu: "{{GPU_COUNT}}"
+              volumeMounts:
+                - {name: data, mountPath: /data}
+                - {name: output, mountPath: /output}
+                - {name: config, mountPath: /config}
+          volumes:
+            - {name: data, persistentVolumeClaim: {claimName: training-data}}
+            - {name: output, persistentVolumeClaim: {claimName: model-output}}
+            - {name: config, configMap: {name: llmtrain-job-config}}
+    Worker:
+      replicas: "{{WORKER_REPLICAS}}"
+      restartPolicy: OnFailure
+      template:
+        spec:
+          containers:
+            - name: pytorch
+              image: "{{IMAGE}}"
+              command:
+                - torchrun
+                - "--nproc_per_node={{NPROC}}"
+                - -m
+                - llmtrain.cli
+                - run
+                - "{{JOB_NAME}}"
+                - --config
+                - "{{CONFIG_PATH}}"
+              envFrom:
+                - secretRef:
+                    name: llmtrain-secrets
+              resources:
+                limits:
+                  nvidia.com/gpu: "{{GPU_COUNT}}"
+              volumeMounts:
+                - {name: data, mountPath: /data}
+                - {name: output, mountPath: /output}
+                - {name: config, mountPath: /config}
+          volumes:
+            - {name: data, persistentVolumeClaim: {claimName: training-data}}
+            - {name: output, persistentVolumeClaim: {claimName: model-output}}
+            - {name: config, configMap: {name: llmtrain-job-config}}

@@ -18,5 +18,6 @@ def get_console_handler() -> logging.StreamHandler:
 def get_logger(name: str = __name__, level: int = logging.DEBUG) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(level)
-    logger.addHandler(get_console_handler())
+    if not logger.handlers:
+        logger.addHandler(get_console_handler())
     return logger

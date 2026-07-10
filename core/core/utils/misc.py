@@ -1,13 +1,6 @@
 import time
-from core.utils.types import ENV
-
-
-def env_exist(envs: list[ENV], env_name: str, env_value: str):
-    for env in envs:
-        if env.name == env_name and env.value == env_value:
-            return True
-    return False
-
+import importlib.util
+from typing import Any
 
 def timestamp() -> str:
     return time.strftime("%Y%m%d-%H%M%S")
@@ -22,3 +15,23 @@ def flatten_dict(d: dict, parent_key: str = "", sep: str = ".") -> dict:
         else:
             items[new_key] = v
     return items
+
+
+def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    """Recursively merge two dicts. Override values take priority."""
+    result = dict(base)
+    for k, v in override.items():
+        if k in result and isinstance(result[k], dict) and isinstance(v, dict):
+            result[k] = deep_merge(result[k], v)
+        else:
+            result[k] = v
+    return result
+
+
+def import_file_as_module(file_path: str):
+    spec = importlib.util.spec_from_file_location(file_path.strip(), file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load file_path: {file_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module

@@ -1,0 +1,10 @@
+model_name: "meta-llama/Llama-3.1-8B"
+output_dir: "/output/eval"
+dataset_path: "/data/ack_extraction_test.jsonl"
+adapter_path: "/output/final"
+
+fields_to_score: [funders, projects, infrastructure, persons_thanked, private_companies]
+
+mlflow:
+  experiment: "ack-extraction-eval"
+  run_name: "eval-llama3-lora-run-01"
