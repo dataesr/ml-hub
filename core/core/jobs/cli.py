@@ -10,7 +10,7 @@ Also accept yaml config:
 
 import os
 import argparse
-from pydantic import ValidationError
+from typing import Literal
 from core.common.configs import load_yaml_config
 from core.jobs import JOBS_REGISTRY
 from core.utils.misc import deep_merge
@@ -61,7 +61,7 @@ def _parse_override(unknown_args: list[str]) -> dict:
     return overrides
 
 
-def run(job_name: str, config: str | None, force_exec: bool, extra_args: list[str]):
+def run(job_name: str, config: str | None, extra_args: list[str], mode: Literal["run", "execute", "submit"] = "run"):
     if job_name not in JOBS_REGISTRY:
         raise ValueError(f"Unknown job '{job_name}'. Available: {list(JOBS_REGISTRY.keys())}")
 
@@ -78,31 +78,42 @@ def run(job_name: str, config: str | None, force_exec: bool, extra_args: list[st
     else:
         job = job_cls.model_validate({"args": overrides})
 
-    logger.info("--- Job %s ---", job.name)
+    logger.info(f"--- Job {job.name} ({mode}) ---")
     try:
-        result = job.execute() if force_exec else job.submit(exec=True)
+        if mode == "run":
+            result = job.submit(exec=True)
+        if mode == "submit":
+            result = job.submit()
+        if mode == "execute":
+            result = job.execute()
         logger.info("--- Success ---")
         return result
-    except ValidationError as error:
-        logger.error("Configuration validation failed: %s", error)
-        raise
     except Exception as error:
-        logger.error("Job %s failed: %s", job.name, error)
+        logger.error(f"Job {job.name} failed: {error}")
         raise
 
 
 def main():
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("job_name", help=f"One of {list(JOBS_REGISTRY.keys())}")
+    common.add_argument("--config", default=None, help="Path to a job YAML config")
+
     parser = argparse.ArgumentParser(description="CLI for AI jobs")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    run_parser = subparsers.add_parser("run", help="Run AI jobs")
-    run_parser.add_argument("job_name", help=f"One of {list(JOBS_REGISTRY.keys())}")
-    run_parser.add_argument("--config", default=None, help="Path to a job YAML config")
-    run_parser.add_argument("--force-exec", action="store_true", default=False, help="Force job execution (no submit)")
+    subparsers.add_parser("run", parents=[common], help="Run AI jobs")
+    subparsers.add_parser("submit", parents=[common], help="Submit AI jobs")
+    subparsers.add_parser("exec", parents=[common], help="Execute AI jobs")
+
     args, extra_args = parser.parse_known_args()
 
     if args.command == "run":
-        run(args.job_name, args.config, args.force_exec, extra_args)
+        run(args.job_name, args.config, extra_args)
 
+    if args.command == "submit":
+        run(args.job_name, args.config, extra_args, "submit")
+
+    if args.command == "exec":
+        run(args.job_name, args.config, extra_args, "execute")
 
 if __name__ == "__main__":
     main()

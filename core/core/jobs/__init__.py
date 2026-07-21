@@ -47,7 +47,7 @@ class InferenceJob(BaseJob[InferenceArgs]):
     ovh: OVHConfig = Field(
         default=OVHConfig(
             image="ghcr.io/dataesr/ml-hub/cuda-vllm:latest",
-            command=["/run.sh", "jobs", "run", "dataset-inference"],
+            command=["/run.sh", "jobs", "exec", "dataset-inference"],
             name="dataset-inference",
             gpu=1,
             flavor="l4-1-gpu",
@@ -74,7 +74,7 @@ class MergeAdaptersJob(BaseJob[MergeAdaptersArgs]):
     args: MergeAdaptersArgs = Field(default_factory=MergeAdaptersArgs)
     ovh: OVHConfig = OVHConfig(
         image="ghcr.io/dataesr/ml-hub/cuda-base:latest",
-        command=["/run.sh", "jobs", "run", "merge-adapters"],
+        command=["/run.sh", "jobs", "exec", "merge-adapters"],
         name="merge-adapters",
         gpu=1,
         flavor="l4-1-gpu",
@@ -94,7 +94,7 @@ class SFTJob(BaseJob[SFTArgs]):
     ovh: OVHConfig = Field(
         default=OVHConfig(
             image="ghcr.io/dataesr/ml-hub/cuda-base:latest",
-            command=["/run.sh", "jobs", "run", "finetune-sft"],
+            command=["/run.sh", "jobs", "exec", "finetune-sft"],
             name="finetune-sft",
             gpu=1,
             flavor="l4-1-gpu",
