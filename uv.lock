@@ -72,6 +72,7 @@ version = "0.1.0"
 source = { editable = "core" }
 dependencies = [
     { name = "datasets" },
+    { name = "httpx" },
     { name = "huggingface-hub" },
     { name = "jsonref" },
     { name = "mlflow" },
@@ -101,6 +102,7 @@ trl = [
 requires-dist = [
     { name = "accelerate", marker = "extra == 'trl'" },
     { name = "datasets", specifier = ">=4.8" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "huggingface-hub", specifier = "==0.36.0" },
     { name = "jsonref", specifier = "==1.1.0" },
     { name = "mlflow", specifier = ">=3.6" },
