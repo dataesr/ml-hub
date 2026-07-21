@@ -36,11 +36,11 @@ RUN uv pip install vllm==0.10.2 --torch-backend=cu128
 
 # Install python packages (ML dependencies)
 RUN uv pip install \
-  bitsandbytes==0.47.0 \
-  peft==0.17.1 \
-  sentencepiece==0.2.1 \
-  transformers==4.56.2 \
-  trl==0.23.0
+  bitsandbytes==0.49.2 \
+  peft==0.19.1 \
+  sentencepiece==0.2.2 \
+  transformers==5.14.1 \
+  trl==1.8.0
 
 # Clean cache
 RUN uv cache clean

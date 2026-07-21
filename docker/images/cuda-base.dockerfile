@@ -36,11 +36,11 @@ RUN uv pip install torch torchvision --index-url https://download.pytorch.org/wh
 
 # Install python packages (ML dependencies)
 RUN uv pip install \
-  bitsandbytes==0.47.0 \
-  peft==0.17.1 \
-  sentencepiece==0.2.1 \
-  transformers==4.56.2 \
-  trl==0.23.0
+  bitsandbytes==0.49.2 \
+  peft==0.19.1 \
+  sentencepiece==0.2.2 \
+  transformers==5.14.1 \
+  trl==1.8.0
 
 # Generic entrypoint: installs core from git at boot
 COPY --chown=42420:42420 docker/scripts/run.sh /run.sh
