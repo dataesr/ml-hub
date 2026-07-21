@@ -47,7 +47,7 @@ Documentation = "https://github.com/dataesr/ml-hub"
 [project.scripts]
 run_pipeline = "core.pipelines.runner:run_pipeline_cli"
 run_entrypoint = "core.pipelines.runner:run_entrypoint_cli"
-iatelier = "core.jobs.cli:app"
+jobs = "core.jobs.cli:main"
 
 [tool.setuptools.packages.find]
 where = [".", "src"]
