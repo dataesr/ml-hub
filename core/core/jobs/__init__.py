@@ -22,7 +22,6 @@ from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-
 class EvaluateJob(BaseJob[EvaluateArgs]):
     """Evaluate completions from a dataset or file using MLflow scorers."""
 
@@ -48,7 +47,7 @@ class InferenceJob(BaseJob[InferenceArgs]):
     ovh: OVHConfig = Field(
         default=OVHConfig(
             image="ghcr.io/dataesr/ml-hub/cuda-vllm:latest",
-            command=["/run.sh", "iatelier", "dataset-inference"],
+            command=["/run.sh", "iatelier", "run", "dataset-inference"],
             name="dataset-inference",
             gpu=1,
             flavor="l4-1-gpu",
@@ -75,7 +74,7 @@ class MergeAdaptersJob(BaseJob[MergeAdaptersArgs]):
     args: MergeAdaptersArgs = Field(default_factory=MergeAdaptersArgs)
     ovh: OVHConfig = OVHConfig(
         image="ghcr.io/dataesr/ml-hub/cuda-base:latest",
-        command=["/run.sh", "iatelier", "merge-adapters"],
+        command=["/run.sh", "iatelier", "run", "merge-adapters"],
         name="merge-adapters",
         gpu=1,
         flavor="l4-1-gpu",
@@ -95,7 +94,7 @@ class SFTJob(BaseJob[SFTArgs]):
     ovh: OVHConfig = Field(
         default=OVHConfig(
             image="ghcr.io/dataesr/ml-hub/cuda-base:latest",
-            command=["/run.sh", "iatelier", "finetune-sft"],
+            command=["/run.sh", "iatelier", "run", "finetune-sft"],
             name="finetune-sft",
             gpu=1,
             flavor="l4-1-gpu",
