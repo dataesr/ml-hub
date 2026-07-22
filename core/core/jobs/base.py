@@ -53,17 +53,13 @@ class BaseJob(BaseModel, Generic[TArgs]):
         return self.ovh.submit_job(flags, extra_envs)
 
     def update_args(self, overrides: dict):
-        """
-        Merge a dict (e.g. loaded from YAML) into args, revalidating the
-        result, and return a new Job instance (Job/args stay immutable).
-        """
-        if self.args is None:
-            raise ValueError(f"[job-{self.name}] No args defined, nothing to update")
+        """Merge a overrides dict into args."""
+
         self.args = type(self.args).model_validate({**self.args.model_dump(), **overrides})
 
 
 class DatasetConfig(BaseModel):
-    """Common dataset configuration shared across pipelines."""
+    """Common dataset configuration shared across jobs."""
 
     path: str = Field(..., description="HuggingFace dataset name or local path")
     split: str = Field("train", description="Dataset split to use")

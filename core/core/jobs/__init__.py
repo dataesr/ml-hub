@@ -1,5 +1,5 @@
-from core.jobs.merge_adapters import MergeAdaptersArgs, run_merge_adapters
-from core.jobs.sft import SFTArgs, run_sft
+from pydantic import Field
+from typing import Type, List
 from core.common.ovh import (
     OVHConfig,
     OVHVolume,
@@ -12,12 +12,14 @@ from core.common.ovh import (
     JOBS_CONTAINER,
     JOBS_VOLUME,
 )
-from core.jobs.inference import InferenceArgs, run_inference
 from core.common.mlflow import MLflowConfig, MLflowRun
-from pydantic import Field
 from core.jobs.base import BaseJob
-from typing import Type, List
 from core.jobs.evaluate import EvaluateArgs, run_evaluate
+from core.jobs.merge_adapters import MergeAdaptersArgs, run_merge_adapters
+from core.jobs.inference_vllm import InferenceVLLMArgs, run_inference_vllm
+
+# from core.jobs.inference_scw import InferenceSCWArgs, run_inference_scw
+from core.jobs.sft import SFTArgs, run_sft
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -36,14 +38,14 @@ class EvaluateJob(BaseJob[EvaluateArgs]):
         return run_evaluate(self.args, mlf)
 
 
-class InferenceJob(BaseJob[InferenceArgs]):
+class InferenceVLLMJob(BaseJob[InferenceVLLMArgs]):
     """Run batch inference on a dataset with a model using vLLM."""
 
     name: str = "dataset-inference"
     description: str = "Run batch inference on a dataset with a model using vLLM"
     tags: List[str] = ["dataset", "inference", "vllm"]
 
-    args: InferenceArgs = Field(default_factory=InferenceArgs)
+    args: InferenceVLLMArgs = Field(default_factory=InferenceVLLMArgs)
     ovh: OVHConfig = Field(
         default=OVHConfig(
             image="ghcr.io/dataesr/ml-hub/cuda-vllm:latest",
@@ -61,7 +63,7 @@ class InferenceJob(BaseJob[InferenceArgs]):
     mlflow: MLflowConfig = Field(default=MLflowConfig())
 
     def run(self, mlf: MLflowRun):
-        return run_inference(self.args, mlf)
+        return run_inference_vllm(self.args, mlf)
 
 
 class MergeAdaptersJob(BaseJob[MergeAdaptersArgs]):
@@ -111,23 +113,24 @@ class SFTJob(BaseJob[SFTArgs]):
         return run_sft(self.args, mlf)
 
 
-JOBS = SFTJob | InferenceJob | EvaluateJob | MergeAdaptersJob
+JOBS = SFTJob | InferenceVLLMJob | EvaluateJob | MergeAdaptersJob
 
 JOBS_REGISTRY: dict[str, Type[JOBS]] = {
     "finetune-sft": SFTJob,
-    "dataset-inference": InferenceJob,
+    "dataset-inference-vllm": InferenceVLLMJob,
     "dataset-evaluate": EvaluateJob,
     "merge-adapters": MergeAdaptersJob,
 }
 
 
 def list_jobs() -> list[Type[JOBS]]:
-    """Return a fresh default instance for every registered job."""
+    """Return the class for every registered job."""
+
     return [cls for cls in JOBS_REGISTRY.values()]
 
 
 def get_job(name: str) -> Type[JOBS]:
-    """Return a fresh default instance for the named pipeline."""
+    """Return the class of a named job."""
 
     cls = JOBS_REGISTRY.get(name)
     if cls is None:

@@ -1,5 +1,5 @@
 """
-Run batch inference on a dataset using vLLM.
+Run batch inference on a dataset using Scaleway.
 """
 
 import mlflow
@@ -22,8 +22,8 @@ from core.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-class InferenceArgs(BaseModel):
-    """Arguments for the inference job (vLLM batch inference)."""
+class InferenceSCWArgs(BaseModel):
+    """Arguments for the inference job (Scaleway inference)."""
 
     model_name: str = Field(..., description="HuggingFace model name or path")
     dataset: DatasetConfig = Field(..., description="Dataset configuration")
@@ -34,8 +34,8 @@ class InferenceArgs(BaseModel):
     )
 
 
-def run_inference(args: InferenceArgs, mlf: MLflowRun):
-    """Run batch inference on a dataset with vLLM."""
+def run_inference_scw(args: InferenceSCWArgs, mlf: MLflowRun):
+    """Run batch inference on a dataset with Scaleway."""
     # GPU imports inside the function to avoid dependencies at import time
     from vllm import LLM, SamplingParams  # ty:ignore[unresolved-import]
     from vllm.version import __version__ as VLLM_VERSION  # ty:ignore[unresolved-import]
