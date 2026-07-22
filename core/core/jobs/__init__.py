@@ -1,5 +1,7 @@
-from pydantic import Field
-from typing import Type, List
+import jsonref
+from core.utils.misc import build_cls_with_defaults
+from pydantic import Field, create_model
+from typing import Type, List, Any
 from core.common.ovh import (
     OVHConfig,
     OVHVolume,
@@ -23,6 +25,7 @@ from core.jobs.sft import SFTArgs, run_sft
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
 
 class EvaluateJob(BaseJob[EvaluateArgs]):
     """Evaluate completions from a dataset or file using MLflow scorers."""
@@ -136,3 +139,29 @@ def get_job(name: str) -> Type[JOBS]:
     if cls is None:
         raise KeyError(f"Job '{name}' not found. Available: {list(JOBS_REGISTRY.keys())}")
     return cls
+
+
+def get_job_schema(cls: Type[JOBS]) -> dict[str, Any]:
+    """
+    Return a JSON Schema object describing the user-facing inputs:
+    ``args`` (required), ``ovh`` and ``mlflow`` (optional overrides).
+    """
+
+    job_fields = cls.model_fields
+    args_cls = job_fields.get("args").default_factory
+    ovh_cfg = job_fields.get("ovh").default
+    mlflow_cfg = job_fields.get("mlflow").default
+
+    fields: dict[str, tuple[Any, Any]] = {
+        "args": (args_cls, Field(title="Jobs arguments")),
+    }
+    if ovh_cfg is not None:
+        ovh_cls = build_cls_with_defaults(OVHConfig, ovh_cfg, "OVH")
+        fields["ovh"] = (ovh_cls, Field(title="OVH configuration", default=None))
+    if mlflow_cfg is not None:
+        mlflow_cls = build_cls_with_defaults(MLflowConfig, mlflow_cfg, "MLflow")
+        fields["mlflow"] = (mlflow_cls, Field(title="MLflow configuration", default=None))
+
+    inputs_cls = create_model("Inputs", **fields)
+    schema = inputs_cls.model_json_schema(union_format="primitive_type_array")
+    return jsonref.replace_refs(schema)

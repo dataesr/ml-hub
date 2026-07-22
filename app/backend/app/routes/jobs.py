@@ -1,13 +1,12 @@
-from core.utils.misc import deep_merge
-from core.jobs import list_jobs, get_job
 from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
+from core.jobs import list_jobs, get_job, get_job_schema
+from core.utils.misc import deep_merge
 from app.logger import get_logger
 
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["jobs"])
-
 
 @router.get("/jobs")
 def jobs_list():
@@ -19,12 +18,9 @@ def jobs_list():
             "name": job_fields.get("name").default,
             "description": job_fields.get("description").default,
             "tags": job_fields.get("tags").default,
-            # "args": cfg.get("args").annotation,
+            # "args": job_fields.get("args").annotation,
             "ovh": job_fields.get("ovh").default,
             "mlflow": job_fields.get("mlflow").default,
-            # "inputs": cfg.get_schema(),
-            # "ovh": cfg.ovh.model_dump(exclude_unset=True) if cfg.ovh else None,
-            # "mlflow": cfg.mlflow.model_dump(exclude_unset=True) if cfg.mlflow else None,
         }
         for job_fields in jobs_fields
     ]
@@ -33,7 +29,8 @@ def jobs_list():
 @router.get("/jobs/{job_name}")
 def jobs_get(job_name: str):
     try:
-        job_fields = get_job(job_name).model_fields
+        job_cls = get_job(job_name)
+        job_fields = job_cls.model_fields
     except KeyError:
         raise HTTPException(status_code=404, detail=f"Job '{job_name}' not found.")
 
@@ -41,10 +38,10 @@ def jobs_get(job_name: str):
         "name": job_fields.get("name").default,
         "description": job_fields.get("description").default,
         "tags": job_fields.get("tags").default,
-        # # "inputs": cfg.get_schema(),
-        # "args": cfg.args.model_dump() if cfg.args is not None else {},
+        # "args": job_fields.get("args").annotation,
         "ovh": job_fields.get("ovh").default,
         "mlflow": job_fields.get("mlflow").default,
+        "inputs": get_job_schema(job_cls),
     }
 
 

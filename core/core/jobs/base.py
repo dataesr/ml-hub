@@ -26,12 +26,13 @@ class BaseJob(BaseModel, Generic[TArgs]):
     def run(self, mlf: MLflowRun):
         """Job run function to overrides"""
 
-    def execute(self) -> None:
+    def execute(self):
         with MLflowRun(self.mlflow) as mlf:
             logger.info(f"[job-{self.name}] Start running")
             logger.debug(f"[job-{self.name}] Args = {self.args.model_dump(exclude_defaults=True)}")
-            self.run(mlf)
+            results = self.run(mlf)
             logger.info(f"[job-{self.name}] Run completed")
+        return results
 
     def submit(self, exec: bool = False):
         """Submit via ovhai CLI. Requires ovh config."""
@@ -49,13 +50,8 @@ class BaseJob(BaseModel, Generic[TArgs]):
         extra_envs.extend(SECRET_ENV_HF)  # TODO: move this
         if self.mlflow:
             extra_envs.extend(self.mlflow.get_envs())
-
+        logger.info(f"[job-{self.name}] Start submitting")
         return self.ovh.submit_job(flags, extra_envs)
-
-    def update_args(self, overrides: dict):
-        """Merge a overrides dict into args."""
-
-        self.args = type(self.args).model_validate({**self.args.model_dump(), **overrides})
 
 
 class DatasetConfig(BaseModel):

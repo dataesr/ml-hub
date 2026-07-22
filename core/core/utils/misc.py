@@ -1,6 +1,7 @@
 import time
 import importlib.util
-from typing import Any
+from typing import Any, Type, Optional
+from pydantic import create_model, BaseModel
 
 def timestamp() -> str:
     return time.strftime("%Y%m%d-%H%M%S")
@@ -35,3 +36,23 @@ def import_file_as_module(file_path: str):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def build_cls_with_defaults(
+    base_cls: Type[BaseModel],
+    instance: BaseModel,
+    model_name: str,
+) -> Type[BaseModel]:
+    """
+    Build a variant of *base_cls* where every field that was set on *instance*
+    becomes a default.  Unset fields keep their original definition.
+    """
+
+    fields: dict[str, tuple[Any, Any]] = {}
+    set_values = instance.model_dump(exclude_unset=True)
+    for name, field_info in base_cls.model_fields.items():
+        if name in set_values:
+            fields[name] = (Optional[field_info.annotation], set_values[name])
+        else:
+            fields[name] = (field_info.annotation, field_info)
+    return create_model(model_name, __base__=base_cls, **fields)
