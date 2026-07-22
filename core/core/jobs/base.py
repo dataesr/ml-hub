@@ -73,11 +73,3 @@ class DatasetConfig(BaseModel):
     input_col: str = Field("input", description="Column containing the input text")
     output_col: str = Field("completion", description="Column containing the completion text")
 
-
-class SamplingParamsConfig(BaseModel):
-    """vLLM sampling parameters."""
-
-    seed: int = Field(0, description="Random seed")
-    temperature: float = Field(0, description="Sampling temperature")
-    max_tokens: int = Field(2048, description="Maximum tokens to generate")
-    skip_special_tokens: bool = Field(False, description="Skip special tokens in output")

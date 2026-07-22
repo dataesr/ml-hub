@@ -5,7 +5,7 @@ Run batch inference on a dataset using vLLM.
 import mlflow
 from pydantic import BaseModel, Field
 from datasets import Dataset
-from core.jobs.base import DatasetConfig, SamplingParamsConfig
+from core.jobs.base import DatasetConfig
 from core.common.mlflow import MLflowRun
 from core.common.datasets import (
     load,
@@ -22,16 +22,22 @@ from core.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+class VLLMSamplingParams(BaseModel):
+    """vLLM sampling parameters."""
+
+    seed: int = Field(0, description="Random seed")
+    temperature: float = Field(0, description="Sampling temperature")
+    max_tokens: int = Field(2048, description="Maximum tokens to generate")
+    skip_special_tokens: bool = Field(False, description="Skip special tokens in output")
+
+
 class InferenceVLLMArgs(BaseModel):
     """Arguments for the inference job (vLLM batch inference)."""
 
     model_name: str = Field(..., description="HuggingFace model name or path")
     dataset: DatasetConfig = Field(..., description="Dataset configuration")
     max_model_len: int = Field(2048, description="vLLM max model length")
-    sampling_params: SamplingParamsConfig = Field(
-        default_factory=SamplingParamsConfig,
-        description="vLLM sampling parameters",
-    )
+    sampling_params: VLLMSamplingParams = Field(default=VLLMSamplingParams())
 
 
 def run_inference_vllm(args: InferenceVLLMArgs, mlf: MLflowRun):
@@ -41,7 +47,7 @@ def run_inference_vllm(args: InferenceVLLMArgs, mlf: MLflowRun):
     from vllm.version import __version__ as VLLM_VERSION  # ty:ignore[unresolved-import]
 
     ### --- Start tracking ---
-    mlf.start_run(f"infer-{args.model_name}", tags={"run_type": "inference"})
+    mlf.start_run(f"infer-{args.model_name}", tags={"run_type": "inference-vllm"})
     mlf.set_active_model(model_name=args.model_name)
 
     ### --- Load dataset ---
@@ -52,14 +58,7 @@ def run_inference_vllm(args: InferenceVLLMArgs, mlf: MLflowRun):
     sampling_params = args.sampling_params
     if sampling_params.model_dump(exclude_defaults=True):
         logger.debug(f"Custom sampling params: {sampling_params.model_dump(exclude_defaults=True)}")
-    full_params = {
-        "seed": 0,
-        "temperature": 0,
-        "max_tokens": 2048,
-        "skip_special_tokens": True,
-        **(sampling_params.model_dump() or {}),
-    }
-    mlf.log_params(full_params)
+    mlf.log_params(sampling_params.model_dump())
 
     ### --- Load vllm engine ---
     vllm_engine = LLM(
@@ -107,7 +106,7 @@ def run_inference_vllm(args: InferenceVLLMArgs, mlf: MLflowRun):
     ### --- Generate completions ---
     @mlflow.trace(name="vllm_generate", span_type="llm")
     def vllm_completions():
-        outputs = vllm_engine.generate(prompts, SamplingParams(**full_params), use_tqdm=True)
+        outputs = vllm_engine.generate(prompts, SamplingParams(**sampling_params.model_dump()), use_tqdm=True)
         completions = [output.outputs[0].text for output in outputs]
         logger.debug(f"Generated {len(completions)} completions")
         return completions
@@ -122,7 +121,6 @@ def run_inference_vllm(args: InferenceVLLMArgs, mlf: MLflowRun):
     # Check completions
     if not isinstance(completions, list):
         raise TypeError(f"Generated completions must be a list, got {type(completions)}")
-
     if len(completions) != len(dataset):
         logger.error(f"Generated {len(completions)} completions from {len(dataset)} texts, only completions will be saved")
         output = Dataset.from_dict({output_col: completions})
