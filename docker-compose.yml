@@ -18,6 +18,9 @@ services:
 
         - action: rebuild
           path: ./pyproject.toml
+        
+        - action: rebuild
+          path: ./app/backend/pyproject.toml
 
         - action: rebuild
           path: ./uv.lock
