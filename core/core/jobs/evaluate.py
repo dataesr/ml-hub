@@ -6,6 +6,7 @@ import pandas as pd
 from typing import Optional
 from pydantic import Field, BaseModel
 from pandas import DataFrame
+from datasets import Dataset
 from core.common.mlflow import MLflowRun
 from core.common.datasets import load_from_ovh
 from core.scorers import SCORERS_MAPPING
@@ -29,28 +30,43 @@ class EvaluateArgs(BaseModel):
     id_col: str = Field("id", description="Column containing the row identifier")
 
 
+class EvaluateInlineArgs(BaseModel):
+    """Evaluation arguments for in-memory datasets (no storage lookup)."""
+
+    model_name: str = Field("unnamed", description="Model name for tracking purposes")
+    scorers: Optional[str] = Field(None, description="Comma-separated list of scorer names to use")
+    input_col: str = Field("inputs", description="Column containing the input text")
+    output_col: str = Field("outputs", description="Column containing the model completions")
+    expectation_col: str = Field("expectations", description="Column containing the expected outputs")
+    id_col: str = Field("id", description="Column containing the row identifier")
+
+
 def run_evaluate(args: EvaluateArgs, mlf: MLflowRun):
     """Evaluate completions from a dataset using MLflow scorers."""
-    # Imports inside the function to avoid dependencies at import time
-
-    # Parse scorers from comma-separated string
-    scorers_fns = get_scorers_fns(args)
-
-    # Load and prepare dataset
     container = getattr(args, "container", "llm-completions")
     df: DataFrame = load_from_ovh(args.dataset_name, container=container).to_pandas()  # ty:ignore[invalid-assignment]
     logger.info(f"✅ Dataset loaded: {df.shape[0]} rows")
-    df = prepare_inputs(df, args)
+    return evaluate_dataframe(df, args, mlf)
 
-    # Run mlflow evaluation
-    eval_results = mlflow.genai.evaluate(df, scorers=scorers_fns, model_id=mlf.set_active_model(model_name=args.model_name))
-    scores_df = prepare_output(eval_results.result_df)  # ty:ignore[unresolved-attribute]
+
+def evaluate_dataframe(df: DataFrame, args: EvaluateInlineArgs | EvaluateArgs, mlf: MLflowRun):
+    """Evaluate a dataframe and return the normalized scores dataframe."""
+    scorers_fns = get_scorers_fns(args)
+    prep_df = prepare_inputs(df, args)
+
+    eval_results = mlflow.genai.evaluate(
+        prep_df,
+        scorers=scorers_fns,
+        model_id=mlf.set_active_model(model_name=args.model_name),
+    )
+    scores_df = prepare_output(eval_results.result_df)  # ty:ignore[invalid-argument-type]
     mlf.log_dict(scores_df.to_dict(orient="index"), f"scores/{eval_results.run_id}.json")
+    return scores_df
 
 
-def get_scorers_fns(args) -> list[Scorer]:  # ty:ignore[invalid-type-form]
+def get_scorers_fns(args) -> list[Scorer]:
     scorers_list: list[str] = []
-    scorers_fns: list[Scorer] = []  # ty:ignore[invalid-type-form]
+    scorers_fns: list[Scorer] = []
     if hasattr(args, "scorers") and args.scorers:
         if isinstance(args.scorers, str):
             scorers_list = [s.strip() for s in args.scorers.split(",")]

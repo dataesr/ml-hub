@@ -1,0 +1,29 @@
+base: dataset-infer-and-eval-vllm
+
+args:
+  inference:
+    model_name: "dataesr/baguette-funders-600m-4k-with-template"
+    dataset:
+      path: "benchmark_acknowledgments.json"
+      split: "train"
+      format: "chat"
+      text_format: '### Acknowledgement Text ###\n{input}\n\n### Reasoning ###\n'
+      input_col: "text"
+      output_col: "completion"
+      system_prompt: "You are a careful assistant."
+    max_model_len: 4096
+    sampling_params:
+      temperature: 0
+      max_tokens: 1024
+
+  evaluation:
+    model_name: "dataesr/baguette-funders-600m-4k-with-template"
+    scorers: "is_json, acknowledgement"
+    input_col: "input"
+    output_col: "completion"
+    expectation_col: "expectations"
+    id_col: "publication_id"
+
+mlflow:
+  experiment: "entity-extraction-acknowledgment"
+  run_name: "infer-eval-vllm-ack"

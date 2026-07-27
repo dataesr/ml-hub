@@ -17,10 +17,15 @@ from core.common.ovh import (
 from core.common.mlflow import MLflowConfig, MLflowRun
 from core.jobs.base import BaseJob
 from core.jobs.evaluate import EvaluateArgs, run_evaluate
+from core.jobs.infer_and_eval import (
+    InferAndEvalVLLMArgs,
+    InferAndEvalSCWArgs,
+    run_infer_and_eval_vllm,
+    run_infer_and_eval_scw,
+)
 from core.jobs.merge_adapters import MergeAdaptersArgs, run_merge_adapters
 from core.jobs.inference_vllm import InferenceVLLMArgs, run_inference_vllm
-
-# from core.jobs.inference_scw import InferenceSCWArgs, run_inference_scw
+from core.jobs.inference_scw import InferenceSCWArgs, run_inference_scw
 from core.jobs.sft import SFTArgs, run_sft
 from core.utils.logger import get_logger
 
@@ -44,7 +49,7 @@ class EvaluateJob(BaseJob[EvaluateArgs]):
 class InferenceVLLMJob(BaseJob[InferenceVLLMArgs]):
     """Run batch inference on a dataset with a model using vLLM."""
 
-    name: str = "dataset-inference"
+    name: str = "dataset-inference-vllm"
     description: str = "Run batch inference on a dataset with a model using vLLM"
     tags: list[str] = ["dataset", "inference", "vllm"]
 
@@ -59,7 +64,11 @@ class InferenceVLLMJob(BaseJob[InferenceVLLMArgs]):
             volumes=[
                 OVHVolume(container=CONFIGS_CONTAINER, mount=CONFIGS_VOLUME),
                 OVHVolume(container=DATASETS_CONTAINER, mount=DATASETS_VOLUME),
-                OVHVolume(container=COMPLETIONS_CONTAINER, mount=COMPLETIONS_VOLUME, permission="RWD"),
+                OVHVolume(
+                    container=COMPLETIONS_CONTAINER,
+                    mount=COMPLETIONS_VOLUME,
+                    permission="RWD",
+                ),
             ],
         )
     )
@@ -67,6 +76,66 @@ class InferenceVLLMJob(BaseJob[InferenceVLLMArgs]):
 
     def run(self, mlf: MLflowRun):
         return run_inference_vllm(self.args, mlf)
+
+
+class InferenceSCWJob(BaseJob[InferenceSCWArgs]):
+    """Run batch inference on a dataset with a model using Scaleway API."""
+
+    name: str = "dataset-inference-scw"
+    description: str = "Run batch inference on a dataset with a model using Scaleway API"
+    tags: list[str] = ["dataset", "inference", "scaleway"]
+
+    args: InferenceSCWArgs = Field(default_factory=InferenceSCWArgs)
+    mlflow: MLflowConfig = Field(default=MLflowConfig())
+
+    def run(self, mlf: MLflowRun):
+        return run_inference_scw(self.args, mlf)
+
+
+class InferAndEvalVLLMJob(BaseJob[InferAndEvalVLLMArgs]):
+    """Run vLLM inference and evaluation sequentially on a dataset."""
+
+    name: str = "dataset-infer-and-eval-vllm"
+    description: str = "Run vLLM inference and evaluation sequentially on a dataset"
+    tags: list[str] = ["dataset", "inference", "evaluate", "vllm", "mlflow"]
+
+    args: InferAndEvalVLLMArgs = Field(default_factory=InferAndEvalVLLMArgs)
+    ovh: OVHConfig = Field(
+        default=OVHConfig(
+            image="ghcr.io/dataesr/ml-hub/cuda-vllm:latest",
+            command=["/run.sh", "jobs", "exec", "dataset-infer-and-eval-vllm"],
+            name="dataset-infer-and-eval-vllm",
+            gpu=1,
+            flavor="l4-1-gpu",
+            volumes=[
+                OVHVolume(container=CONFIGS_CONTAINER, mount=CONFIGS_VOLUME),
+                OVHVolume(container=DATASETS_CONTAINER, mount=DATASETS_VOLUME),
+                OVHVolume(
+                    container=COMPLETIONS_CONTAINER,
+                    mount=COMPLETIONS_VOLUME,
+                    permission="RWD",
+                ),
+            ],
+        )
+    )
+    mlflow: MLflowConfig = Field(default=MLflowConfig())
+
+    def run(self, mlf: MLflowRun):
+        return run_infer_and_eval_vllm(self.args, mlf)
+
+
+class InferAndEvalSCWJob(BaseJob[InferAndEvalSCWArgs]):
+    """Run Scaleway inference and evaluation sequentially on a dataset."""
+
+    name: str = "dataset-infer-and-eval-scw"
+    description: str = "Run Scaleway inference and evaluation sequentially on a dataset"
+    tags: list[str] = ["dataset", "inference", "evaluate", "scaleway", "mlflow"]
+
+    args: InferAndEvalSCWArgs = Field(default_factory=InferAndEvalSCWArgs)
+    mlflow: MLflowConfig = Field(default=MLflowConfig())
+
+    def run(self, mlf: MLflowRun):
+        return run_infer_and_eval_scw(self.args, mlf)
 
 
 class MergeAdaptersJob(BaseJob[MergeAdaptersArgs]):
@@ -116,14 +185,18 @@ class SFTJob(BaseJob[SFTArgs]):
         return run_sft(self.args, mlf)
 
 
-JOBS = SFTJob | InferenceVLLMJob | EvaluateJob | MergeAdaptersJob
+# Fill jobs classes here
+JOBS = (
+    SFTJob
+    | InferenceVLLMJob
+    | InferenceSCWJob
+    | InferAndEvalVLLMJob
+    | InferAndEvalSCWJob
+    | EvaluateJob
+    | MergeAdaptersJob
+)
 
-JOBS_REGISTRY: dict[str, type[JOBS]] = {
-    "finetune-sft": SFTJob,
-    "dataset-inference-vllm": InferenceVLLMJob,
-    "dataset-evaluate": EvaluateJob,
-    "merge-adapters": MergeAdaptersJob,
-}
+JOBS_REGISTRY: dict[str, type[JOBS]] = {cls.name: cls for cls in JOBS.__args__}
 
 
 def list_jobs() -> list[type[JOBS]]:
@@ -160,7 +233,10 @@ def get_job_schema(cls: type[JOBS]) -> dict[str, Any]:
         fields["ovh"] = (ovh_cls, Field(title="OVH configuration", default=None))
     if mlflow_cfg is not None:
         mlflow_cls = build_cls_with_defaults(MLflowConfig, mlflow_cfg, "MLflow")
-        fields["mlflow"] = (mlflow_cls, Field(title="MLflow configuration", default=None))
+        fields["mlflow"] = (
+            mlflow_cls,
+            Field(title="MLflow configuration", default=None),
+        )
 
     inputs_cls = create_model("Inputs", **fields)
     schema = inputs_cls.model_json_schema(union_format="primitive_type_array")

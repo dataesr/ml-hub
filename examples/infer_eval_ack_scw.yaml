@@ -1,0 +1,31 @@
+base: dataset-infer-and-eval-scw
+
+args:
+  inference:
+    model_name: "mistral-nemo-instruct-2407"
+    dataset:
+      path: "benchmark_acknowledgments.json"
+      split: "train"
+      format: "chat"
+      text_format: '### Acknowledgement Text ###\n{input}\n\n### Reasoning ###\n'
+      input_col: "text"
+      output_col: "completion"
+      system_prompt: "You are a careful assistant."
+    completion_params:
+      temperature: 0
+      top_p: 0.95
+      response_format:
+        type: "text"
+      stream: false
+
+  evaluation:
+    model_name: "mistral-nemo-instruct-2407"
+    scorers: "is_json, acknowledgement"
+    input_col: "input"
+    output_col: "completion"
+    expectation_col: "expectations"
+    id_col: "publication_id"
+
+mlflow:
+  experiment: "entity-extraction-acknowledgment"
+  run_name: "infer-eval-scw-ack"

@@ -39,7 +39,12 @@ class InferenceSCWArgs(BaseModel):
     )
 
 
-def run_inference_scw(args: InferenceSCWArgs, mlf: MLflowRun):
+def run_inference_scw(
+    args: InferenceSCWArgs,
+    mlf: MLflowRun,
+    return_output_dataset: bool = False,
+    start_tracking: bool = True,
+):
     """Run batch inference on a dataset with Scaleway."""
     ### --- Get deployment ---
     deployment = find_deployment(model_name=args.model_name)
@@ -48,7 +53,8 @@ def run_inference_scw(args: InferenceSCWArgs, mlf: MLflowRun):
         raise ValueError(f"No deployment URL found for model name: {args.model_name}")
 
     ### --- Start tracking ---
-    mlf.start_run(f"infer-{args.model_name}", tags={"run_type": "inference-scw"})
+    if start_tracking:
+        mlf.start_run(f"infer-{args.model_name}", tags={"run_type": "inference-scw"})
     mlf.set_active_model(model_name=args.model_name)
 
     ### --- Load dataset ---
@@ -109,3 +115,6 @@ def run_inference_scw(args: InferenceSCWArgs, mlf: MLflowRun):
 
     ### --- Finalize ---
     logger.info(f"✅ Inference done! Results saved to {output_path}")
+    if return_output_dataset:
+        return output
+    return output_path

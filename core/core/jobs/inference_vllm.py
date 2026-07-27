@@ -40,14 +40,20 @@ class InferenceVLLMArgs(BaseModel):
     sampling_params: VLLMSamplingParams = Field(default=VLLMSamplingParams())
 
 
-def run_inference_vllm(args: InferenceVLLMArgs, mlf: MLflowRun):
+def run_inference_vllm(
+    args: InferenceVLLMArgs,
+    mlf: MLflowRun,
+    return_output_dataset: bool = False,
+    start_tracking: bool = True,
+):
     """Run batch inference on a dataset with vLLM."""
     # GPU imports inside the function to avoid dependencies at import time
     from vllm import LLM, SamplingParams  # ty:ignore[unresolved-import]
     from vllm.version import __version__ as VLLM_VERSION  # ty:ignore[unresolved-import]
 
     ### --- Start tracking ---
-    mlf.start_run(f"infer-{args.model_name}", tags={"run_type": "inference-vllm"})
+    if start_tracking:
+        mlf.start_run(f"infer-{args.model_name}", tags={"run_type": "inference-vllm"})
     mlf.set_active_model(model_name=args.model_name)
 
     ### --- Load dataset ---
@@ -136,3 +142,6 @@ def run_inference_vllm(args: InferenceVLLMArgs, mlf: MLflowRun):
 
     ### --- Finalize ---
     logger.info(f"✅ Inference done! Results saved to {output_path}")
+    if return_output_dataset:
+        return output
+    return output_path
