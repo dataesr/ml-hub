@@ -3,7 +3,7 @@ import os
 import json
 import shlex
 from subprocess import CompletedProcess, run
-from typing import Literal, List, Optional, Any
+from typing import Literal, Optional, Any
 from pydantic import BaseModel, Field
 from core.utils.logger import get_logger
 
@@ -192,7 +192,7 @@ class OVHFlag(BaseModel):
 class OVHConfig(BaseModel):
     # Image
     image: str
-    command: List[str] = Field(default_factory=list)
+    command: list[str] = Field(default_factory=list)
 
     # Options
     name: Optional[str] = None

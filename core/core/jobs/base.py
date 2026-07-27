@@ -1,6 +1,6 @@
 """Base job abstraction."""
 
-from typing import List, Optional, TypeVar, Generic
+from typing import Optional, TypeVar, Generic
 from pydantic import BaseModel, Field
 from core.common.mlflow import MLflowConfig, MLflowRun
 from core.common.ovh import OVHConfig
@@ -17,7 +17,7 @@ class BaseJob(BaseModel, Generic[TArgs]):
 
     name: str
     description: str = ""
-    tags: List[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
 
     args: TArgs
     mlflow: Optional[MLflowConfig] = None
@@ -72,4 +72,3 @@ class DatasetConfig(BaseModel):
     instruction_col: str = Field("instruction", description="Column containing the instruction text")
     input_col: str = Field("input", description="Column containing the input text")
     output_col: str = Field("completion", description="Column containing the completion text")
-

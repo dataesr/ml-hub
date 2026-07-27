@@ -3,7 +3,7 @@ MLflow config and lightweight run context manager.
 """
 
 import os
-from typing import Any, List, Optional
+from typing import Any, Optional
 import mlflow
 from pydantic import BaseModel, Field
 from datasets import Dataset
@@ -34,9 +34,9 @@ class MLflowConfig(BaseModel):
     run_name: str = "run"
     run_name_tag: Optional[str] = None
 
-    def get_envs(self) -> List[ENV]:
+    def get_envs(self) -> list[ENV]:
         """Return environment variables needed to propagate this config to a remote job."""
-        envs: List[ENV] = []
+        envs: list[ENV] = []
         if self.experiment:
             envs.append(ENV(name="MLFLOW_EXPERIMENT_NAME", value=self.experiment))
         if self.run_name:

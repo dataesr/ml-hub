@@ -1,7 +1,7 @@
 import jsonref
 from core.utils.misc import build_cls_with_defaults
 from pydantic import Field, create_model
-from typing import Type, List, Any
+from typing import Any
 from core.common.ovh import (
     OVHConfig,
     OVHVolume,
@@ -32,7 +32,7 @@ class EvaluateJob(BaseJob[EvaluateArgs]):
 
     name: str = "dataset-evaluate"
     description: str = "Evaluate completions from a dataset or file using MLflow scorers"
-    tags: List[str] = ["dataset", "evaluate", "mlflow"]
+    tags: list[str] = ["dataset", "evaluate", "mlflow"]
 
     args: EvaluateArgs = Field(default_factory=EvaluateArgs)
     mlflow: MLflowConfig = Field(default=MLflowConfig())
@@ -46,7 +46,7 @@ class InferenceVLLMJob(BaseJob[InferenceVLLMArgs]):
 
     name: str = "dataset-inference"
     description: str = "Run batch inference on a dataset with a model using vLLM"
-    tags: List[str] = ["dataset", "inference", "vllm"]
+    tags: list[str] = ["dataset", "inference", "vllm"]
 
     args: InferenceVLLMArgs = Field(default_factory=InferenceVLLMArgs)
     ovh: OVHConfig = Field(
@@ -74,7 +74,7 @@ class MergeAdaptersJob(BaseJob[MergeAdaptersArgs]):
 
     name: str = "merge-adapters"
     description: str = "Merge adapters to a base model and save merged model"
-    tags: List[str] = ["huggingface", "adapters", "merge"]
+    tags: list[str] = ["huggingface", "adapters", "merge"]
 
     args: MergeAdaptersArgs = Field(default_factory=MergeAdaptersArgs)
     ovh: OVHConfig = OVHConfig(
@@ -93,7 +93,7 @@ class MergeAdaptersJob(BaseJob[MergeAdaptersArgs]):
 class SFTJob(BaseJob[SFTArgs]):
     name: str = "finetune-sft"
     description: str = "Finetune a model with sft + LoRA and BitsAndBytes 4-bit quantization"
-    tags: List[str] = ["finetuning", "sft", "transformers", "lora", "bitsandbytes"]
+    tags: list[str] = ["finetuning", "sft", "transformers", "lora", "bitsandbytes"]
 
     args: SFTArgs = Field(default_factory=SFTArgs)
     ovh: OVHConfig = Field(
@@ -118,7 +118,7 @@ class SFTJob(BaseJob[SFTArgs]):
 
 JOBS = SFTJob | InferenceVLLMJob | EvaluateJob | MergeAdaptersJob
 
-JOBS_REGISTRY: dict[str, Type[JOBS]] = {
+JOBS_REGISTRY: dict[str, type[JOBS]] = {
     "finetune-sft": SFTJob,
     "dataset-inference-vllm": InferenceVLLMJob,
     "dataset-evaluate": EvaluateJob,
@@ -126,13 +126,13 @@ JOBS_REGISTRY: dict[str, Type[JOBS]] = {
 }
 
 
-def list_jobs() -> list[Type[JOBS]]:
+def list_jobs() -> list[type[JOBS]]:
     """Return the class for every registered job."""
 
     return [cls for cls in JOBS_REGISTRY.values()]
 
 
-def get_job(name: str) -> Type[JOBS]:
+def get_job(name: str) -> type[JOBS]:
     """Return the class of a named job."""
 
     cls = JOBS_REGISTRY.get(name)
@@ -141,7 +141,7 @@ def get_job(name: str) -> Type[JOBS]:
     return cls
 
 
-def get_job_schema(cls: Type[JOBS]) -> dict[str, Any]:
+def get_job_schema(cls: type[JOBS]) -> dict[str, Any]:
     """
     Return a JSON Schema object describing the user-facing inputs:
     ``args`` (required), ``ovh`` and ``mlflow`` (optional overrides).
