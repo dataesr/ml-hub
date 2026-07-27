@@ -5,23 +5,6 @@ from core.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-# cleaning
-def clean_completion(text: str):
-    clean = text
-
-    # for nuextract tiny
-    if text.startswith("### Template:"):
-        clean = text.replace("### Template:", "")
-
-    # for llama 1B
-    for t in text.split("```"):
-        if t.startswith("json"):
-            clean = t[4:]
-            break
-
-    return clean
-
-
 def tsv_to_data(text: str) -> dict[str, Any]:
     lines = text.strip().split("\n")
     if not lines:
