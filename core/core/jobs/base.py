@@ -54,21 +54,3 @@ class BaseJob(BaseModel, Generic[TArgs]):
         return self.ovh.submit_job(flags, extra_envs)
 
 
-class DatasetConfig(BaseModel):
-    """Common dataset configuration shared across jobs."""
-
-    path: str = Field(..., description="HuggingFace dataset name or local path")
-    split: str = Field("train", description="Dataset split to use")
-    format: Optional[str] = Field(
-        None,
-        description="Dataset format ('chat' or 'text'). Inferred from structure when not set.",
-    )
-    text_format: Optional[str] = Field(
-        None,
-        description="Text prompt template in '{instruction}...{input}...{response}' form.",
-    )
-    system_prompt: Optional[str] = Field(None, description="System prompt prepended to all inputs")
-    chat_template: Optional[str] = Field(None, description="Chat template for conversation formatting")
-    instruction_col: str = Field("instruction", description="Column containing the instruction text")
-    input_col: str = Field("input", description="Column containing the input text")
-    output_col: str = Field("completion", description="Column containing the completion text")

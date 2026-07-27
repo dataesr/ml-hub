@@ -3,6 +3,8 @@ Datasets utils.
 """
 
 import os
+from typing import Any, Literal, Optional
+from pydantic import BaseModel, Field
 from datasets import Dataset, load_dataset
 from core.common.ovh import ovhai_object_download, DATASETS_CONTAINER, DATASETS_VOLUME
 from core.utils.logger import get_logger
@@ -16,6 +18,26 @@ INPUT_COLUMN = "input"
 OUTPUT_COLUMN = "completion"
 
 DEFAULT_TEXT_FORMAT = "### Instruction:\n{instruction}\n\n### Input:\n{input}\n\n### Response:\n{response}"
+
+
+class DatasetConfig(BaseModel):
+    """Common dataset configuration shared across jobs."""
+
+    path: str = Field(..., description="HuggingFace dataset name or local path")
+    split: str = Field("train", description="Dataset split to use")
+    format: Optional[Literal["chat", "text"]] = Field(
+        None,
+        description="Dataset format ('chat' or 'text'). Inferred from structure when not set.",
+    )
+    text_format: Optional[str] = Field(
+        None,
+        description="Text prompt template in '{instruction}...{input}...{response}' form.",
+    )
+    system_prompt: Optional[str] = Field(None, description="System prompt prepended to all inputs")
+    chat_template: Optional[str] = Field(None, description="Chat template for conversation formatting")
+    instruction_col: str = Field("instruction", description="Column containing the instruction text")
+    input_col: str = Field("input", description="Column containing the input text")
+    output_col: str = Field("completion", description="Column containing the completion text")
 
 
 def load_from_ovh(path: str, container: str) -> Dataset:
@@ -68,6 +90,33 @@ def load(path_or_name: str, split: str | None = None) -> Dataset:
         raise Exception(f"Error while loading {path_or_name}")
 
     return dataset
+
+
+def load_and_format_dataset(
+    args: DatasetConfig,
+    dataset_chat_template: str | None = None,
+) -> tuple[Dataset, bool]:
+    """
+    Load and format a dataset.
+    """
+    dataset = load(args.path, split=args.split)
+    dataset = rename_columns(
+        dataset,
+        instruction_col=args.instruction_col,
+        input_col=args.input_col,
+        output_col=args.output_col,
+    )
+    use_chat_format = should_use_chat_format(
+        config_format=args.format,
+        dataset_chat_template=args.chat_template or dataset_chat_template,
+    )
+    dataset = construct_prompts(
+        dataset,
+        custom_instruction=args.system_prompt,
+        custom_text_format=args.text_format,
+        use_chat_format=use_chat_format,
+    )
+    return dataset, use_chat_format
 
 
 def construct_one_prompt(
@@ -133,14 +182,15 @@ def construct_prompts(
     - dataset (Dataset): training dataset
     - custom_instruction (str): custom system prompt
     - custom_text_format (str): custom text format
-    - use_conversational_format (bool): Use conversational or text format
-    Returns the a dataset with the prompt column (either conversational or text)
+    - use_chat_format (bool): Use chat or text format
+    Returns the a dataset with the prompt column (either chat or text)
     """
+
     prompts_field = CONVERSATIONS_COLUMN if use_chat_format else TEXT_COLUMN
 
     def map_conversations(example):
         if use_chat_format:
-            # Conversational format (list of messages, ChatML-like)
+            # Chat format (list of messages, ChatML-like)
             return {
                 prompts_field: construct_one_conversation(
                     system=custom_instruction or example.get(INSTRUCTION_COLUMN),
@@ -149,13 +199,12 @@ def construct_prompts(
                 )
             }
         else:
-            # Non-conversational (Alpaca-style prompt-response text)
-            instruction = custom_instruction if custom_instruction is not None else "You are an helpful assistant."
-            text_format = custom_text_format or DEFAULT_TEXT_FORMAT
-            text = text_format.format(
-                instruction=instruction,
-                input=example[INPUT_COLUMN],
-                response=example[OUTPUT_COLUMN] if OUTPUT_COLUMN in example else "",
+            # Non-chat (Alpaca-style prompt-response text)
+            text = construct_one_prompt(
+                example[INPUT_COLUMN],
+                instruction=custom_instruction,
+                response=example.get(OUTPUT_COLUMN, ""),
+                text_format=custom_text_format,
             )
             return {prompts_field: text}
 
@@ -189,6 +238,22 @@ def rename_columns(
     return dataset
 
 
+def should_use_chat_format(config_format: str | None = None, dataset_chat_template=None):
+    if config_format == "chat":
+        logger.debug("Format set to 'chat'")
+        return True
+    elif config_format == "text":
+        logger.debug("Format set to 'text'")
+        return False
+    else:
+        if dataset_chat_template is not None:
+            logger.debug("Format automatically set to 'chat'")
+            return True
+        else:
+            logger.debug("Format automatically set to 'text'")
+            return False
+
+
 def get_commit_hash(dataset: Dataset) -> str | None:
     """
     Retrieve commit hash from dataset checksums
@@ -210,28 +275,3 @@ def get_commit_hash(dataset: Dataset) -> str | None:
         checksum_file = checksums_list[0].split("@")[1]  # ty:ignore[unresolved-attribute]
         commit_hash = checksum_file.split("/")[0]
     return commit_hash
-
-
-def get_prompts(data: Dataset) -> list[str]:
-    input_col = INPUT_COLUMN
-    if input_col not in data.column_names:
-        raise ValueError(f"Column {input_col} not found on data! Set env var 'INPUT_COLUMN' to select the column name.")
-
-    prompts = list(data[input_col])
-    return prompts
-
-
-def should_use_chat_format(config_format: str | None = None, dataset_chat_template=None):
-    if config_format == "chat":
-        logger.debug("Format set to 'chat'")
-        return True
-    elif config_format == "text":
-        logger.debug("Format set to 'text'")
-        return False
-    else:
-        if dataset_chat_template is not None:
-            logger.debug("Format automatically set to 'chat'")
-            return True
-        else:
-            logger.debug("Format automatically set to 'text'")
-            return False

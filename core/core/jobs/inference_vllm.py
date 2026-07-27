@@ -5,15 +5,10 @@ Run batch inference on a dataset using vLLM.
 import mlflow
 from pydantic import BaseModel, Field
 from datasets import Dataset
-from core.jobs.base import DatasetConfig
 from core.common.mlflow import MLflowRun
 from core.common.datasets import (
-    load,
-    get_prompts,
-    should_use_chat_format,
-    construct_one_prompt,
-    construct_one_conversation,
-    rename_columns,
+    DatasetConfig,
+    load_and_format_dataset,
     OUTPUT_COLUMN,
 )
 from core.utils.misc import timestamp
@@ -56,11 +51,6 @@ def run_inference_vllm(
         mlf.start_run(f"infer-{args.model_name}", tags={"run_type": "inference-vllm"})
     mlf.set_active_model(model_name=args.model_name)
 
-    ### --- Load dataset ---
-    dataset = load(args.dataset.path, split=args.dataset.split)
-    mlf.log_dataset(args.dataset.path, dataset, dataset_split=args.dataset.split)
-    logger.info("✅ Dataset loaded")
-
     sampling_params = args.sampling_params
     if sampling_params.model_dump(exclude_defaults=True):
         logger.debug(f"Custom sampling params: {sampling_params.model_dump(exclude_defaults=True)}")
@@ -85,27 +75,24 @@ def run_inference_vllm(
     tokenizer = vllm_engine.get_tokenizer()
     logger.info(f"✅ {args.model_name} tokenizer loaded")
 
-    ### --- Get prompts from dataset ---
-    dataset = rename_columns(dataset, input_col=args.dataset.input_col)
-    prompts = get_prompts(dataset)
-    use_conversation = should_use_chat_format(args.dataset.format, args.dataset.chat_template or tokenizer.chat_template)
-    prompts = [
-        tokenizer.apply_chat_template(
-            (
-                construct_one_conversation(
-                    prompt,
-                    system=args.dataset.system_prompt,
-                )
-                if use_conversation
-                else construct_one_prompt(
-                    prompt, instruction=args.dataset.system_prompt, text_format=args.dataset.text_format
-                )
-            ),
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-        for prompt in prompts
-    ]
+    ### --- Load and format dataset ---
+    dataset, use_chat_format = load_and_format_dataset(
+        args.dataset,
+        dataset_chat_template=tokenizer.chat_template,
+    )
+    mlf.log_dataset(args.dataset.path, dataset, dataset_split=args.dataset.split)
+    logger.info("✅ Dataset loaded")
+
+    prompts = dataset[dataset.column_names[0]]  # Use the first column as prompts
+    if use_chat_format:
+        prompts = [
+            tokenizer.apply_chat_template(
+                prompt,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+            for prompt in prompts
+        ]
     logger.info(f"✅ {len(prompts)} prompts formatted")
     logger.debug(f"Example: {prompts[0]}")
 

@@ -5,9 +5,8 @@ Finetune a causal LM with LoRA + BitsAndBytes (4-bit quantization).
 import os
 from typing import no_type_check, Optional, Any
 from pydantic import BaseModel, Field
-from core.jobs.base import DatasetConfig
 from core.common.mlflow import MLflowRun
-from core.common.datasets import load, construct_prompts, rename_columns, should_use_chat_format
+from core.common.datasets import DatasetConfig, load_and_format_dataset
 from core.common.models import push_model_to_hf, merge_adapters_to_model
 from core.utils.files import folder_create
 from core.utils.logger import get_logger
@@ -97,22 +96,13 @@ def run_sft(args: SFTArgs, mlf: MLflowRun):
     logger.debug(f"Tokenizer template: {tokenizer.chat_template}")
     logger.info("✅ Model and tokenizer loaded")
 
-    ### --- Load dataset ---
-    dataset = load(args.dataset.path, split=args.dataset.split)
-    mlf.log_dataset(args.dataset.path, dataset, dataset_split=args.dataset.split)
-    logger.info("✅ Dataset loaded")
-
-    ### --- Format prompts ---
-    dataset = rename_columns(dataset, args.dataset.instruction_col, args.dataset.input_col, args.dataset.output_col)
-    dataset = construct_prompts(
-        dataset,
-        custom_instruction=args.dataset.system_prompt,
-        custom_text_format=args.dataset.text_format,
-        use_conversational_format=should_use_chat_format(
-            config_format=args.dataset.format,
-            dataset_chat_template=args.dataset.chat_template or tokenizer.chat_template,
-        ),
+    ### --- Load and format dataset ---
+    dataset = load_and_format_dataset(
+        args.dataset,
+        dataset_chat_template=tokenizer.chat_template,
     )
+    mlf.log_dataset(args.dataset.path, dataset, dataset_split=args.dataset.split)
+    logger.info("✅ Dataset loaded and formatted")
 
     ### --- Training ---
     lora_config = LoraConfig(
