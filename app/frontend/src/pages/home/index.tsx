@@ -12,7 +12,7 @@ export default function Home() {
           <Card
             background
             shadow
-            desc="Run AI pipelines."
+            desc="Run AI jobs."
             enlargeLink
             imageAlt="system"
             imageUrl="artwork/pictograms/system/system.svg"

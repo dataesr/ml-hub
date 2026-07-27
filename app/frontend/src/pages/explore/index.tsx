@@ -1,7 +1,7 @@
 import { useCallback } from "react"
 import { Breadcrumb, Container, Link, Text } from "@dataesr/dsfr-plus"
 import Datasets from "../datasets"
-import Experiments from "../experiments"
+// import Experiments from "../experiments"
 import Models from "../models"
 import { useSearchParams } from "react-router-dom"
 

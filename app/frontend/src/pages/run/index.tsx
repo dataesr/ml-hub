@@ -1,14 +1,14 @@
 import { Accordion, Breadcrumb, Container, Link, Text } from "@dataesr/dsfr-plus"
-import { useListPipelines, useGetPipeline } from "../../api/pipelines/hooks"
-import PipelinesTable from "./components/pipelines-table"
+import { useListJobs, useGetJob } from "../../api/jobs/hooks"
+import JobsTable from "./components/jobs-table"
 import ErrorCallOut from "../../components/error-call-out"
 import LoadingSpinner from "../../components/loading-spinner"
 import Drawer from "../../components/drawer"
 import { useState } from "react"
-import PipelineForm from "./components/pipelines-form"
-import Jobs from "../jobs"
+import JobForm from "./components/jobs-form"
+import OVHJobs from "../ovh/jobs"
 
-function PipelinesHeader() {
+function JobsHeader() {
   return (
     <Container fluid className="bg-run fr-pb-0">
       <Container>
@@ -17,33 +17,33 @@ function PipelinesHeader() {
           <Link current>Run</Link>
         </Breadcrumb>
         <Text size="lead" className="fr-mb-1w fr-pb-1w">
-          Run AI pipelines
+          Run AI jobs
         </Text>
       </Container>
     </Container>
   )
 }
 
-export default function Pipelines() {
-  const { data, isFetching, error } = useListPipelines()
-  const [selectedPipeline, setSelectedPipeline] = useState<string | null>(null)
-  const { data: pipeline } = useGetPipeline(selectedPipeline)
+export default function Jobs() {
+  const { data, isFetching, error } = useListJobs()
+  const [selectedJob, setSelectedJob] = useState<string | null>(null)
+  const { data: job } = useGetJob(selectedJob)
 
   return (
     <Container fluid>
-      <PipelinesHeader />
+      <JobsHeader />
       <Container className="fr-my-2w">
-        {/* <SearchBar className="fr-mb-2w" style={{ maxWidth: "500px" }} onSearch={() => null} placeholder="Search pipelines..." /> */}
-        {selectedPipeline && pipeline && (
-          <Drawer anchor="right" isOpen={!!selectedPipeline} onClose={() => setSelectedPipeline(null)}>
-            <PipelineForm pipeline={pipeline} />
+        {/* <SearchBar className="fr-mb-2w" style={{ maxWidth: "500px" }} onSearch={() => null} placeholder="Search jobs..." /> */}
+        {selectedJob && job && (
+          <Drawer anchor="right" isOpen={!!selectedJob} onClose={() => setSelectedJob(null)}>
+            <JobForm job={job} />
           </Drawer>
         )}
         {error && <ErrorCallOut error={error} />}
         {isFetching && !data && <LoadingSpinner position="left" />}
-        {data && <PipelinesTable pipelines={data} onSelect={setSelectedPipeline} />}
-        <Accordion title="Cloud Jobs">
-          <Jobs />
+        {data && <JobsTable jobs={data} onSelect={setSelectedJob} />}
+        <Accordion title="OVH Jobs">
+          <OVHJobs />
         </Accordion>
       </Container>
     </Container>

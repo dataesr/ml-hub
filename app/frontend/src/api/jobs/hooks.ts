@@ -1,16 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { useMemo } from "react"
-import { getJob, listJobs } from "./api"
-import { JobState } from "./types"
+import { listJobs, getJob, runJob } from "./api"
 
-export function useGetJob(name: string) {
+export function useListJobs() {
   const { data, error, isFetching } = useQuery({
-    queryKey: ["jobs", "get", name],
-    queryFn: () => getJob(name),
+    queryKey: ["jobs", "list"],
+    queryFn: () => listJobs(),
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    keepPreviousData: true,
-    // staleTime: 5 * 60 * 1000,
   })
 
   const values = useMemo(() => {
@@ -20,19 +17,24 @@ export function useGetJob(name: string) {
   return values
 }
 
-export function useListJobs(state: JobState = null) {
-  const { data, error, isFetching, refetch } = useQuery({
-    queryKey: ["jobs", "list", state || "all"],
-    queryFn: () => listJobs(state),
+export function useGetJob(name: string) {
+  const { data, error, isFetching } = useQuery({
+    queryKey: ["job", "get", name],
+    queryFn: () => getJob(name),
+    enabled: !!name,
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    keepPreviousData: true,
-    // staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
   })
 
   const values = useMemo(() => {
-    return { data, isFetching, error, refetch }
-  }, [data, isFetching, error, refetch])
+    return { data, isFetching, error }
+  }, [data, isFetching, error])
 
   return values
+}
+
+export function useRunJob() {
+  return useMutation({
+    mutationFn: ({ name, data }: { name: string; data: any }) => runJob(name, data),
+  })
 }

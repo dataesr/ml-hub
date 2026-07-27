@@ -2,8 +2,10 @@ import { DSFRColors } from "@dataesr/dsfr-plus";
 
 export function getEnvironmentColor(environment: string): DSFRColors {
   switch (environment) {
-    case "cloud":
+    case "ovh":
       return "blue-cumulus"
+    case "scaleway":
+      return "purple-glycine"
     case "local":
       return "brown-cafe-creme"
     default:
