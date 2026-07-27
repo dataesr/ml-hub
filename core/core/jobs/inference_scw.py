@@ -29,7 +29,14 @@ class InferenceSCWArgs(BaseModel):
 
     model_name: str = Field(..., description="Scaleway model name")
     dataset: DatasetConfig = Field(..., description="Dataset configuration")
-    completion_params: ChatCompletionParams = Field(default=ChatCompletionParams())
+    completion_params: ChatCompletionParams = Field(
+        default=ChatCompletionParams(
+            temperature=0,
+            top_p=0.95,
+            response_format={"type": "text"},
+            stream=False,
+        )
+    )
 
 
 def run_inference_scw(args: InferenceSCWArgs, mlf: MLflowRun):
