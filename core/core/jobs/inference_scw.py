@@ -30,6 +30,7 @@ class InferenceSCWArgs(BaseModel):
             top_p=0.95,
             response_format={"type": "text"},
             stream=False,
+            max_completion_tokens=4096,
         )
     )
 

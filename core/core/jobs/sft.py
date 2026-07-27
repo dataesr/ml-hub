@@ -72,7 +72,7 @@ def run_sft(args: SFTArgs, mlf: MLflowRun):
     tokenizer.padding_side = "right"  # to prevent warnings
     max_seq_length = args.max_seq_length
     if hasattr(tokenizer, "max_length") and tokenizer.max_length < max_seq_length:
-        logger.warning(f"Overrriding tokenizer max_length from {tokenizer.max_length} to {max_seq_length}")
+        logger.warning(f"Overriding tokenizer max_length from {tokenizer.max_length} to {max_seq_length}")
         tokenizer.max_length = max_seq_length
 
     # Load model in 4bit

@@ -136,7 +136,7 @@ def construct_one_prompt(
     if text_format is None:
         text_format = DEFAULT_TEXT_FORMAT
 
-    logger.debug(f"{text_format=} {input=}")
+    # logger.debug(f"{text_format=} {input=}")
     prompt = text_format.format(instruction=instruction or "", input=input, response=response or "")
     # logger.debug(f"prompt = {prompt}")
     return prompt
