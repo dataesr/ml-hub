@@ -1,85 +1,53 @@
-import { Col, Container, Row, Title } from "@dataesr/dsfr-plus"
-import { Card } from "@codegouvfr/react-dsfr/Card"
+import { Badge, Button, Col, Container, Row, Text, Title } from "@dataesr/dsfr-plus"
 
 export default function Home() {
   return (
-    <Container className="fr-my-5w">
-      <Title as="h2" className="fr-mb-10w">
-        Home
-      </Title>
-      <Row gutters>
-        <Col xs={12} sm={6} lg={6} xl={3}>
-          <Card
-            background
-            shadow
-            desc="Run AI jobs."
-            enlargeLink
-            imageAlt="system"
-            imageUrl="artwork/pictograms/system/system.svg"
-            classes={{ imgTag: "fr-ratio-1x1" }}
-            linkProps={{
-              href: "/run",
-            }}
-            size="small"
-            title="Run"
-            titleAs="h3"
-          />
-        </Col>
-        <Col xs={12} sm={6} lg={6} xl={3}>
-          <Card
-            background
-            shadow
-            desc="Explore DataESR models, datasets and more."
-            enlargeLink
-            imageAlt="digital-search"
-            imageUrl="artwork/pictograms/digital/search.svg"
-            classes={{ imgTag: "fr-ratio-1x1" }}
-            linkProps={{
-              href: "/explore?t=models",
-            }}
-            size="small"
-            title="Explore"
-            titleAs="h3"
-          />
-        </Col>
-
-        <Col xs={12} sm={6} lg={6} xl={3}>
-          <Card
-            background
-            shadow
-            desc="Track and compare your runs."
-            enlargeLink
-            imageAlt="digital-data-visualization"
-            imageUrl="artwork/pictograms/digital/data-visualization.svg"
-            classes={{ imgTag: "fr-ratio-1x1" }}
-            linkProps={{
-              href: "https://mlflow.staging.dataesr.ovh",
-              target: "_blank",
-              rel: "noopener noreferrer",
-            }}
-            size="small"
-            title="Track"
-            titleAs="h3"
-          />
-        </Col>
-        {/* <Col xs={12} sm={6} lg={6} xl={3}>
-          <Card
-            background
-            shadow
-            desc="Infere models."
-            enlargeLink
-            imageAlt="leisure-community"
-            imageUrl="artwork/pictograms/leisure/community.svg"
-            classes={{ imgTag: "fr-ratio-1x1" }}
-            linkProps={{
-              href: "/inference",
-            }}
-            size="small"
-            title="Inference"
-            titleAs="h3"
-          />
-        </Col> */}
-      </Row>
+    <Container fluid className="fr-pb-8w">
+      <Container className="fr-pt-6w fr-pb-6w">
+        <Row gutters>
+          <Col xs={12} lg={7}>
+            <div className="home-hero">
+              <Badge className="fr-mb-2w">AI Hub</Badge>
+              <Title as="h1" className="fr-mb-2w">
+                Launch, track, and explore AI workflows.
+              </Title>
+              <Text className="fr-mb-3w" size="lead">
+                A single interface for curated jobs, reproducible runs, and the AI model and dataset catalog.
+              </Text>
+              <div className="home-hero__actions">
+                <Button icon="play-line" as="a" href="/run" style={{ borderRadius: "1rem" }}>
+                  Launch a job
+                </Button>
+                <Button as="a" href="/explore?t=models">
+                  Explore assets
+                </Button>
+              </div>
+            </div>
+          </Col>
+          <Col xs={12} lg={5}>
+            <div className="home-highlight fr-p-4w">
+              <Text bold className="fr-mb-1w">
+                Suggested flow
+              </Text>
+              <Title as="h2" look="h4" className="fr-mb-2w">
+                From config to tracked run
+              </Title>
+              <div className="home-highlight__step">
+                <span>1</span>
+                <Text size="sm">Select a ready-to-run job and review its inputs.</Text>
+              </div>
+              <div className="home-highlight__step">
+                <span>2</span>
+                <Text size="sm">Launch with structured parameters and environment context.</Text>
+              </div>
+              <div className="home-highlight__step">
+                <span>3</span>
+                <Text size="sm">Open MLflow to compare outputs and diagnose regressions.</Text>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Container>
     </Container>
   )
 }

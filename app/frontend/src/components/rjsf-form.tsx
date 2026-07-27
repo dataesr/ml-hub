@@ -47,7 +47,7 @@ function CustomInputTemplate(props: BaseInputTemplateProps) {
 
   return (
     <TextInput
-      className="fr-mt-2w fr-mb-5w"
+      className="fr-mb-3w"
       hint={schema?.description || ""}
       id={id}
       label={label}
@@ -82,41 +82,70 @@ function CustomFieldTemplate(props: FieldTemplateProps) {
 
 function CustomObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   const { title, description, properties } = props
-  return (
-    <div>
+
+  const content = (
+    <>
       {description && (
         <Text className="fr-mb-1w" size="sm">
           {description}
         </Text>
       )}
-      <Accordion
-        title={title}
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
-      >
+      <div className="rjsf-object-field__body">
         {properties.map((element) => (
-          <div className="property-wrapper">{element.content}</div>
+          <div key={element.name} className="property-wrapper">
+            {element.content}
+          </div>
         ))}
-      </Accordion>
+      </div>
+    </>
+  )
+
+  return (
+    <div className="rjsf-object-field fr-mb-3w">
+      {title ? (
+        <Accordion
+          title={title}
+          className="rjsf-object-field__accordion"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+        >
+          {content}
+        </Accordion>
+      ) : (
+        content
+      )}
     </div>
   )
 }
 
 function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
   const { title, items, canAdd, onAddClick, rawErrors } = props
+
+  const addItem = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    onAddClick(event)
+  }
+
   return (
-    <div>
-      {title}
-      <br />
-      {items.map((element) => element)}
+    <div className="rjsf-array-field fr-mb-3w">
+      {title ? (
+        <Text bold className="fr-mb-1w">
+          {title}
+        </Text>
+      ) : null}
+      <div className="rjsf-array-field__items">{items.map((element) => element)}</div>
       {canAdd && (
-        <Button className="fr-mt-1w" size="sm" variant="secondary" onClick={onAddClick}>
+        <Button className="fr-mt-1w" size="sm" variant="secondary" onClick={addItem}>
           Add
         </Button>
       )}
-      {rawErrors?.length > 0 && <p>{rawErrors?.join(", ")}</p>}
+      {rawErrors?.length > 0 && (
+        <Text size="sm" className="fr-text-default--error fr-mt-1w">
+          {rawErrors.join(", ")}
+        </Text>
+      )}
     </div>
   )
 }
@@ -124,10 +153,11 @@ function CustomArrayFieldTemplate(props: ArrayFieldTemplateProps) {
 function CustomSubmitButton(props: SubmitButtonProps) {
   const { uiSchema } = props
   const { norender, submitText } = getSubmitButtonOptions(uiSchema)
+
   if (norender) return null
 
   return (
-    <Button className="fr-mt-2w" variant="secondary">
+    <Button className="fr-mt-2w" type="submit">
       {submitText || "Submit"}
     </Button>
   )
