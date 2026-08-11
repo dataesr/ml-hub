@@ -42,6 +42,10 @@ JOB_STATE = Literal[
 
 
 def ovhai_initialize():
+    if not os.getenv("OVHAI_USERNAME") or not os.getenv("OVHAI_PASSWORD"):
+        logger.info("OVH CLI credentials not configured; skipping ovhai initialization")
+        return
+
     # login
     cmd = [
         "ovhai",
@@ -55,6 +59,10 @@ def ovhai_initialize():
     result.check_returncode()
 
     # add s3 datastore
+    if not os.getenv("OVHAI_OS_ENDPOINT") or not os.getenv("OVHAI_OS_ACCESS_KEY"):
+        logger.info("OVH object storage credentials not configured; skipping datastore setup")
+        return
+
     cmd = [
         "ovhai",
         "datastore",

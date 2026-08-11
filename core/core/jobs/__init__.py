@@ -196,7 +196,17 @@ JOBS = (
     | MergeAdaptersJob
 )
 
-JOBS_REGISTRY: dict[str, type[JOBS]] = {cls.name: cls for cls in JOBS.__args__}
+
+def _get_job_name(cls: type[BaseJob[Any]]) -> str:
+    """Return a job's public name from Pydantic model field metadata."""
+
+    field = cls.model_fields.get("name")
+    if field is not None and field.default is not None:
+        return str(field.default)
+    return cls.__name__
+
+
+JOBS_REGISTRY: dict[str, type[JOBS]] = {_get_job_name(cls): cls for cls in JOBS.__args__}
 
 
 def list_jobs() -> list[type[JOBS]]:
