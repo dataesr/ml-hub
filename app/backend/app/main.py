@@ -9,7 +9,7 @@ from app.routes.datasets import router as datasets_router
 from app.routes.models import router as models_router
 from app.routes.ovh import router as ovh_router
 from app.routes.experiments import router as experiments_router
-# from app.routes.pipelines import router as pipelines_router
+from app.routes.tools import router as tools_router
 from app.routes.jobs import router as jobs_router
 from app.logger import get_logger
 
@@ -57,6 +57,7 @@ api_router.include_router(models_router)
 api_router.include_router(ovh_router)
 api_router.include_router(jobs_router)
 api_router.include_router(experiments_router)
+api_router.include_router(tools_router)
 app.include_router(api_router)
 
 
