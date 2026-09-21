@@ -98,11 +98,11 @@ def main():
     common.add_argument("job_name", help=f"One of {list(JOBS_REGISTRY.keys())}")
     common.add_argument("--config", default=None, help="Path to a job YAML config")
 
-    parser = argparse.ArgumentParser(description="CLI for AI jobs")
+    parser = argparse.ArgumentParser(description="CLI for ML jobs")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("run", parents=[common], help="Run AI jobs")
-    subparsers.add_parser("submit", parents=[common], help="Submit AI jobs")
-    subparsers.add_parser("exec", parents=[common], help="Execute AI jobs")
+    subparsers.add_parser("run", parents=[common], help="Run ML jobs")
+    subparsers.add_parser("submit", parents=[common], help="Submit ML jobs")
+    subparsers.add_parser("exec", parents=[common], help="Execute ML jobs")
 
     args, extra_args = parser.parse_known_args()
 
