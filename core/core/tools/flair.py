@@ -1,18 +1,22 @@
 from flair.data import Sentence
 from flair.models import SequenceTagger
+from core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 models = {}
 
 
-def load_ner_model(model_name: str = "kalawinka/flair-ner-acknowledgments"):
+def _load_model(model_name: str):
     global models
     if not model_name in models:
         models[model_name] = SequenceTagger.load(model_name)
+        logger.info(f"Successfully loaded SequenceTagger model {model_name}")
     return models[model_name]
 
 
 def flair_predict_tags(text: str) -> list[dict]:
-    model = load_ner_model()
+    model = _load_model("kalawinka/flair-ner-acknowledgments")
 
     sentence = Sentence(text)
     model.predict(sentence)
