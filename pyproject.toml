@@ -4,6 +4,15 @@ members = [
     "app/backend",
 ]
 
+[tool.uv.sources]
+ai-core = { workspace = true }
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
 [tool.ty.environment]
 python = ".venv/Scripts/python.exe"
 extra-paths = ["./core", "./core/core"]

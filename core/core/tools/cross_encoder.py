@@ -1,4 +1,3 @@
-from sentence_transformers import CrossEncoder
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -8,6 +7,14 @@ models = {}
 
 def _load_model(model_name: str, **kwargs):
     global models
+    try:
+        from sentence_transformers import CrossEncoder
+    except ModuleNotFoundError as error:
+        raise RuntimeError(
+            "sentence-transformers is required for cross_encoder_predict. "
+            "Install it with 'pip install sentence-transformers' or 'pip install ai-core[tools]'."
+        ) from error
+
     if not model_name in models:
         models[model_name] = CrossEncoder(model_name, **kwargs)
         logger.info(f"Successfully loaded CrossEncoder model {model_name}")
