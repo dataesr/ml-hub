@@ -1,51 +1,32 @@
 # syntax=docker/dockerfile:1
-FROM pytorch/pytorch:2.9.1-cuda12.8-cudnn9-devel
+FROM nvidia/cuda:13.0.3-cudnn-runtime-ubuntu24.04
 
-# System deps for TorchTitan
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python + git
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git curl ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+  python3 \
+  python3-dev \
+  python3-pip \
+  python3-venv \
+  curl \
+  zip \
+  git \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Clone TorchTitan
-RUN git clone https://github.com/pytorch/torchtitan.git /opt/torchtitan
-
-WORKDIR /opt/torchtitan
-
-# Install TorchTitan deps + mlflow
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir mlflow
-
-# Entrypoint
-RUN cat <<'EOF' > /entrypoint.sh
-#!/bin/bash
-set -e
-
-if [ -z "$CONFIG_FILE" ]; then
-  echo "[entrypoint] ERROR: CONFIG_FILE environment variable is not set."
-  exit 1
-fi
-
-CONFIG_PATH="./configs/${CONFIG_FILE}"
-
-if [ ! -f "$CONFIG_PATH" ]; then
-  echo "[entrypoint] ERROR: config file not found at ${CONFIG_PATH}"
-  exit 1
-fi
-
-NGPU=${NGPU:-1}
-
-echo "[entrypoint] Launching TorchTitan training with ${CONFIG_PATH} on ${NGPU} GPU(s)"
-
-torchrun --standalone --nproc_per_node=${NGPU} \
-  train.py --job.config_file "$CONFIG_PATH"
-EOF
-
-RUN chmod +x /entrypoint.sh
-
-USER 42420:42420
-
+# Create and set the HOME directory
 WORKDIR /workspace
 ENV HOME=/workspace
-ENV HF_HOME=/workspace/.cache/huggingface
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Create python virtual environment
+RUN curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
+RUN uv venv --python 3.12 --seed
+# ENV PATH="$HOME/.venv/bin:$PATH"
+
+# # Install torchtitan + all deps using uv (faster than pip)
+RUN uv pip install --no-cache-dir \
+  "git+https://github.com/dataesr/torchtitan.git@main"
+
+# Generic entrypoint: installs core from git at boot
+COPY --chmod=755 docker/scripts/core-run.sh /run.sh
+USER 42420:42420
