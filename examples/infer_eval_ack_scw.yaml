@@ -27,5 +27,5 @@ args:
     id_col: "publication_id"
 
 mlflow:
-  experiment: "entity-extraction-acknowledgment"
+  experiment: "skolar-acknowledgement"
   run_name: "infer-eval-scw-ack"

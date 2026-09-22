@@ -38,6 +38,9 @@ trl = [
     "peft>=0.17",
     "accelerate",
 ]
+torchtitan = [
+    "torchtitan",
+]
 dev = [
     "pytest>=8.0",
 ]

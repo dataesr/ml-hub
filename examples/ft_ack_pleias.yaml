@@ -17,4 +17,4 @@ args:
   hf_push_repo: "dataesr/Qwen3-0.6B-ack"
 
 tracking:
-  project_name: "entity-extraction-acknowledgment"
+  project_name: "skolar-acknowledgement"

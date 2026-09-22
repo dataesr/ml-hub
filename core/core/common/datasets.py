@@ -92,6 +92,15 @@ def load(path_or_name: str, split: str | None = None) -> Dataset:
     return dataset
 
 
+def download_dataset(path_or_name: str, output_path: str, split: str = "train") -> str:
+    """Resolve a dataset from Hugging Face, local storage, or OVH and save it as JSONL."""
+    dataset = load(path_or_name, split=split)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    dataset.to_json(output_path, orient="records", lines=True)
+    logger.info(f"✅ Dataset downloaded to {output_path}")
+    return output_path
+
+
 def load_and_format_dataset(
     args: DatasetConfig,
     dataset_chat_template: str | None = None,
@@ -272,6 +281,6 @@ def get_commit_hash(dataset: Dataset) -> str | None:
     checksums = dataset.info.download_checksums
     if isinstance(checksums, dict) and checksums:
         checksums_list = list(checksums.keys())
-        checksum_file = checksums_list[0].split("@")[1]  # ty:ignore[unresolved-attribute]
+        checksum_file = checksums_list[0].split("@")[1]
         commit_hash = checksum_file.split("/")[0]
     return commit_hash

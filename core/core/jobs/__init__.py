@@ -27,6 +27,7 @@ from core.jobs.merge_adapters import MergeAdaptersArgs, run_merge_adapters
 from core.jobs.inference_vllm import InferenceVLLMArgs, run_inference_vllm
 from core.jobs.inference_scw import InferenceSCWArgs, run_inference_scw
 from core.jobs.sft import SFTArgs, run_sft
+from core.jobs.torchtitan import TorchTitanArgs, run_torchtitan
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -185,6 +186,31 @@ class SFTJob(BaseJob[SFTArgs]):
         return run_sft(self.args, mlf)
 
 
+class TorchTitanJob(BaseJob[TorchTitanArgs]):
+    name: str = "pretrain-torchtitan"
+    description: str = "Pretrain a model with TorchTitan"
+    tags: list[str] = ["pretraining", "torchtitan"]
+
+    args: TorchTitanArgs = Field(default_factory=TorchTitanArgs)
+    ovh: OVHConfig = Field(
+        default=OVHConfig(
+            image="ghcr.io/dataesr/ml-hub/cuda-torchtitan:latest",
+            command=["/run.sh", "jobs", "exec", "pretrain-torchtitan"],
+            name="pretrain-torchtitan",
+            gpu=8,
+            flavor="l40s-8-gpu",
+            volumes=[
+                OVHVolume(container=DATASETS_CONTAINER, mount=DATASETS_VOLUME),
+                OVHVolume(container=JOBS_CONTAINER, mount=JOBS_VOLUME, permission="RWD"),
+            ],
+        )
+    )
+    mlflow: MLflowConfig = Field(default=MLflowConfig())
+
+    def run(self, mlf: MLflowRun):
+        return run_torchtitan(self.args, mlf)
+
+
 # Fill jobs classes here
 JOBS = (
     SFTJob
@@ -194,6 +220,7 @@ JOBS = (
     | InferAndEvalSCWJob
     | EvaluateJob
     | MergeAdaptersJob
+    | TorchTitanJob
 )
 
 

@@ -10,4 +10,4 @@ args:
   max_model_len: 4096
 
 tracking:
-  project_name: "entity-extraction-acknowledgment"
+  project_name: "skolar-acknowledgement"
