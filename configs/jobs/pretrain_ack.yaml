@@ -1,0 +1,16 @@
+# Torchtitan pretrain for acknowledgement detection
+base: "pretrain-torchtitan"
+
+args:
+  model_name: "JZSG/balanced-600M"
+  dataset:
+    path: "JZSG/funders-data"
+    format: "text"
+    text_format: "{input}"
+    input_col: "text"
+  module: "qwen3"
+  config: "qwen3_balanced_600m_ack_reasoning"
+  hf_push_repo: null
+
+tracking:
+  project_name: "skolar-acknowledgement"

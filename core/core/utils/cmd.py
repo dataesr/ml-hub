@@ -62,7 +62,7 @@ def run_cmd(
             shell=False,
             text=True,
             check=check,
-            env=env,
+            # env=env,
             **kwargs,
         )
 

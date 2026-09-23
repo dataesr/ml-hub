@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -15,7 +16,15 @@ from app.logger import get_logger
 
 logger = get_logger(__name__)
 
-app = FastAPI(title="ML HUB API", redirect_slashes=True)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    ovhai_initialize()
+    # mlflow_initialize()
+    yield
+
+
+app = FastAPI(title="ML HUB API", redirect_slashes=True, lifespan=lifespan)
 
 # CORS in dev mode only
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
@@ -59,13 +68,6 @@ api_router.include_router(jobs_router)
 api_router.include_router(experiments_router)
 api_router.include_router(tools_router)
 app.include_router(api_router)
-
-
-# Init ovhai cli
-ovhai_initialize()
-
-# Init mlflow
-# mlflow_initialize()
 
 @app.get("/health")
 def health_check():

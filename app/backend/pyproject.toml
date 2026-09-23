@@ -5,7 +5,7 @@ description = "Backend for ml-hub application"
 readme = "README.md"
 requires-python = ">=3.11.5"
 dependencies = [
-    "ai-core[tools]",
+    "ai-core",
     "datasets>=4.8",
     "fastapi[standard]>=0.118.0",
     "huggingface-hub>=0.36.0",
@@ -13,4 +13,9 @@ dependencies = [
     "mlflow>=3.6",
     "pandas>=2.3",
     "retry==0.9.2",
+]
+
+[project.optional-dependencies]
+tools = [
+    "ai-core[tools]",
 ]

@@ -5,18 +5,18 @@ export default function Home() {
     <Container fluid className="fr-pb-8w">
       <Container className="fr-pt-6w fr-pb-6w">
         <Row gutters>
-          <Col xs={12} lg={7}>
+          <Col xs={12} lg={12}>
             <div className="home-hero">
-              <Badge className="fr-mb-2w">AI Hub</Badge>
+              <Badge className="fr-mb-2w">ML HUB</Badge>
               <Title as="h1" className="fr-mb-2w">
-                Launch, track, and explore AI workflows.
+                Launch, track, and explore ML workflows.
               </Title>
               <Text className="fr-mb-3w" size="lead">
-                A single interface for curated jobs, reproducible runs, and the AI model and dataset catalog.
+                A single interface for curated jobs, reproducible runs, and ML model and dataset catalog.
               </Text>
               <div className="home-hero__actions">
                 <Button icon="play-line" as="a" href="/run" style={{ borderRadius: "1rem" }}>
-                  Launch a job
+                  Launch jobs
                 </Button>
                 <Button as="a" href="/explore?t=models">
                   Explore assets
@@ -24,7 +24,7 @@ export default function Home() {
               </div>
             </div>
           </Col>
-          <Col xs={12} lg={5}>
+          {/* <Col xs={12} lg={5}>
             <div className="home-highlight fr-p-4w">
               <Text bold className="fr-mb-1w">
                 Suggested flow
@@ -45,7 +45,7 @@ export default function Home() {
                 <Text size="sm">Open MLflow to compare outputs and diagnose regressions.</Text>
               </div>
             </div>
-          </Col>
+          </Col> */}
         </Row>
       </Container>
     </Container>

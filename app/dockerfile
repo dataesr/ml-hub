@@ -1,4 +1,4 @@
-### Frontend
+# ------ Frontend ------ 
 FROM node:20-alpine AS frontend-build
 WORKDIR /frontend
 COPY ./app/frontend/package*.json ./
@@ -6,7 +6,7 @@ RUN npm ci
 COPY ./app/frontend/ .
 RUN npm run build --omit:dev
 
-### Backend
+# ------ Backend ------ 
 FROM astral/uv:python3.11-trixie-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -33,11 +33,12 @@ COPY ./uv.lock .
 COPY ./pyproject.toml .
 COPY ./app/backend/pyproject.toml ./app/backend/pyproject.toml
 COPY ./core/pyproject.toml ./core/pyproject.toml
-RUN uv sync --frozen --no-cache
+RUN uv sync --frozen --no-cache --package ai-backend --extra tools
 
 # Add source code
 COPY ./core ./core
 COPY ./app/backend ./app/backend
+COPY ./configs ./app/backend/configs
 
 # Copy built frontend into /app/static
 COPY --from=frontend-build /frontend/dist /app/static
@@ -50,5 +51,3 @@ WORKDIR /app/app/backend
 EXPOSE 8000
 
 CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-

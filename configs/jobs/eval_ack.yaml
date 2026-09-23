@@ -1,0 +1,16 @@
+# Evaluation for acknowledgement detection
+base: dataset-evaluate
+
+args:
+  dataset_name: "completions_20260603-102309.json"
+  model_name: "dataesr/Qwen3-0.6B-ack"
+  container: "llm-completions"
+  scorers: "is_json, acknowledgement"
+  input_col: "text"
+  output_col: "completions"
+  expectation_col: "expectations"
+  id_col: "publication_id"
+
+
+tracking:
+  project_name: "skolar-acknowledgement"

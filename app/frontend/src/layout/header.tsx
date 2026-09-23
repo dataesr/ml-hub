@@ -1,14 +1,4 @@
-import {
-  Header as HeaderWrapper,
-  Logo,
-  Service,
-  FastAccess,
-  Button,
-  Nav,
-  Link,
-  NavItem,
-  // NavItem,
-} from "@dataesr/dsfr-plus"
+import { Header as HeaderWrapper, Logo, Service, FastAccess, Button, Nav, Link } from "@dataesr/dsfr-plus"
 import SwitchTheme from "./switch-theme"
 import { useState } from "react"
 import { useLocation } from "react-router-dom"
@@ -48,10 +38,9 @@ export default function Header() {
         <Link href="/run" current={pathname.split("/").includes("run")}>
           Run
         </Link>
-        <NavItem title="Explore" current={pathname.split("/").includes("explore")}>
-          <Link href="/explore?t=models">Models</Link>
-          <Link href="/explore?t=datasets">Datasets</Link>
-        </NavItem>
+        <Link href="/explore" current={pathname.split("/").includes("explore")}>
+          Explore
+        </Link>
         <Link href="https://mlflow.staging.dataesr.ovh" target="_blank" rel="noopener noreferrer">
           Track
         </Link>

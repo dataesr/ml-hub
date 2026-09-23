@@ -9,10 +9,11 @@ import JsonSchemaForm from "../../../components/rjsf-form"
 interface JobFormProps {
   job: Job
   onClose?: () => void
+  initialData?: Record<string, any>
 }
-export default function JobForm({ job, onClose }: JobFormProps) {
+export default function JobForm({ job, onClose, initialData = {} }: JobFormProps) {
   const { mutate: runJob, isSuccess, isLoading, error, reset } = useRunJob()
-  const [formData, setFormData] = useState<any>({})
+  const [formData, setFormData] = useState<any>(initialData)
 
   const handleSubmit = (data: IChangeEvent<any>) => {
     runJob({ name: job.name, data: data.formData ?? {} })

@@ -56,6 +56,7 @@ def ovhai_initialize():
         "OVHAI_PASSWORD",
     ]
     run_cmd(cmd)
+    logger.debug("OVH CLI login successful")
 
     # add s3 datastore
     if not os.getenv("OVHAI_OS_ENDPOINT") or not os.getenv("OVHAI_OS_ACCESS_KEY"):
@@ -76,6 +77,7 @@ def ovhai_initialize():
         "--store-credentials-locally",
     ]
     run_cmd(cmd)
+    logger.debug("OVH CLI datastore setup successful")
 
 ### --- ovhai objects ---
 def ovhai_object_list(container: str, prefix: str | None = None):

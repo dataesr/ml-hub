@@ -24,11 +24,13 @@ COPY ./uv.lock .
 COPY ./pyproject.toml .
 COPY ./app/backend/pyproject.toml ./app/backend/pyproject.toml
 COPY ./core/pyproject.toml ./core/pyproject.toml
+# Install backend dependencies without tools
 RUN uv sync --frozen --no-cache
 
 # Add source code
 COPY ./core ./core
 COPY ./app/backend ./app/backend
+COPY ./configs ./app/backend/configs
 
 ENV PYTHONPATH="/app/core"
 

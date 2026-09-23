@@ -1,7 +1,6 @@
 import { useCallback } from "react"
 import { Breadcrumb, Container, Link, Text } from "@dataesr/dsfr-plus"
 import Datasets from "../datasets"
-// import Experiments from "../experiments"
 import Models from "../models"
 import { useSearchParams } from "react-router-dom"
 
@@ -26,7 +25,7 @@ export default function Explore() {
             <Link current>Explore</Link>
           </Breadcrumb>
           <Text size="lead" className="fr-mb-1w">
-            Explore models, datasets and experiments
+            Explore models and datasets from huggingface
           </Text>
           <nav className="fr-nav xfr-nav--horizontal fr-mb-3w" aria-label="Menu">
             <ul className="fr-nav__list">

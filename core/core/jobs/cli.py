@@ -71,7 +71,7 @@ def run(job_name: str, config: str | None, extra_args: list[str], mode: Literal[
     if config:
         if not os.path.exists(config):
             raise ValueError(f"Config path '{config}' not found.")
-        job_cfg = load_yaml_config(config, from_disk=True)
+        job_cfg = load_yaml_config(config)
         if overrides:
             job_cfg = deep_merge(job_cfg, {"args": overrides})
         job = job_cls.model_validate(job_cfg)

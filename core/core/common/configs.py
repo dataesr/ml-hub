@@ -1,21 +1,21 @@
-from core.utils.files import file_write_yaml
 import os
 import yaml
 from typing import Any
+from core.utils.files import file_write_yaml
 from core.common.ovh import ovhai_object_download, CONFIGS_CONTAINER, ovhai_object_upload
 
 
-def load_yaml_config(path: str, from_disk: bool = False) -> dict[str, Any]:
+def load_yaml_config(path: str, from_ovh: bool = False) -> dict[str, Any]:
     if not path.endswith(".yaml"):
         path += ".yaml"
 
-    if from_disk:
-        file_path = path
-    else:
+    if from_ovh:
         try:
             file_path = ovhai_object_download(path, CONFIGS_CONTAINER, output="/tmp/")
         except Exception as error:
             raise Exception(f"Error while downloading config {path} from {CONFIGS_CONTAINER} (details={error})")
+    else:
+        file_path = path
 
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"Config {path} not found on disk ({file_path=})")
@@ -26,7 +26,7 @@ def load_yaml_config(path: str, from_disk: bool = False) -> dict[str, Any]:
     except Exception as error:
         raise yaml.YAMLError(f"Error while parsing {file_path}: {error}")
 
-    if not from_disk:
+    if from_ovh:
         os.remove(file_path)
     return cfg
 

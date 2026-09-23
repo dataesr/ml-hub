@@ -137,3 +137,18 @@ body {
 .bg-configue {
   background-color: var(--background-alt-brown-cafe-creme) !important;
 }
+
+.configs-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.configs-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.75rem;
+}
