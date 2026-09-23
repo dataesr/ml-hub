@@ -12,7 +12,7 @@ router = APIRouter(tags=["jobs"])
 def jobs_list():
     jobs_cls = list_jobs()
     jobs_fields = [cls.model_fields for cls in jobs_cls]
-    logger.debug(f"jobs={jobs_fields}")
+    # logger.debug(f"jobs={jobs_fields}")
     return [
         {
             "name": job_fields.get("name").default,
@@ -65,6 +65,9 @@ def jobs_run_or_submit(job_name: str, raw_input_data: dict):
     except ValidationError as error:
         raise HTTPException(status_code=422, detail=error.errors())
     except Exception as error:
+        import traceback
+
+        logger.error(f"Error during job '{job_name}' execution: {error}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(error))
 
     return {f"{job_name}": "ok"}

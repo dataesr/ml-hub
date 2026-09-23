@@ -197,8 +197,8 @@ class TorchTitanJob(BaseJob[TorchTitanArgs]):
             image="ghcr.io/dataesr/ml-hub/cuda-torchtitan:latest",
             command=["/run.sh", "jobs", "exec", "pretrain-torchtitan"],
             name="pretrain-torchtitan",
-            gpu=8,
-            flavor="l40s-8-gpu",
+            gpu=1,
+            flavor="l4-1-gpu",
             volumes=[
                 OVHVolume(container=DATASETS_CONTAINER, mount=DATASETS_VOLUME),
                 OVHVolume(container=JOBS_CONTAINER, mount=JOBS_VOLUME, permission="RWD"),
