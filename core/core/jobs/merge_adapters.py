@@ -3,7 +3,7 @@
 import os
 from typing import Optional
 from pydantic import Field, BaseModel
-from core.common.models import merge_adapters_to_model, push_model_to_hf
+from core.common.models import merge_adapters_to_model, upload_model
 from core.utils.files import folder_create
 from core.utils.logger import get_logger
 
@@ -38,5 +38,5 @@ def run_merge_adapters(args: MergeAdaptersArgs):
         base_model_name_or_path=args.base_model_name_or_path,
     )
 
-    push_model_to_hf(merged_dir, args.hf_push_repo)
+    upload_model(merged_dir, args.hf_push_repo)
     return merged_dir

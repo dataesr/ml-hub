@@ -7,7 +7,7 @@ from typing import no_type_check, Optional, Any
 from pydantic import BaseModel, Field
 from core.common.mlflow import MLflowRun
 from core.common.datasets import DatasetConfig, load_and_format_dataset
-from core.common.models import push_model_to_hf, merge_adapters_to_model
+from core.common.models import merge_adapters_to_model, upload_model
 from core.utils.files import folder_create
 from core.utils.logger import get_logger
 
@@ -146,7 +146,7 @@ def run_sft(args: SFTArgs, mlf: MLflowRun):
     merge_and_write(trainer, tokenizer, args.model_name, output_dir, finetuned_dir)
 
     ### --- Push model ---
-    push_model_to_hf(finetuned_dir, args.hf_push_repo)
+    upload_model(finetuned_dir, args.hf_push_repo)
 
 
 @no_type_check

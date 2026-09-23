@@ -1,10 +1,10 @@
-from core.utils.types import ENV
 import os
 import json
 import shlex
-from subprocess import CompletedProcess, run
 from typing import Literal, Optional, Any
 from pydantic import BaseModel, Field
+from core.utils.cmd import run_cmd
+from core.utils.types import ENV
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -51,12 +51,11 @@ def ovhai_initialize():
         "ovhai",
         "login",
         "--username",
-        os.getenv("OVHAI_USERNAME"),
+        os.getenv("OVHAI_USERNAME", ""),
         "--password-from-env",
         "OVHAI_PASSWORD",
     ]
-    result: CompletedProcess = run(cmd, shell=False, text=True)
-    result.check_returncode()
+    run_cmd(cmd)
 
     # add s3 datastore
     if not os.getenv("OVHAI_OS_ENDPOINT") or not os.getenv("OVHAI_OS_ACCESS_KEY"):
@@ -69,37 +68,21 @@ def ovhai_initialize():
         "update",
         "s3",
         CONTAINERS_REGION,
-        os.getenv("OVHAI_OS_ENDPOINT"),
+        os.getenv("OVHAI_OS_ENDPOINT", ""),
         os.getenv("OVHAI_OS_REGION", "").lower(),
-        os.getenv("OVHAI_OS_ACCESS_KEY"),
+        os.getenv("OVHAI_OS_ACCESS_KEY", ""),
         "--secret-key-from-env",
         "OVHAI_OS_SECRET_KEY",
         "--store-credentials-locally",
     ]
-    result: CompletedProcess = run(cmd, shell=False, text=True, capture_output=True)
-    result.check_returncode()
-
-
-def _run_cmd(cmd: list[str], capture_json: bool = False):
-    result = run(cmd, shell=False, text=True, capture_output=True)
-    if result.returncode != 0:
-        message = result.stderr or result.stdout
-        raise Exception(f"CMD ERR: {message}")
-
-    if result.returncode == 0 and capture_json:
-        try:
-            data: dict = json.loads(result.stdout)
-            return data
-        except Exception:
-            raise ValueError(f"Error while parsing json from {result.stdout}")
-
+    run_cmd(cmd)
 
 ### --- ovhai objects ---
 def ovhai_object_list(container: str, prefix: str | None = None):
     cmd = ["ovhai", "bucket", "object", "list", f"{container}@{CONTAINERS_REGION}", "-o", "json"]
     if prefix:
         cmd.extend(["--prefix", prefix])
-    data = _run_cmd(cmd, capture_json=True)
+    data = run_cmd(cmd, capture_json=True)
     return data
 
 
@@ -109,7 +92,7 @@ def ovhai_object_upload(object_name: str, container: str, prefix: str | None = N
         cmd.extend(["--add-prefix", prefix])
     if remove_prefix:
         cmd.extend(["--remove-prefix", remove_prefix])
-    _run_cmd(cmd)
+    run_cmd(cmd)
 
 
 def ovhai_object_download(
@@ -126,7 +109,7 @@ def ovhai_object_download(
     if output:
         cmd.extend(["--output", output])
         output_path = os.path.join(output, output_path)
-    _run_cmd(cmd)
+    run_cmd(cmd)
     return output_path
 
 
@@ -138,7 +121,7 @@ def ovhai_object_delete(container: str, object_name: str | None = None, prefix: 
         cmd.extend(["--prefix", prefix])
     else:
         cmd.append("--all")
-    _run_cmd(cmd)
+    run_cmd(cmd)
 
 
 ### --- ovhai jobs ---
@@ -146,32 +129,27 @@ def job_list(state: JOB_STATE | None = None):  # TODO: use schema
     filter = ["-s", state] if state else ["-a"]
     cmd = ["ovhai", "job", "list", "-o", "json"]
     cmd.extend(filter)
-    data = _run_cmd(cmd, capture_json=True)
+    data = run_cmd(cmd, capture_json=True)
     return data
 
 
 def job_get(id: str):
     cmd = ["ovhai", "job", "get", id, "-o", "json"]
-    data = _run_cmd(cmd, capture_json=True)
+    data = run_cmd(cmd, capture_json=True)
     return data
 
 
 def job_stop(id: str):
     cmd = ["ovhai", "job", "stop", id]
-    _run_cmd(cmd)
+    run_cmd(cmd)
 
 
-# def job_run(inputs: CloudJobInputs):
-#     cli = build_cli_args(inputs)
-#     logger.debug(f"Job CLI: {cli}")
-#     data = _run_cmd(cli, capture_json=True)
-#     return data
 def job_run(cfg_args: list[str]):
     cmd = ["ovhai", "job", "run"]
     cmd.extend(["-o", "json"])  # output json
     cmd.extend(cfg_args)  # ovh job command
     logger.debug(f"Job command: {cmd}")
-    data = _run_cmd(cmd, capture_json=True)
+    data = run_cmd(cmd, capture_json=True)
     return data
 
 
