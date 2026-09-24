@@ -21,12 +21,17 @@ ENV HOME=/workspace
 # Create python virtual environment
 RUN curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
 RUN uv venv --python 3.12 --seed
-# ENV PATH="$HOME/.venv/bin:$PATH"
+ENV PATH="$HOME/.venv/bin:$PATH"
 
 # # Install torchtitan + all deps using uv (faster than pip)
 RUN uv pip install --no-cache-dir \
   "git+https://github.com/dataesr/torchtitan.git@main"
 
+# Allow the runtime user to update the preinstalled virtualenv.
+RUN chown -R 42420:42420 /workspace
+
 # Generic entrypoint: installs core from git at boot
-COPY --chmod=755 docker/scripts/core-run.sh /run.sh
+COPY --chown=42420:42420 docker/scripts/core-run.sh /run.sh
+USER root
+RUN chmod +x /run.sh
 USER 42420:42420
