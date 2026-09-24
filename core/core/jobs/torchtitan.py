@@ -19,8 +19,8 @@ class TorchTitanArgs(BaseModel):
 
     model_name: str = Field(..., description="HuggingFace model repository to download")
     dataset: DatasetConfig = Field(..., description="Dataset to prepare for TorchTitan")
-    module: str = Field(..., description="TorchTitan configuration module")
-    config: str = Field(..., description="TorchTitan configuration function")
+    module_name: str = Field(..., description="TorchTitan configuration module")
+    config_name: str = Field(..., description="TorchTitan configuration function")
     hf_push_repo: Optional[str] = Field(None, description="HuggingFace repo ID to push the model to.")
 
 
@@ -42,8 +42,8 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
 
     ### --- Training ---
     env = os.environ.copy()
-    env["MODULE"] = args.module
-    env["CONFIG"] = args.config
+    env["MODULE"] = args.module_name
+    env["CONFIG"] = args.config_name
 
     command = [
         "./run_train.sh",
