@@ -55,10 +55,12 @@ def jobs_run_or_submit(job_name: str, raw_input_data: dict):
     try:
         logger.info(f"Starting job '{job_name}' execution...")
         input_data = raw_input_data
-        if "ovh" in raw_input_data and job_cls.ovh:
-            input_data["ovh"] = deep_merge(job_cls.ovh.model_dump(), raw_input_data["ovh"])
-        if "mlflow" in raw_input_data and job_cls.mlflow:
-            input_data["mlflow"] = deep_merge(job_cls.mlflow.model_dump(), raw_input_data["mlflow"])
+        ovh_default = job_cls.model_fields.get("ovh").default
+        if "ovh" in raw_input_data and ovh_default is not None:
+            input_data["ovh"] = deep_merge(ovh_default.model_dump(), raw_input_data["ovh"])
+        mlflow_default = job_cls.model_fields.get("mlflow").default
+        if "mlflow" in raw_input_data and mlflow_default is not None:
+            input_data["mlflow"] = deep_merge(mlflow_default.model_dump(), raw_input_data["mlflow"])
         job = job_cls.model_validate(input_data)
         results = job.submit(exec=True)
         logger.info(f"Job '{job_name}' completed with results: {results}")
