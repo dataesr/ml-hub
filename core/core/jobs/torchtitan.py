@@ -44,9 +44,10 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
     env = os.environ.copy()
     env["MODULE"] = args.module_name
     env["CONFIG"] = args.config_name
+    env.setdefault("NGPU", "1")
 
     command = [
-        "./run_train.sh",
+        "/workspace/torchtitan/run_train.sh",
         "--dump_folder",
         output_dir,
         "--hf_assets_path",

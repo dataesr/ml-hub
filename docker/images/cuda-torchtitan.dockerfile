@@ -23,9 +23,9 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin s
 RUN uv venv --python 3.12 --seed
 ENV PATH="$HOME/.venv/bin:$PATH"
 
-# # Install torchtitan + all deps using uv (faster than pip)
-RUN uv pip install --no-cache-dir \
-  "git+https://github.com/dataesr/torchtitan.git@main"
+# Install TorchTitan and keep its repository-level launcher available.
+RUN git clone --depth 1 https://github.com/dataesr/torchtitan.git /workspace/torchtitan
+RUN uv pip install --no-cache-dir /workspace/torchtitan
 
 # Allow the runtime user to update the preinstalled virtualenv.
 RUN chown -R 42420:42420 /workspace
