@@ -13,7 +13,7 @@ import argparse
 from typing import Literal
 from core.common.configs import load_yaml_config
 from core.jobs import JOBS_REGISTRY
-from core.utils.misc import deep_merge
+from core.utils.misc import deep_merge, dotted_to_dict
 from core.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -34,31 +34,21 @@ def _parse_override(unknown_args: list[str]) -> dict:
     """Parse unknown ``--key value`` CLI args into a nested dict."""
 
     iterator = iter(unknown_args)
-    parsed = {}
+    parsed = []
     for key in iterator:
         if key.startswith("--"):
             key = key.lstrip("-").replace("-", "_")
             try:
                 value = next(iterator)
                 if value.startswith("--"):
-                    parsed[key] = True
+                    parsed.append((key, True))
                     iterator = iter([value] + list(iterator))
                 else:
-                    parsed[key] = _cast_value(value)
+                    parsed.append((key, _cast_value(value)))
             except StopIteration:
-                parsed[key] = True
+                parsed.append((key, True))
 
-    # Expand dotted keys into nested dicts: "dataset.path" → {"dataset": {"path": ...}}
-    overrides: dict = {}
-    for key, value in parsed.items():
-        parts = key.split(".")
-        current = overrides
-        for part in parts[:-1]:
-            current.setdefault(part, {})
-            current = current[part]
-        current[parts[-1]] = value
-
-    return overrides
+    return dotted_to_dict(parsed)
 
 
 def run(job_name: str, config: str | None, extra_args: list[str], mode: Literal["run", "execute", "submit"] = "run"):

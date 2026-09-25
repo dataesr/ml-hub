@@ -4,6 +4,7 @@ import shlex
 from typing import Literal, Optional, Any
 from pydantic import BaseModel, Field
 from core.utils.cmd import run_cmd
+from core.utils.misc import dict_to_dotted
 from core.utils.types import ENV
 from core.utils.logger import get_logger
 
@@ -215,10 +216,15 @@ class OVHConfig(BaseModel):
         args.extend(self.command)
 
         if flags:
-            for key, value in flags:
+            for key, value in dict_to_dotted(dict(flags)).items():
                 arg = [f'--{key.replace("_","-")}']
-                if value is not None:
+                if isinstance(value, list):
+                    for item in value:
+                        args.extend([*arg, str(item)])
+                elif value is not None:
                     arg.append(str(value))
-                args.extend(arg)
+                    args.extend(arg)
+                else:
+                    args.extend(arg)
 
         return job_run(args)
