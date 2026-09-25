@@ -47,7 +47,7 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
     env.setdefault("NGPU", "1")
 
     command = [
-        "/workspace/torchtitan/run_train.sh",
+        "/torchtitan/run_train.sh",
         "--dump_folder",
         output_dir,
         "--hf_assets_path",

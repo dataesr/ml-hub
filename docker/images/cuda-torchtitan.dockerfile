@@ -24,13 +24,13 @@ RUN uv venv --python 3.12 --seed
 ENV PATH="$HOME/.venv/bin:$PATH"
 
 # Install TorchTitan and keep its repository-level launcher available.
-RUN git clone --depth 1 https://github.com/dataesr/torchtitan.git /workspace/torchtitan
-RUN uv pip install --no-cache-dir /workspace/torchtitan
+RUN git clone --depth 1 https://github.com/dataesr/torchtitan.git /torchtitan
+RUN uv pip install --no-cache-dir /torchtitan
 
-# Allow the runtime user to update the preinstalled virtualenv.
-RUN chown -R 42420:42420 /workspace
+# Allow OVH user
+RUN chown -R 42420:42420 /workspace /torchtitan
 
-# Generic entrypoint: installs core from git at boot
+# Generic entrypoint: installs core and run job script
 COPY --chown=42420:42420 docker/scripts/core-run.sh /run.sh
 USER root
 RUN chmod +x /run.sh
