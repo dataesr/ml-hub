@@ -27,6 +27,9 @@ ENV PATH="$HOME/.venv/bin:$PATH"
 RUN git clone --depth 1 https://github.com/dataesr/torchtitan.git /torchtitan
 RUN uv pip install --no-cache-dir /torchtitan
 
+# Add workspace and torchtitan to Python path
+ENV PYTHONPATH="$HOME:/torchtitan:${PYTHONPATH}"
+
 # Allow OVH user
 RUN chown -R 42420:42420 /workspace /torchtitan
 

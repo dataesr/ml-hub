@@ -29,7 +29,7 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
     mlf.start_run(f"torchtitan-{args.model_name}", tags={"run_type": "pretraining"})
 
     ### --- Download model and dataset ---
-    model_dir: str = folder_create(os.path.join("jobs", args.model_name))
+    model_dir: str = folder_create(os.path.join("jobs", args.model_name), override=True)
     output_dir = os.path.join(model_dir, "output")
     assets_dir = os.path.join(model_dir, "assets")
     assets_dir = download_model(args.model_name, assets_dir)
@@ -42,7 +42,7 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
 
     ### --- Training ---
     env = os.environ.copy()
-    env["MODULE"] = args.module_name
+    env["MODULE"] = f"torchtitan_recipes.{args.module_name}"
     env["CONFIG"] = args.config_name
     env.setdefault("NGPU", "1")
 
