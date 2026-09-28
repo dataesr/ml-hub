@@ -7,15 +7,23 @@ from core.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-def download_model(model_name: str, local_dir: str, revision: str | None = None) -> str:
+def download_model(model_name: str, local_dir: str, revision: str | None = None, override: bool = False) -> str:
     """Download a Hugging Face model repository without loading model weights."""
     if os.path.isdir(model_name):
+        if model_name == local_dir:
+            return model_name
+
         logger.info(f"Copying local model checkpoint from {model_name} to {local_dir}")
         shutil.copytree(model_name, local_dir, dirs_exist_ok=True)
         return local_dir
 
     logger.info(f"Start downloading model {model_name} to {local_dir}")
-    model_dir = snapshot_download(repo_id=model_name, local_dir=local_dir, revision=revision)
+    model_dir = snapshot_download(
+        repo_id=model_name,
+        local_dir=local_dir,
+        revision=revision,
+        force_download=override,
+    )
     logger.info(f"✅ Model downloaded to {model_dir}")
     return model_dir
 
