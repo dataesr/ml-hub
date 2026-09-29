@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from core.common.ovh import ovhai_initialize
 from app.routes.configs import router as configs_router
 from app.routes.datasets import router as datasets_router
@@ -69,11 +69,20 @@ api_router.include_router(experiments_router)
 api_router.include_router(tools_router)
 app.include_router(api_router)
 
+
 @app.get("/health")
 def health_check():
     return {"message": "healthy"}
 
+
 # Frontend routes at /
 STATIC_DIR = os.getenv("STATIC_DIR", "static")
 if os.path.isdir(STATIC_DIR):
-    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+    app.mount("/assets", StaticFiles(directory=f"{STATIC_DIR}/assets"), name="assets")
+
+    @app.get("/{path:path}")
+    async def serve_react_app(path: str):
+        file_path = os.path.join(STATIC_DIR, path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(STATIC_DIR, "index.html"))
