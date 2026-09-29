@@ -29,7 +29,7 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
     mlf.start_run(f"torchtitan-{args.model_name}", tags={"run_type": "pretraining"})
 
     ### --- Download model and dataset ---
-    job_dir = os.path.join("jobs", args.model_name)
+    job_dir = os.path.abspath(os.path.join("jobs", args.model_name))
     output_dir = os.path.join(job_dir, "output")
     model_dir = download_model(args.model_name, os.path.join(job_dir, "assets"))
 
