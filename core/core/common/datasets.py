@@ -92,8 +92,12 @@ def load(path_or_name: str, split: str | None = None) -> Dataset:
     return dataset
 
 
-def download_dataset(path_or_name: str, output_path: str, split: str = "train") -> str:
+def download_dataset(path_or_name: str, output_path: str, split: str = "train", override: bool = False) -> str:
     """Resolve a dataset from Hugging Face, local storage, or OVH and save it as JSONL."""
+    if os.path.isfile(output_path) and not override:
+        logger.debug(f"Dataset file {output_path} already exists, we assume dataset is already downloaded.")
+        return output_path
+
     dataset = load(path_or_name, split=split)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     dataset.to_json(output_path, orient="records", lines=True)

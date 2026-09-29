@@ -29,15 +29,14 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
     mlf.start_run(f"torchtitan-{args.model_name}", tags={"run_type": "pretraining"})
 
     ### --- Download model and dataset ---
-    model_dir: str = folder_create(os.path.join("jobs", args.model_name), override=True)
-    output_dir = os.path.join(model_dir, "output")
-    assets_dir = os.path.join(model_dir, "assets")
-    assets_dir = download_model(args.model_name, assets_dir)
+    job_dir = os.path.join("jobs", args.model_name)
+    output_dir = os.path.join(job_dir, "output")
+    model_dir = download_model(args.model_name, os.path.join(job_dir, "assets"))
 
     # TODO: Download tokenizer if different from model
 
     dataset_name = os.path.splitext(os.path.basename(args.dataset.path))[0]
-    dataset_path = os.path.join(model_dir, "datasets", f"{dataset_name}-{args.dataset.split}.jsonl")
+    dataset_path = os.path.join(job_dir, "datasets", f"{dataset_name}-{args.dataset.split}.jsonl")
     dataset_path = download_dataset(args.dataset.path, dataset_path, split=args.dataset.split)
 
     ### --- Training ---
@@ -51,10 +50,11 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
         "--dump_folder",
         output_dir,
         "--hf_assets_path",
-        assets_dir,
+        model_dir,
         "--checkpointer.initial_load_path",
-        assets_dir,
-        "--dataloader.dataset.dataset.source.load_dataset_kwargs.data_files",
+        model_dir,
+        "--dataloader.dataset.dataset.source.load_dataset_kwargs",
+        "data_files",
         dataset_path,
     ]
 

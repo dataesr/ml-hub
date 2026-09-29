@@ -1,3 +1,4 @@
+from core.utils.files import folder_create
 from typing import no_type_check
 import os
 import shutil
@@ -13,14 +14,19 @@ def download_model(model_name: str, local_dir: str, revision: str | None = None,
         if model_name == local_dir:
             return model_name
 
-        logger.info(f"Copying local model checkpoint from {model_name} to {local_dir}")
+        logger.debug(f"Copying local model checkpoint from {model_name} to {local_dir}")
         shutil.copytree(model_name, local_dir, dirs_exist_ok=True)
         return local_dir
 
-    logger.info(f"Start downloading model {model_name} to {local_dir}")
+    if os.path.isdir(local_dir) and os.listdir(local_dir) and not override:
+        logger.debug(f"Model folder {local_dir} is not empty, we assume model is already downloaded.")
+        return local_dir
+
+    model_dir = folder_create(local_dir, override=override)
+    logger.debug(f"Start downloading model {model_name} to {model_dir}")
     model_dir = snapshot_download(
         repo_id=model_name,
-        local_dir=local_dir,
+        local_dir=model_dir,
         revision=revision,
         force_download=override,
     )
