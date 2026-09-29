@@ -30,11 +30,12 @@ RUN uv pip install --no-cache-dir /torchtitan
 # Add workspace and torchtitan to Python path
 ENV PYTHONPATH="$HOME:/torchtitan:${PYTHONPATH}"
 
+# Generic entrypoint: installs core and run job script
+COPY --chown=42420:42420 docker/scripts/core-run.sh /run.sh
+
 # Allow OVH user
 RUN chown -R 42420:42420 /workspace /torchtitan
 
-# Generic entrypoint: installs core and run job script
-COPY --chown=42420:42420 docker/scripts/core-run.sh /run.sh
-USER root
+# Run entrypoint
 RUN chmod +x /run.sh
 USER 42420:42420
