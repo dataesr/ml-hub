@@ -10,7 +10,7 @@ echo "[runner] Installing core (branch=${CORE_BRANCH})..."
 uv pip install --no-cache "git+${REPO_URL}@${CORE_BRANCH}#subdirectory=core"
 
 echo "[runner] Fetching configs folder (branch=${CORE_BRANCH})..."
-git clone --quiet --depth 1 --branch "${core_BRANCH}" --filter=blob:none --sparse \
+git clone --quiet --depth 1 --branch "${CORE_BRANCH}" --filter=blob:none --sparse \
   "$REPO_URL" "$TMP_DIR"
 git -C "$TMP_DIR" sparse-checkout set configs
 rm -rf "$CONFIGS_DIR"
