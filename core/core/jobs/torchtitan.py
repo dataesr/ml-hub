@@ -55,6 +55,7 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
         model_dir,
         "--checkpointer.initial_load_path",
         model_dir,
+        "--checkpointer.initial_load_in_hf",
     ]
 
     logger.info(f"Starting TorchTitan: {' '.join(command)}")

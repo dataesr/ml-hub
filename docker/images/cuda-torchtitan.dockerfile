@@ -20,6 +20,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin s
 # Set workspace
 WORKDIR /workspace
 ENV HOME=/workspace
+ENV PYTHONPATH=/workspace
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
@@ -36,7 +37,7 @@ ARG TORCHTITAN_REF="f36852b60c8154718985f07d6778cb411c470516"
 RUN git init /torchtitan \
  && git -C /torchtitan fetch --depth 1 https://github.com/dataesr/torchtitan.git ${TORCHTITAN_REF} \
  && git -C /torchtitan checkout FETCH_HEAD \
- && git -C /torchtitan rev-parse HEAD > /torchtitan.sha
+ && git -C /torchtitan rev-parse HEAD > /torchtitan/sha
 RUN uv pip install --no-cache-dir -e /torchtitan
 
 # Add generic entrypoint

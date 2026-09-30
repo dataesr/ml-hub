@@ -16,7 +16,6 @@ git -C "$TMP_DIR" sparse-checkout set configs
 rm -rf "$CONFIGS_DIR"
 cp -r "$TMP_DIR/configs" "$CONFIGS_DIR"
 rm -rf "$TMP_DIR"
-export PYTHONPATH="$CONFIGS_DIR:${PYTHONPATH:-}"
 
 echo "[runner] Running command: $*"
 
