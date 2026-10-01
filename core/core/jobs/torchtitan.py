@@ -56,6 +56,8 @@ def run_torchtitan(args: TorchTitanArgs, mlf: MLflowRun):
         "--checkpointer.initial_load_path",
         model_dir,
         "--checkpointer.initial_load_in_hf",
+        "--training.num_tokens_per_microbatch_per_dp_rank",
+        "8192",  # fix cuda oom
     ]
 
     logger.info(f"Starting TorchTitan: {' '.join(command)}")
