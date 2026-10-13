@@ -126,7 +126,7 @@ class MLflowRun:
 
         try:
             dataset_source = resolve_dataset_source(raw_source)
-            mlflow_dataset = MetaDataset(source=dataset_source, name=name)
+            mlflow_dataset = MetaDataset(source=dataset_source, name=name)  # ty: ignore[call-non-callable]
             mlflow.log_input(mlflow_dataset, context=dataset_split, tags=metadata)
             logger.debug(f"Logged dataset {dataset_name} metadata")
         except Exception as error:
