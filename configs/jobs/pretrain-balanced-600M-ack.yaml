@@ -9,7 +9,7 @@ args:
     text_format: "{input}"
     input_col: "text"
   module_name: "qwen3"
-  config_name: "qwen3_balanced_600m_ack_reasoning"
+  config_name: "balanced_600m_ack"
   hf_push_repo: null
 
 tracking:
