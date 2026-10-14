@@ -1,5 +1,5 @@
 # official MLflow image
-FROM ghcr.io/mlflow/mlflow:v3.6.0
+FROM ghcr.io/mlflow/mlflow:v3.17.1-full
 
 # Install git
 RUN apt-get update && \
@@ -8,4 +8,4 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/*
 
 # Install mlflow dependencies
-RUN pip install --no-cache-dir "mlflow[extras]==3.6.0"
+RUN pip install --no-cache-dir "mlflow[extras]==3.17.1"
